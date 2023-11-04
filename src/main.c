@@ -3,6 +3,7 @@
 #include <string.h>
 #include "ulas.h"
 #include <unistd.h>
+#include <getopt.h>
 
 #define ULAS_NAME "ulas"
 #define ULAS_VER "0.0.1"
@@ -48,12 +49,11 @@ void ulas_getopt(int argc, char **argv, struct ulas_config *cfg) {
 
 int main(int argc, char **argv) {
   // map args to cfg here
-  struct ulas_config cfg;
-  memset(&cfg, 0, sizeof(cfg));
+  struct ulas_config cfg = ulas_cfg_from_env();
 
   ulas_getopt(argc, argv, &cfg);
 
-  int res = ulas_main(&cfg);
+  int res = ulas_main(cfg);
 
   return res;
 }

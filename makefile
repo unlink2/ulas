@@ -4,7 +4,7 @@ SDIR=./src
 CC=gcc
 DBGCFLAGS=-g -fsanitize=address
 DBGLDFLAGS=-fsanitize=address 
-CFLAGS=-I$(IDIR) -Wall -pedantic $(DBGCFLAGS) -std=gnu99
+CFLAGS=-I$(IDIR) -Wall -pedantic $(DBGCFLAGS) -std=c99
 LIBS=
 TEST_LIBS=
 LDFLAGS=$(DBGLDFLAGS) $(LIBS)
