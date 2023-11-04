@@ -1,5 +1,7 @@
 # ulas
 
+Unlink's light assembler is a C99 assembler for the 6502 without any external dependencies.
+
 ## Table of content
 
 - [Installation](#Installation)
@@ -10,7 +12,7 @@
 
 ## Installation
 
-To build this program you will require a recent C compiler, make, `libargtable2` and `libcmocka` for unit tests.
+To build this program you will require a recent C compiler, and make.
 
 ```sh
 premake gmake # to build gnu make file 
