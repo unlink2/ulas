@@ -17,6 +17,7 @@ void test_tok(void) {
   TESTBEGIN("tok");
 
   assert_tok("test", 4, "test tokens", ulas_tokrulespace);
+  assert_tok("test", 6, "  test tokens", ulas_tokrulespace);
   assert_tok("tokens", 6, "tokens", ulas_tokrulespace);
   assert_tok("", 0, "", ulas_tokrulespace);
   assert_tok("", -1, NULL, ulas_tokrulespace);

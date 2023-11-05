@@ -56,7 +56,7 @@ int ulas_main(struct ulas_config cfg) {
   return 0;
 }
 
-bool ulas_tokrulespace(char current, char prev) { return isspace(current); }
+bool ulas_tokrulespace(char current) { return isspace(current); }
 
 int ulas_tok(char *dst, const char *line, size_t n, ulas_tokrule rule) {
   if (!dst || !line || n == 0) {
@@ -64,17 +64,22 @@ int ulas_tok(char *dst, const char *line, size_t n, ulas_tokrule rule) {
   }
 
   int i = 0;
-  char prev = '\0';
+  int write = 0;
   char current = '\0';
-  for (i = 0; i < n - 1 && line[i]; i++) {
-    prev = current;
-    current = line[i];
-    if (rule(current, prev)) {
-      break;
-    }
-    dst[i] = current;
+
+  // always skip leading terminators
+  while (line[i] && i < n - 1 && rule(line[i])) {
+    i++;
   }
 
-  dst[i + 1] = '\0';
+  for (; i < n - 1 && write < n - 1 && line[i]; i++, write++) {
+    current = line[i];
+    if (rule(current)) {
+      break;
+    }
+    dst[write] = current;
+  }
+
+  dst[write + 1] = '\0';
   return i;
 }
