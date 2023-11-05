@@ -22,9 +22,9 @@
 
 // configurable tokens
 #define ULAS_TOK_COMMENT ';'
-// start of as directives such as .org 
+// start of as directives such as .org
 #define ULAS_TOK_ASDIR_BEGIN '.'
-// start of preprocessor directives such as #define or #include 
+// start of preprocessor directives such as #define or #include
 #define ULAS_TOK_PREPROC_BEGIN '#'
 
 // format macros
@@ -38,13 +38,72 @@ extern FILE *ulasout;
 extern FILE *ulaserr;
 
 struct ulas_config {
-  // argv represents file names 
+  // argv represents file names
   char **argv;
   int argc;
 
   char *output_path;
 
   bool verbose;
+};
+
+/**
+ * Tokens
+ */
+
+enum ulas_toks {
+  ULAS_TOKLITERAL,
+  ULAS_TOKINT,
+  ULAS_TOKFLOAT,
+  ULAS_TOKCHAR,
+  ULAS_TOKSTRING
+};
+
+struct ulas_tokliteral {
+  const char *literal;
+};
+
+union ulas_tokdat {
+  struct ulas_tokliteral literal;
+};
+
+struct ulas_tok {
+  enum ulas_toks type;
+  union ulas_tokdat dat;
+};
+
+/**
+ * Expressions
+ */
+
+struct ulas_expr;
+
+enum ulas_exprs { ULAS_EXPUNARY, ULAS_EXPBINARY, ULAS_EXPLITERAL };
+
+struct ulas_expunary {
+  struct ulas_expr *left;
+  struct ulas_tok *op;
+};
+
+struct ulas_expbinary {
+  struct ulas_expr *left;
+  struct ulas_expr *right;
+  struct ulas_tok *op;
+};
+
+struct ulas_expliteral {
+  struct ulas_tok *tok;
+};
+
+union ulas_expdat {
+  struct ulas_expunary unary;
+  struct ulas_expbinary binary;
+  struct ulas_expliteral literal;
+};
+
+struct ulas_expr {
+  enum ulas_exprs type;
+  union ulas_expdat dat;
 };
 
 extern struct ulas_config ulascfg;
