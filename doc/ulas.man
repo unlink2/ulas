@@ -17,7 +17,25 @@
   -v, --verbose             
     verbose output
  
-.SH SYNTAX
+.SH PREPROCESSOR 
+
+The preprocessor is a text based way of modifying the input before 
+the assembly step.
+
+Withing preprocessor macros 
+- $0 will expand to the literal argument string 
+- $1 to $9 will expand to the comma separated arguments of the macro 
+- $$ will expand to an internal macro call counter which can be used to make labels 
+  that are expanded by a macro unique.
+
+Macros:
+
+#macro 
+label$$:
+  adc $1, $2
+#endm
+
+.SH ASSEMBLY SYNTAX
 
 
 

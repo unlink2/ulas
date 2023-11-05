@@ -1,6 +1,6 @@
 # ulas
 
-Unlink's light assembler is a C99 assembler for the 6502 without any external dependencies.
+Unlink's light assembler is a C99 assembler without any external dependencies.
 
 ## Table of content
 

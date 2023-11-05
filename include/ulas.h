@@ -72,6 +72,23 @@ struct ulas_tok {
   union ulas_tokdat dat;
 };
 
+enum ulas_ppdirs {
+  ULAS_PP_DEF,
+  ULAS_PP_MACRO,
+};
+
+struct ulas_ppdir {
+  enum ulas_ppdirs type;
+};
+
+/**
+ * Symbols
+ */
+
+struct ulas_sym {
+  const char *name;
+};
+
 /**
  * Expressions
  */
@@ -112,6 +129,11 @@ struct ulas_config ulas_cfg_from_env(void);
 void ulas_init(struct ulas_config cfg);
 
 int ulas_main(struct ulas_config cfg);
+
+/**
+ * Tokenize and apply the preprocessor
+ */
+int ulas_preproc(FILE *dst, FILE *src);
 
 char *ulas_strndup(const char *src, size_t n);
 

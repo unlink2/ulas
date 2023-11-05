@@ -54,3 +54,5 @@ int ulas_main(struct ulas_config cfg) {
 
   return 0;
 }
+
+int ulas_preproc(FILE *dst, FILE *src) {}
