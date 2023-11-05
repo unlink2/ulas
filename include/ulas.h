@@ -9,8 +9,6 @@
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
-#define ULAS_COMMENT ';'
-
 // Config variables
 #define ULAS_CFG_FMT_GREEN "\x1B[32m"
 #define ULAS_CFG_FMT_YELLOW "\x1B[33m"
@@ -19,6 +17,10 @@
 #define ULAS_CFG_FMT_CYAN "\x1B[36m"
 #define ULAS_CFG_FMT_BLUE "\x1B[34m"
 #define ULAS_CFG_FMT_RESET "\x1B[0m"
+
+// configurable tokens
+#define ULAS_TOK_COMMENT ';'
+#define ULAS_TOK_DIRECTIVE_BEGIN '#'
 
 // format macros
 #define ULAS_FMT(f, fmt)                                                       \

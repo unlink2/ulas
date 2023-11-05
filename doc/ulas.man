@@ -1,22 +1,26 @@
 .\" Manpage for ulas.
 .\" Contact lukas@krickl.dev to correct errors or typos.
 
-.TH man 8 "21 August 2023" "0.0.1" "ulas manual"
+.TH man 1 "21 August 2023" "0.0.1" "ulas manual"
 
 .SH NAME
   ulas
 .SH SYNOPSIS
-  ulas [-v] [--help] [--version]
+  ulas [-hvV] 
 .SH DESCRIPTION
   ulas
 
-  --help                    
+  -h                    
     display this help and exit
-  --version                 
+  -v                 
     display version info and exit
   -v, --verbose             
     verbose output
-  
+ 
+.SH SYNTAX
+
+
+
 .SH EXAMPLES
  
 .SH SEE ALSO

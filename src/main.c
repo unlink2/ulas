@@ -8,19 +8,27 @@
 #define ULAS_NAME "ulas"
 #define ULAS_VER "0.0.1"
 
+// args without value
+#define ULAS_OPTS "hvV"
+
+// args with value
+#define ULAS_OPTS_ARG ""
+
+#define ULAS_HELP(a, desc) printf("\t%s\t%s\n", (a), desc);
+
 void ulas_help(void) {
   printf("%s\n", ULAS_NAME);
-  printf("Usage %s [-h] [-V] [-v]\n\n", ULAS_NAME);
-  printf("\t-h\tdisplay this help and exit\n");
-  printf("\t-V\tdisplay version info and exit\n");
-  printf("\t-v\tverbose output\n");
+  printf("Usage %s [-%s]\n\n", ULAS_NAME, ULAS_OPTS);
+  ULAS_HELP("-h", "display this help and exit");
+  ULAS_HELP("-V", "display version info and exit");
+  ULAS_HELP("-v", "verbose output");
 }
 
 void ulas_version(void) { printf("%s version %s\n", ULAS_NAME, ULAS_VER); }
 
 void ulas_getopt(int argc, char **argv, struct ulas_config *cfg) {
   int c = 0;
-  while ((c = getopt(argc, argv, "hvV")) != -1) {
+  while ((c = getopt(argc, argv, ULAS_OPTS ULAS_OPTS_ARG)) != -1) {
     switch (c) {
     case 'h':
       ulas_help();
