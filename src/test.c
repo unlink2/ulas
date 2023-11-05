@@ -1,6 +1,7 @@
 #include "ulas.h"
 #include <stdio.h>
 #include <assert.h>
+#include "preproc.h"
 
 #define TESTBEGIN(name) printf("[test %s]\n", (name));
 #define TESTEND(name) printf("[%s ok]\n", (name));
@@ -25,14 +26,35 @@ void test_tok(void) {
   TESTEND("tok");
 }
 
+#define assert_preproc(expect_dst, expect_ret, input)                          \
+  {                                                                            \
+    char dstbuf[ULAS_LINEMAX];                                                 \
+    memset(dstbuf, 0, ULAS_LINEMAX);                                           \
+    FILE *src = fmemopen((input), strlen((input)), "r");                       \
+    FILE *dst = fmemopen(dstbuf, ULAS_LINEMAX, "w");                           \
+    assert(ulas_preproc(dst, src) == (expect_ret));                            \
+    assert(strcmp(dstbuf, (expect_dst)) == 0);                                 \
+    fclose(src);                                                               \
+    fclose(dst);                                                               \
+  }
+
+void test_preproc(void) {
+  TESTBEGIN("preproc");
+
+  assert_preproc("", 0, "test");
+
+  TESTEND("preproc");
+}
+
 int main(int arc, char **argv) {
   ulas_init(ulas_cfg_from_env());
 
-  if (!ulascfg.verbose) {
+  /*if (!ulascfg.verbose) {
     fclose(stderr);
-  }
+  }*/
 
   test_tok();
+  test_preproc();
 
   return 0;
 }

@@ -7,6 +7,7 @@
 #include <string.h>
 
 #define ULAS_PATHMAX 4096
+#define ULAS_LINEMAX 4096
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
@@ -26,6 +27,9 @@
 #define ULAS_TOK_ASDIR_BEGIN '.'
 // start of preprocessor directives such as #define or #include
 #define ULAS_TOK_PREPROC_BEGIN '#'
+
+#define ULASERR(...) fprintf(ulaserr, __VA_ARGS__);
+#define ULASWARN(...) fprintf(ulaserr, __VA_ARGS__);
 
 // format macros
 #define ULAS_FMT(f, fmt)                                                       \
