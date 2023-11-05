@@ -6,6 +6,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+#define ULAS_PATHMAX 4096
+
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
@@ -20,7 +22,10 @@
 
 // configurable tokens
 #define ULAS_TOK_COMMENT ';'
-#define ULAS_TOK_DIRECTIVE_BEGIN '#'
+// start of as directives such as .org 
+#define ULAS_TOK_ASDIR_BEGIN '.'
+// start of preprocessor directives such as #define or #include 
+#define ULAS_TOK_PREPROC_BEGIN '#'
 
 // format macros
 #define ULAS_FMT(f, fmt)                                                       \
@@ -33,8 +38,11 @@ extern FILE *ulasout;
 extern FILE *ulaserr;
 
 struct ulas_config {
+  // argv represents file names 
   char **argv;
   int argc;
+
+  char *output_path;
 
   bool verbose;
 };
@@ -45,5 +53,7 @@ struct ulas_config ulas_cfg_from_env(void);
 void ulas_init(struct ulas_config cfg);
 
 int ulas_main(struct ulas_config cfg);
+
+char *ulas_strndup(const char *src, size_t n);
 
 #endif

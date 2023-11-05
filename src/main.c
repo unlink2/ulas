@@ -12,16 +12,17 @@
 #define ULAS_OPTS "hvV"
 
 // args with value
-#define ULAS_OPTS_ARG ""
+#define ULAS_OPTS_ARG "o:"
 
-#define ULAS_HELP(a, desc) printf("\t%s\t%s\n", (a), desc);
+#define ULAS_HELP(a, desc) printf("\t-%s\t%s\n", (a), desc);
 
 void ulas_help(void) {
   printf("%s\n", ULAS_NAME);
-  printf("Usage %s [-%s]\n\n", ULAS_NAME, ULAS_OPTS);
-  ULAS_HELP("-h", "display this help and exit");
-  ULAS_HELP("-V", "display version info and exit");
-  ULAS_HELP("-v", "verbose output");
+  printf("Usage %s [-%s] [-o=path] [input]\n\n", ULAS_NAME, ULAS_OPTS);
+  ULAS_HELP("h", "display this help and exit");
+  ULAS_HELP("V", "display version info and exit");
+  ULAS_HELP("v", "verbose output");
+  ULAS_HELP("o=path", "Output file");
 }
 
 void ulas_version(void) { printf("%s version %s\n", ULAS_NAME, ULAS_VER); }
@@ -40,6 +41,9 @@ void ulas_getopt(int argc, char **argv, struct ulas_config *cfg) {
       break;
     case 'v':
       cfg->verbose = true;
+      break;
+    case 'o':
+      cfg->output_path = ulas_strndup(optarg, ULAS_PATHMAX);
       break;
     case '?':
       break;
