@@ -65,20 +65,23 @@ int ulas_tok(char *dst, const char *line, size_t n, ulas_tokrule rule) {
 
   int i = 0;
   int write = 0;
-  char current = '\0';
+
+#define weld_tokcond (i < n - 1 && write < n - 1 && line[i])
 
   // always skip leading terminators
-  while (line[i] && i < n - 1 && rule(line[i])) {
+  while (weld_tokcond && rule(line[i])) {
     i++;
   }
 
-  for (; i < n - 1 && write < n - 1 && line[i]; i++, write++) {
-    current = line[i];
-    if (rule(current)) {
+  while (weld_tokcond) {
+    if (rule(line[i])) {
       break;
     }
-    dst[write] = current;
+    dst[write] = line[i];
+    i++;
+    write++;
   }
+#undef weld_tokcond
 
   dst[write + 1] = '\0';
   return i;
