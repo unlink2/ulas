@@ -22,6 +22,12 @@
 The preprocessor is a text based way of modifying the input before 
 the assembly step.
 
+Preprocessor directives start with a # and have to be the first non-space character in a line.
+All lines that are not a preprocessor directive, or are not part of a preprocessor block (macro, or if)
+will be output as-is. If a line contains the name of a preprocessot define or macro 
+,surrounded by token any character that is not alphanumeric or an underscore,
+the define or macro will be expanded.
+
 Withing preprocessor macros 
 - $0 will expand to the literal argument string 
 - $1 to $9 will expand to the comma separated arguments of the macro 
@@ -30,13 +36,16 @@ Withing preprocessor macros
 
 Macros:
 
-#macro 
+#macro my_macro
 label$$:
   adc $1, $2
-#endm
+#endmacro
+
+my_macro a, b
+
+
 
 .SH ASSEMBLY SYNTAX
-
 
 
 .SH EXAMPLES

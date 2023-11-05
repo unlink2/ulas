@@ -72,15 +72,6 @@ struct ulas_tok {
   union ulas_tokdat dat;
 };
 
-enum ulas_ppdirs {
-  ULAS_PP_DEF,
-  ULAS_PP_MACRO,
-};
-
-struct ulas_ppdir {
-  enum ulas_ppdirs type;
-};
-
 /**
  * Symbols
  */
@@ -130,11 +121,21 @@ void ulas_init(struct ulas_config cfg);
 
 int ulas_main(struct ulas_config cfg);
 
-/**
- * Tokenize and apply the preprocessor
- */
-int ulas_preproc(FILE *dst, FILE *src);
-
 char *ulas_strndup(const char *src, size_t n);
+
+/**
+ * A token rule returns true when a token should end
+ * otherwise returns false
+ */
+typedef bool (*ulas_tokrule)(char current, char prev);
+
+// simple tokenizer at any space char
+bool ulas_tokrulespace(char current, char prev);
+
+// tokenisze according to pre-defined rules
+// returns the amount of bytes of line that were
+// consumed or -1 on error
+// returns 0 when no more tokens can be read
+int ulas_tok(char *dst, const char *line, size_t n, ulas_tokrule rule);
 
 #endif

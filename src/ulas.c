@@ -1,4 +1,5 @@
 #include "ulas.h"
+#include <ctype.h>
 #include <errno.h>
 #include <string.h>
 
@@ -55,4 +56,25 @@ int ulas_main(struct ulas_config cfg) {
   return 0;
 }
 
-int ulas_preproc(FILE *dst, FILE *src) {}
+bool ulas_tokrulespace(char current, char prev) { return isspace(current); }
+
+int ulas_tok(char *dst, const char *line, size_t n, ulas_tokrule rule) {
+  if (!dst || !line || n == 0) {
+    return -1;
+  }
+
+  int i = 0;
+  char prev = '\0';
+  char current = '\0';
+  for (i = 0; i < n - 1 && line[i]; i++) {
+    prev = current;
+    current = line[i];
+    if (rule(current, prev)) {
+      break;
+    }
+    dst[i] = current;
+  }
+
+  dst[i + 1] = '\0';
+  return i;
+}
