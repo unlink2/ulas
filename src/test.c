@@ -1,4 +1,5 @@
 #include "ulas.h"
+#include <ctype.h>
 #include <stdio.h>
 #include <assert.h>
 #include "preproc.h"
@@ -32,13 +33,13 @@
 void test_tok(void) {
   TESTBEGIN("tok");
 
-  assert_tok("test", 4, "test tokens", ulas_tokrulespace);
-  assert_tok("test", 6, "  test tokens", ulas_tokrulespace);
-  assert_tok("tokens", 6, "tokens", ulas_tokrulespace);
-  assert_tok("", 0, "", ulas_tokrulespace);
-  assert_tok("", -1, NULL, ulas_tokrulespace);
+  assert_tok("test", 4, "test tokens", isspace);
+  assert_tok("test", 6, "  test tokens", isspace);
+  assert_tok("tokens", 6, "tokens", isspace);
+  assert_tok("", 0, "", isspace);
+  assert_tok("", -1, NULL, isspace);
 
-  assert_tokline(4, "  test  tokens   with   line", ulas_tokrulespace,
+  assert_tokline(4, "  test  tokens   with   line", isspace,
                  {"test", "tokens", "with", "line"});
 
   TESTEND("tok");

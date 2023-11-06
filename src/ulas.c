@@ -49,8 +49,6 @@ int ulas_main(struct ulas_config cfg) {
   return 0;
 }
 
-bool ulas_tokrulespace(char current) { return isspace(current); }
-
 int ulas_tok(char *dst, const char *line, size_t n, ulas_tokrule rule) {
   if (!dst || !line || n == 0) {
     return -1;

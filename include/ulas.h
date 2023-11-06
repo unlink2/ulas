@@ -163,10 +163,8 @@ char *ulas_strndup(const char *src, size_t n);
  * A token rule returns true when a token should end
  * otherwise returns false
  */
-typedef bool (*ulas_tokrule)(char current);
+typedef int (*ulas_tokrule)(int current);
 
-// simple tokenizer at any space char
-bool ulas_tokrulespace(char current);
 
 // tokenisze according to pre-defined rules
 // returns the amount of bytes of line that were

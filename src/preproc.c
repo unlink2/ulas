@@ -5,8 +5,6 @@
 #include <stdio.h>
 #include <assert.h>
 
-bool ulas_tokpreproc(char c) { return !isalnum(c) && c != '#'; }
-
 char *ulas_preprocexpand(char *line, size_t linemax, const char *raw_line,
                          size_t *n) {
   assert(*n <= linemax);
@@ -18,7 +16,7 @@ char *ulas_preprocexpand(char *line, size_t linemax, const char *raw_line,
   // if so expand it
   // only expand macros if they match toks[0] though!
   // otherwise memcpy the read bytes 1:1 into the new string
-  while (ulas_tokline(tok, &praw_line, ULAS_TOKMAX, ulas_tokpreproc)) {
+  while (ulas_tokline(tok, &praw_line, ULAS_TOKMAX, isalnum)) {
   }
 
   // TODO: actually expand here...
@@ -49,13 +47,20 @@ int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, const char *raw_line,
   char tok[ULAS_TOKMAX];
 
   // check if the first token is any of the valid preproc directives
-  if (ulas_tokline(tok, &pline, ULAS_TOKMAX, ulas_tokpreproc)) {
+  if (ulas_tokline(tok, &pline, ULAS_TOKMAX, isspace)) {
+    // not a preproc directive...
+    if (tok[0] != ULAS_TOK_PREPROC_BEGIN) {
+      goto found;
+    }
     for (size_t i = 0; dirstrs[i]; i++) {
       if (strncmp(dirstrs[i], tok, ULAS_TOKMAX) == 0) {
         found_dir = dirs[i];
         goto found;
       }
     }
+
+    ULASERR("Unknown preprocessor directive: %s\n", line);
+    return -1;
   }
 found:
 
