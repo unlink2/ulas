@@ -16,15 +16,17 @@
 
 #define assert_tokline(expected_n, line, rule, ...)                            \
   {                                                                            \
-    char *expect[] = __VA_ARGS__;                                              \
-    size_t n = 0;                                                              \
-    char **toks = ulas_tokline(line, &n, rule);                                \
-    assert(toks);                                                              \
-    assert(n == expected_n);                                                   \
-    for (size_t i = 0; i < n; i++) {                                           \
-      assert(strcmp(toks[i], expect[i]) == 0);                                 \
+    const char *expect[] = __VA_ARGS__;                                        \
+    size_t n = ULAS_TOKMAX;                                                    \
+    char buf[n];                                                               \
+    memset(buf, 0, n);                                                         \
+    int i = 0;                                                                 \
+    const char *pline = line;                                                  \
+    while (ulas_tokline(buf, &pline, n, rule)) {                               \
+      assert(strcmp(buf, expect[i]) == 0);                                     \
+      i++;                                                                     \
     }                                                                          \
-    ulas_toklinefree(toks, n);                                                 \
+    assert(i == expected_n);                                                   \
   }
 
 void test_tok(void) {
@@ -57,7 +59,8 @@ void test_tok(void) {
 void test_preproc(void) {
   TESTBEGIN("preproc");
 
-  assert_preproc("test", 0, "test");
+  // should just echo back line as is
+  assert_preproc("  test line", 0, "  test line");
 
   TESTEND("preproc");
 }

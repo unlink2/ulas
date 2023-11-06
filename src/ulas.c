@@ -28,13 +28,6 @@ struct ulas_config ulas_cfg_from_env(void) {
   return cfg;
 }
 
-char *ulas_strndup(const char *src, size_t n) {
-  size_t len = MIN(strlen(src), n);
-  char *dst = malloc(len);
-  strncpy(dst, src, len);
-  return dst;
-}
-
 int ulas_main(struct ulas_config cfg) {
   if (cfg.output_path) {
     ulasout = fopen(cfg.output_path, "we");
@@ -87,44 +80,11 @@ int ulas_tok(char *dst, const char *line, size_t n, ulas_tokrule rule) {
   return i;
 }
 
-char **ulas_tokline(const char *line, size_t *n, ulas_tokrule rule) {
-  char buf[ULAS_TOKMAX];
-
-  char **dst = NULL;
-  *n = 0;
-
-  int tokrc = 0;
-  int read = 0;
-  while ((tokrc = ulas_tok(buf, line + read, ULAS_TOKMAX, rule)) > 0) {
-    if (tokrc == -1) {
-      goto fail;
-    }
-    read += tokrc;
-
-    *n = *n + 1;
-    char **newdst = realloc(dst, sizeof(char *) * (*n));
-    if (!newdst) {
-      goto fail;
-    }
-    dst = newdst;
-
-    dst[(*n) - 1] = strndup(buf, ULAS_TOKMAX);
+int ulas_tokline(char *dst, const char **line, size_t n, ulas_tokrule rule) {
+  int rc = ulas_tok(dst, *line, n, rule);
+  if (rc == -1) {
+    return -1;
   }
-
-  return dst;
-fail:
-  ulas_toklinefree(dst, *n);
-  *n = 0;
-  return NULL;
-}
-
-void ulas_toklinefree(char **data, size_t n) {
-  if (!data) {
-    return;
-  }
-  for (size_t i = 0; i < n; i++) {
-    free(data[i]);
-  }
-
-  free(data);
+  *line += rc;
+  return rc;
 }
