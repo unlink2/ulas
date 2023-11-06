@@ -86,3 +86,44 @@ int ulas_tok(char *dst, const char *line, size_t n, ulas_tokrule rule) {
   dst[write + 1] = '\0';
   return i;
 }
+
+char **ulas_tokline(const char *line, size_t *n, ulas_tokrule rule) {
+  char buf[ULAS_TOKMAX];
+
+  char **dst = NULL;
+  *n = 0;
+
+  int tokrc = 0;
+  int read = 0;
+  while ((tokrc = ulas_tok(buf, line + read, ULAS_TOKMAX, rule)) > 0) {
+    if (tokrc == -1) {
+      goto fail;
+    }
+    read += tokrc;
+
+    *n = *n + 1;
+    char **newdst = realloc(dst, sizeof(char *) * (*n));
+    if (!newdst) {
+      goto fail;
+    }
+    dst = newdst;
+
+    dst[*n - 1] = strndup(buf, ULAS_TOKMAX);
+  }
+
+  return dst;
+fail:
+  ulas_toklinefree(dst, *n);
+  return NULL;
+}
+
+void ulas_toklinefree(char **data, size_t n) {
+  if (!data) {
+    return;
+  }
+  for (size_t i = 0; i < n; i++) {
+    free(data[n]);
+  }
+
+  free(data);
+}

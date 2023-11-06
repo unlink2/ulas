@@ -8,6 +8,7 @@
 
 #define ULAS_PATHMAX 4096
 #define ULAS_LINEMAX 4096
+#define ULAS_TOKMAX 512
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
@@ -141,5 +142,10 @@ bool ulas_tokrulespace(char current);
 // consumed or -1 on error
 // returns 0 when no more tokens can be read
 int ulas_tok(char *dst, const char *line, size_t n, ulas_tokrule rule);
+
+// tokenizes an entire line
+char **ulas_tokline(const char *line, size_t *n, ulas_tokrule rule);
+
+void ulas_toklinefree(char **data, size_t n);
 
 #endif

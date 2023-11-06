@@ -8,11 +8,14 @@
 
 #define assert_tok(expected_tok, expected_ret, line, rule)                     \
   {                                                                            \
-    char buf[256];                                                             \
-    memset(buf, 0, 256);                                                       \
-    assert(ulas_tok(buf, (line), 256, (rule)) == (expected_ret));              \
+    char buf[ULAS_TOKMAX];                                                     \
+    memset(buf, 0, ULAS_TOKMAX);                                               \
+    assert(ulas_tok(buf, (line), ULAS_TOKMAX, (rule)) == (expected_ret));      \
     assert(strcmp(buf, expected_tok) == 0);                                    \
   }
+
+#define assert_tokline(expected_toks, expected_n, line, rule)                  \
+  {}
 
 void test_tok(void) {
   TESTBEGIN("tok");
@@ -23,6 +26,9 @@ void test_tok(void) {
   assert_tok("", 0, "", ulas_tokrulespace);
   assert_tok("", -1, NULL, ulas_tokrulespace);
 
+  assert_tokline(({"test", "tokens", "with", "line"}), 4,
+                 "  test  tokens   with   line", ulas_tokrulespace);
+
   TESTEND("tok");
 }
 
@@ -30,18 +36,18 @@ void test_tok(void) {
   {                                                                            \
     char dstbuf[ULAS_LINEMAX];                                                 \
     memset(dstbuf, 0, ULAS_LINEMAX);                                           \
-    FILE *src = fmemopen((input), strlen((input)), "r");                       \
-    FILE *dst = fmemopen(dstbuf, ULAS_LINEMAX, "w");                           \
-    assert(ulas_preproc(dst, src) == (expect_ret));                            \
-    assert(strcmp(dstbuf, (expect_dst)) == 0);                                 \
+    FILE *src = fmemopen((input), strlen((input)), "re");                      \
+    FILE *dst = fmemopen(dstbuf, ULAS_LINEMAX, "we");                          \
+    assert(ulas_preproc(dst, "testdst", src, "testsrc") == (expect_ret));      \
     fclose(src);                                                               \
     fclose(dst);                                                               \
+    assert(strcmp(dstbuf, (expect_dst)) == 0);                                 \
   }
 
 void test_preproc(void) {
   TESTBEGIN("preproc");
 
-  assert_preproc("", 0, "test");
+  assert_preproc("test", 0, "test");
 
   TESTEND("preproc");
 }
