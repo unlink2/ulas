@@ -61,6 +61,7 @@ void test_preproc(void) {
 
   // should just echo back line as is
   assert_preproc("  test line", 0, "  test line");
+  assert_preproc("", 0, "  #define test");
 
   TESTEND("preproc");
 }

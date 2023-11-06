@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-bool ulas_tokpreproc(char c) { return !isalnum(c); }
+bool ulas_tokpreproc(char c) { return !isalnum(c) && c != '#'; }
 
 char *ulas_preprocexpand(char *line, size_t linemax, const char *raw_line,
                          size_t *n) {
@@ -61,6 +61,8 @@ found:
 
   if (found_dir) {
     // TODO: process directive
+    printf("%s preproc directive!\n", tok);
+    fputc('\0', dst);
   } else {
     assert(fwrite(line, 1, n, dst) == n);
   }
