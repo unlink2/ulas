@@ -42,6 +42,21 @@ extern FILE *ulasin;
 extern FILE *ulasout;
 extern FILE *ulaserr;
 
+// NULL for int based lookup
+#define INULL (-1)
+
+// expression index in the expression list
+typedef int iexpr;
+
+// token index in the token list
+typedef int itok;
+
+// string index in the string list
+typedef int istr;
+
+struct ulas_expr;
+struct ulas_tok;
+
 struct ulas_config {
   // argv represents file names
   char **argv;
@@ -50,6 +65,15 @@ struct ulas_config {
   char *output_path;
 
   bool verbose;
+};
+
+/**
+ * Assembly context
+ */
+
+struct ulas {
+  char **strs;
+  size_t strslen;
 };
 
 /**
@@ -65,7 +89,7 @@ enum ulas_toks {
 };
 
 struct ulas_tokliteral {
-  const char *literal;
+  istr literal;
 };
 
 union ulas_tokdat {
@@ -82,30 +106,34 @@ struct ulas_tok {
  */
 
 struct ulas_sym {
-  const char *name;
+  istr name;
 };
 
 /**
  * Expressions
+ *
+ * Expressions use an index based lookup instead of
+ * actual pointers to allow easy dumping of the structure to a file
+ * as well as realloc calls. As an index the integer based iexpr and itok
+ * denote which data type is supposed to be looked up. An iexpr or itok value of
+ * -1 denotes a NULL value
  */
-
-struct ulas_expr;
 
 enum ulas_exprs { ULAS_EXPUNARY, ULAS_EXPBINARY, ULAS_EXPLITERAL };
 
 struct ulas_expunary {
-  struct ulas_expr *left;
-  struct ulas_tok *op;
+  iexpr left;
+  itok op;
 };
 
 struct ulas_expbinary {
-  struct ulas_expr *left;
-  struct ulas_expr *right;
-  struct ulas_tok *op;
+  iexpr left;
+  iexpr right;
+  itok op;
 };
 
 struct ulas_expliteral {
-  struct ulas_tok *tok;
+  itok tok;
 };
 
 union ulas_expdat {

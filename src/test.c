@@ -14,8 +14,18 @@
     assert(strcmp(buf, expected_tok) == 0);                                    \
   }
 
-#define assert_tokline(expected_toks, expected_n, line, rule)                  \
-  {}
+#define assert_tokline(expected_n, line, rule, ...)                            \
+  {                                                                            \
+    char *expect[] = __VA_ARGS__;                                              \
+    size_t n = 0;                                                              \
+    char **toks = ulas_tokline(line, &n, rule);                                \
+    assert(toks);                                                              \
+    assert(n == expected_n);                                                   \
+    for (size_t i = 0; i < n; i++) {                                           \
+      assert(strcmp(toks[i], expect[i]) == 0);                                 \
+    }                                                                          \
+    ulas_toklinefree(toks, n);                                                 \
+  }
 
 void test_tok(void) {
   TESTBEGIN("tok");
@@ -26,8 +36,8 @@ void test_tok(void) {
   assert_tok("", 0, "", ulas_tokrulespace);
   assert_tok("", -1, NULL, ulas_tokrulespace);
 
-  assert_tokline(({"test", "tokens", "with", "line"}), 4,
-                 "  test  tokens   with   line", ulas_tokrulespace);
+  assert_tokline(4, "  test  tokens   with   line", ulas_tokrulespace,
+                 {"test", "tokens", "with", "line"});
 
   TESTEND("tok");
 }

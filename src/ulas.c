@@ -83,7 +83,7 @@ int ulas_tok(char *dst, const char *line, size_t n, ulas_tokrule rule) {
   }
 #undef weld_tokcond
 
-  dst[write + 1] = '\0';
+  dst[write] = '\0';
   return i;
 }
 
@@ -108,12 +108,13 @@ char **ulas_tokline(const char *line, size_t *n, ulas_tokrule rule) {
     }
     dst = newdst;
 
-    dst[*n - 1] = strndup(buf, ULAS_TOKMAX);
+    dst[(*n) - 1] = strndup(buf, ULAS_TOKMAX);
   }
 
   return dst;
 fail:
   ulas_toklinefree(dst, *n);
+  *n = 0;
   return NULL;
 }
 
@@ -122,7 +123,7 @@ void ulas_toklinefree(char **data, size_t n) {
     return;
   }
   for (size_t i = 0; i < n; i++) {
-    free(data[n]);
+    free(data[i]);
   }
 
   free(data);
