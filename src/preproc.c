@@ -59,7 +59,7 @@ int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, const char *raw_line,
       }
     }
 
-    ULASERR("Unknown preprocessor directive: %s\n", line);
+    ULASPANIC("Unknown preprocessor directive: %s\n", line);
     return -1;
   }
 found:

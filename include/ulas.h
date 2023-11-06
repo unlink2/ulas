@@ -34,6 +34,11 @@
 
 #define ULASERR(...) fprintf(ulaserr, __VA_ARGS__);
 #define ULASWARN(...) fprintf(ulaserr, __VA_ARGS__);
+#define ULASPANIC(...)                                                         \
+  {                                                                            \
+    fprintf(ulaserr, __VA_ARGS__);                                             \
+    exit(-1);                                                                  \
+  }
 
 // format macros
 #define ULAS_FMT(f, fmt)                                                       \
@@ -164,7 +169,6 @@ char *ulas_strndup(const char *src, size_t n);
  * otherwise returns false
  */
 typedef int (*ulas_tokrule)(int current);
-
 
 // tokenisze according to pre-defined rules
 // returns the amount of bytes of line that were
