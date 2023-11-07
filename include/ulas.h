@@ -107,7 +107,7 @@ extern struct ulas ulas;
  */
 
 enum ulas_ppdirs {
-  ULAS_PPDIR_NONE = 0,
+  ULAS_PPDIR_NONE = 1,
   ULAS_PPDIR_DEF,
   ULAS_PPDIR_MACRO,
   ULAS_PPDIR_ENDMACRO,
@@ -247,7 +247,7 @@ int ulas_preproc(FILE *dst, FILE *src);
 
 // reads the next line
 // returns 0 if no more data can be read
-//         1 if data was read
+//         > 0 if data was read (enum ulas_ppdirs id)
 //         -1 on error
 // it also places the processed line into pp->line.buf
 // note that this is overwritten by every call!

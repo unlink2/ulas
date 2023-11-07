@@ -243,7 +243,7 @@ int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, FILE *src,
   }
 found:
 
-  if (found_dir) {
+  if (found_dir != ULAS_PPDIR_NONE) {
     switch (found_dir) {
     case ULAS_PPDIR_DEF: {
       // next token is a name
@@ -296,7 +296,7 @@ found:
     fwrite(line, 1, n, dst);
   }
 
-  return 0;
+  return ULAS_PPDIR_NONE;
 }
 
 int ulas_preprocnext(struct ulas_preproc *pp, FILE *dst, FILE *src, char *buf,
@@ -304,9 +304,7 @@ int ulas_preprocnext(struct ulas_preproc *pp, FILE *dst, FILE *src, char *buf,
   int rc = 1;
   if (fgets(buf, n, src) != NULL) {
     ulas.line++;
-    if (ulas_preprocline(pp, dst, src, buf, strlen(buf)) == -1) {
-      rc = -1;
-    }
+    rc = ulas_preprocline(pp, dst, src, buf, strlen(buf));
   } else {
     rc = 0;
   }
