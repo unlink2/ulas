@@ -50,11 +50,8 @@ int ulas_main(struct ulas_config cfg) {
   return 0;
 }
 
-int ulas_tok(struct ulas_str *dst, const char *line, size_t n,
-             ulas_tokrule rule) {
-  if (!dst->buf || !line || n == 0) {
-    return -1;
-  }
+int ulas_tok(struct ulas_str *dst, const char **out_line, size_t n) {
+  const char *line = *out_line;
   ulas_strensr(dst, n + 1);
 
   int i = 0;
@@ -63,32 +60,44 @@ int ulas_tok(struct ulas_str *dst, const char *line, size_t n,
 #define weld_tokcond (i < n && write < n && line[i])
 
   // always skip leading terminators
-  while (weld_tokcond && rule(line[i])) {
+  while (weld_tokcond && isspace(line[i])) {
     i++;
   }
 
-  while (weld_tokcond) {
-    if (rule(line[i])) {
-      break;
+  char c = line[i];
+
+  switch (c) {
+  case ',':
+  case '+':
+  case '-':
+  case '*':
+  case '/':
+  case '\\':
+  case ULAS_TOK_COMMENT:
+    // single char tokens
+    dst->buf[write++] = line[i++];
+    break;
+    // consume rest of the line but do not write anything to tokens
+    i = (int)n;
+    break;
+  default:
+    while (weld_tokcond) {
+      if (isspace(line[i])) {
+        break;
+      }
+      dst->buf[write] = line[i];
+      i++;
+      write++;
     }
-    dst->buf[write] = line[i];
-    i++;
-    write++;
+    break;
   }
+
 #undef weld_tokcond
 
   dst->buf[write] = '\0';
-  return i;
-}
 
-int ulas_tokline(struct ulas_str *dst, const char **line, size_t n,
-                 ulas_tokrule rule) {
-  int rc = ulas_tok(dst, *line, n, rule);
-  if (rc == -1) {
-    return -1;
-  }
-  *line += rc;
-  return rc;
+  *out_line += i;
+  return i;
 }
 
 struct ulas_str ulas_str(size_t n) {
@@ -118,17 +127,33 @@ void ulas_strfree(struct ulas_str *s) {
 char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
                          size_t *n) {
   const char *praw_line = raw_line;
-  ulas_strensr(&pp->line, (*n) + 1);
+  memset(pp->line.buf, 0, pp->line.maxlen);
+
+  int read = 0;
 
   // go through all tokens, see if a define matches the token,
   // if so expand it
   // only expand macros if they match toks[0] though!
   // otherwise memcpy the read bytes 1:1 into the new string
-  while (ulas_tokline(&pp->tok, &praw_line, *n, isalnum)) {
+  while ((read = ulas_tok(&pp->tok, &praw_line, *n))) {
+    bool found = false;
+    for (size_t i = 0; i < pp->defslen; i++) {
+      struct ulas_ppdef *def = &pp->defs[i];
+      if (strncmp(def->name, pp->tok.buf, pp->tok.maxlen) != 0) {
+        continue;
+      }
+
+      // if so... expand now
+      found = true;
+    }
+    // if not found: copy everythin from prev to the current raw_line point -
+    // tok lenght -> this keeps the line in-tact as is
+    if (!found) {
+      ulas_strensr(&pp->line, (*n) + 1);
+      strncat(pp->line.buf, praw_line - read, read);
+    }
   }
 
-  // TODO: actually expand here...
-  strncpy(pp->line.buf, raw_line, (*n) + 1);
   *n = strlen(pp->line.buf);
   return pp->line.buf;
 }
@@ -147,7 +172,7 @@ int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, const char *raw_line,
   enum ulas_ppdirs found_dir = ULAS_PPDIR_NONE;
 
   // check if the first token is any of the valid preproc directives
-  if (ulas_tokline(&pp->tok, &pline, n, isspace)) {
+  if (ulas_tok(&pp->tok, &pline, n)) {
     // not a preproc directive...
     if (pp->tok.buf[0] != ULAS_TOK_PREPROC_BEGIN) {
       goto found;

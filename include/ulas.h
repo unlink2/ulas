@@ -103,12 +103,14 @@ enum ulas_ppdirs {
 };
 
 enum ulas_ppdefs {
-  ULAS_PP_DEF,
-  ULAS_PP_MACRO,
+  ULAS_PPDEF,
+  ULAS_PPMACRO,
 };
 
 struct ulas_ppdef {
   enum ulas_ppdefs type;
+  char *name;
+  char *value;
   bool undef;
 };
 
@@ -203,22 +205,11 @@ int ulas_main(struct ulas_config cfg);
 
 char *ulas_strndup(const char *src, size_t n);
 
-/**
- * A token rule returns true when a token should end
- * otherwise returns false
- */
-typedef int (*ulas_tokrule)(int current);
-
 // tokenisze according to pre-defined rules
 // returns the amount of bytes of line that were
 // consumed or -1 on error
 // returns 0 when no more tokens can be read
-int ulas_tok(struct ulas_str *dst, const char *line, size_t n,
-             ulas_tokrule rule);
-
-// smae as ulas_tok but modifies line
-int ulas_tokline(struct ulas_str *dst, const char **line, size_t n,
-                 ulas_tokrule rule);
+int ulas_tok(struct ulas_str *dst, const char **out_line, size_t n);
 
 /**
  * str

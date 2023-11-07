@@ -8,42 +8,33 @@
 #define TESTBEGIN(name) printf("[test %s]\n", (name));
 #define TESTEND(name) printf("[%s ok]\n", (name));
 
-#define assert_tok(expected_tok, expected_ret, line, rule)                     \
-  {                                                                            \
-    struct ulas_str dst = ulas_str(ULAS_TOKMAX);                               \
-    memset(dst.buf, 0, ULAS_TOKMAX);                                           \
-    assert(ulas_tok(&dst, (line), ULAS_TOKMAX, (rule)) == (expected_ret));     \
-    assert(strcmp(dst.buf, expected_tok) == 0);                                \
-    ulas_strfree(&dst);                                                        \
-  }
-
-#define assert_tokline(expected_n, line, rule, ...)                            \
+#define assert_tok(line, ...)                                                  \
   {                                                                            \
     const char *expect[] = __VA_ARGS__;                                        \
-    size_t n = ULAS_TOKMAX;                                                    \
+    size_t n = strlen(line);                                                   \
     struct ulas_str dst = ulas_str(n);                                         \
     memset(dst.buf, 0, n);                                                     \
     int i = 0;                                                                 \
     const char *pline = line;                                                  \
-    while (ulas_tokline(&dst, &pline, n, rule)) {                              \
+    while (ulas_tok(&dst, &pline, n)) {                                        \
+      puts(dst.buf);                                                           \
+      assert(expect[i]);                                                       \
       assert(strcmp(dst.buf, expect[i]) == 0);                                 \
       i++;                                                                     \
     }                                                                          \
-    assert(i == expected_n);                                                   \
+    size_t expect_n = 0;                                                       \
+    for (expect_n = 0; expect[expect_n]; expect_n++) {                         \
+    }                                                                          \
+    assert(i == expect_n);                                                     \
     ulas_strfree(&dst);                                                        \
   }
 
 void test_tok(void) {
   TESTBEGIN("tok");
 
-  assert_tok("test", 4, "test tokens", isspace);
-  assert_tok("test", 6, "  test tokens", isspace);
-  assert_tok("tokens", 6, "tokens", isspace);
-  assert_tok("", 0, "", isspace);
-  assert_tok("", -1, NULL, isspace);
-
-  assert_tokline(4, "  test  tokens   with   line", isspace,
-                 {"test", "tokens", "with", "line"});
+  assert_tok(
+      "  test  tokens   with   line / * + - , ;",
+      {"test", "tokens", "with", "line", "/", "*", "+", "-", ",", ";", NULL});
 
   TESTEND("tok");
 }
