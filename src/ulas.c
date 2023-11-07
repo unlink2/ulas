@@ -207,13 +207,18 @@ int ulas_preprocdef(struct ulas_preproc *pp, struct ulas_ppdef def) {
   return 0;
 }
 
-int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, const char *raw_line,
-                     size_t n) {
+int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, FILE *src,
+                     const char *raw_line, size_t n) {
   char *line = ulas_preprocexpand(pp, raw_line, &n);
   const char *pline = line;
 
-  const char *dirstrs[] = {"#define", "#macro",    "#ifdef", "#ifndef",
-                           "#endif",  "#endmacro", NULL};
+  const char *dirstrs[] = {ULAS_PPSTR_DEF,
+                           ULAS_PPSTR_MACRO,
+                           ULAS_PPSTR_IFDEF,
+                           ULAS_PPSTR_IFNDEF,
+                           ULAS_PPSTR_ENDIF,
+                           ULAS_PPSTR_ENDMACRO,
+                           NULL};
   enum ulas_ppdirs dirs[] = {ULAS_PPDIR_DEF,   ULAS_PPDIR_MACRO,
                              ULAS_PPDIR_IFDEF, ULAS_PPDIR_IFNDEF,
                              ULAS_PPDIR_ENDIF, ULAS_PPDIR_ENDMACRO};
@@ -264,7 +269,7 @@ found:
       ulas_preprocdef(pp, def);
       // define short-circuits the rest of the logic
       // because it just takes the entire rest of the line as a value!
-      return 0;
+      goto dirdone;
     }
     case ULAS_PPDIR_MACRO:
     case ULAS_PPDIR_ENDMACRO:
@@ -285,12 +290,28 @@ found:
               pp->tok.buf);
       return -1;
     }
-
+  dirdone:
+    return found_dir;
   } else {
     fwrite(line, 1, n, dst);
   }
 
   return 0;
+}
+
+int ulas_preprocnext(struct ulas_preproc *pp, FILE *dst, FILE *src, char *buf,
+                     int n) {
+  int rc = 1;
+  if (fgets(buf, n, src) != NULL) {
+    ulas.line++;
+    if (ulas_preprocline(pp, dst, src, buf, strlen(buf)) == -1) {
+      rc = -1;
+    }
+  } else {
+    rc = 0;
+  }
+
+  return rc;
 }
 
 int ulas_preproc(FILE *dst, FILE *src) {
@@ -300,15 +321,9 @@ int ulas_preproc(FILE *dst, FILE *src) {
 
   struct ulas_preproc pp = {NULL, 0, ulas_str(1), ulas_str(1)};
 
-  while (fgets(buf, ULAS_LINEMAX, src) != NULL) {
-    ulas.line++;
-    if (ulas_preprocline(&pp, dst, buf, strlen(buf)) == -1) {
-      rc = -1;
-      goto fail;
-    }
+  while ((rc = ulas_preprocnext(&pp, dst, src, buf, ULAS_LINEMAX)) > 0) {
   }
 
-fail:
   ulas_strfree(&pp.line);
   ulas_strfree(&pp.tok);
 

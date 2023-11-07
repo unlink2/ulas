@@ -21,6 +21,13 @@
 #define ULAS_CFG_FMT_BLUE "\x1B[34m"
 #define ULAS_CFG_FMT_RESET "\x1B[0m"
 
+#define ULAS_PPSTR_DEF "#define"
+#define ULAS_PPSTR_MACRO "#macro"
+#define ULAS_PPSTR_IFDEF "#ifdef"
+#define ULAS_PPSTR_ENDIF "#endif"
+#define ULAS_PPSTR_IFNDEF "#ifndef"
+#define ULAS_PPSTR_ENDMACRO "#endmacro"
+
 // configurable tokens
 #define ULAS_TOK_COMMENT ';'
 // start of as directives such as .org
@@ -233,8 +240,24 @@ void ulas_strfree(struct ulas_str *s);
 
 /**
  * Tokenize and apply the preprocessor
+ * returns 0: no error
+ *        -1: error
  */
 int ulas_preproc(FILE *dst, FILE *src);
+
+// reads the next line
+// returns 0 if no more data can be read
+//         1 if data was read
+//         -1 on error
+int ulas_preprocnext(struct ulas_preproc *pp, FILE *dst, FILE *src, char *buf,
+                     int n);
+
+// process a line of preproc
+// returns: 0 when a regular line was read
+//          enum ulas_ppdirs id for preprocessor directive
+//          -1 on error
+int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, FILE *src,
+                     const char *raw_line, size_t n);
 
 // expand preproc into dst line
 char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
