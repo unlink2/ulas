@@ -28,10 +28,12 @@
 // start of preprocessor directives such as #define or #include
 #define ULAS_TOK_PREPROC_BEGIN '#'
 
-#define ULASERR(...) fprintf(ulaserr, __VA_ARGS__);
-#define ULASWARN(...) fprintf(ulaserr, __VA_ARGS__);
+#define ULASINFO() fprintf(ulaserr, "%s:%ld ", ulas.filename, ulas.line);
+#define ULASERR(...) ULASINFO() fprintf(ulaserr, __VA_ARGS__);
+#define ULASWARN(...) ULASINFO() fprintf(ulaserr, __VA_ARGS__);
 #define ULASPANIC(...)                                                         \
   {                                                                            \
+    ULASINFO();                                                                \
     fprintf(ulaserr, __VA_ARGS__);                                             \
     exit(-1);                                                                  \
   }
