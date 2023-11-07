@@ -2,32 +2,33 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <assert.h>
-#include "preproc.h"
 
 #define TESTBEGIN(name) printf("[test %s]\n", (name));
 #define TESTEND(name) printf("[%s ok]\n", (name));
 
 #define assert_tok(expected_tok, expected_ret, line, rule)                     \
   {                                                                            \
-    char buf[ULAS_TOKMAX];                                                     \
-    memset(buf, 0, ULAS_TOKMAX);                                               \
-    assert(ulas_tok(buf, (line), ULAS_TOKMAX, (rule)) == (expected_ret));      \
-    assert(strcmp(buf, expected_tok) == 0);                                    \
+    struct ulas_str dst = ulas_str(ULAS_TOKMAX);                               \
+    memset(dst.buf, 0, ULAS_TOKMAX);                                           \
+    assert(ulas_tok(&dst, (line), ULAS_TOKMAX, (rule)) == (expected_ret));     \
+    assert(strcmp(dst.buf, expected_tok) == 0);                                \
+    ulas_strfree(&dst);                                                        \
   }
 
 #define assert_tokline(expected_n, line, rule, ...)                            \
   {                                                                            \
     const char *expect[] = __VA_ARGS__;                                        \
     size_t n = ULAS_TOKMAX;                                                    \
-    char buf[n];                                                               \
-    memset(buf, 0, n);                                                         \
+    struct ulas_str dst = ulas_str(n);                                         \
+    memset(dst.buf, 0, n);                                                     \
     int i = 0;                                                                 \
     const char *pline = line;                                                  \
-    while (ulas_tokline(buf, &pline, n, rule)) {                               \
-      assert(strcmp(buf, expect[i]) == 0);                                     \
+    while (ulas_tokline(&dst, &pline, n, rule)) {                              \
+      assert(strcmp(dst.buf, expect[i]) == 0);                                 \
       i++;                                                                     \
     }                                                                          \
     assert(i == expected_n);                                                   \
+    ulas_strfree(&dst);                                                        \
   }
 
 void test_tok(void) {
@@ -43,6 +44,22 @@ void test_tok(void) {
                  {"test", "tokens", "with", "line"});
 
   TESTEND("tok");
+}
+
+void test_strbuf(void) {
+  TESTBEGIN("strbuf");
+
+  struct ulas_str s = ulas_str(5);
+  assert(s.maxlen == 5);
+  assert(s.buf);
+
+  s = ulas_strensr(&s, 10);
+  assert(s.maxlen == 10);
+  assert(s.buf);
+
+  ulas_strfree(&s);
+
+  TESTEND("strbuf");
 }
 
 #define assert_preproc(expect_dst, expect_ret, input)                          \
@@ -75,6 +92,7 @@ int main(int arc, char **argv) {
   }*/
 
   test_tok();
+  test_strbuf();
   test_preproc();
 
   return 0;

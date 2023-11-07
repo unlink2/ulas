@@ -76,12 +76,55 @@ struct ulas_config {
 };
 
 /**
+ * str
+ */
+struct ulas_str {
+  char *buf;
+  size_t maxlen;
+};
+
+/**
  * Assembly context
  */
 
 struct ulas {
   char **strs;
   size_t strslen;
+};
+
+/**
+ * Preproc
+ */
+
+enum ulas_ppdirs {
+  ULAS_PPDIR_NONE = 0,
+  ULAS_PPDIR_DEF,
+  ULAS_PPDIR_MACRO,
+  ULAS_PPDIR_ENDMACRO,
+  ULAS_PPDIR_IFDEF,
+  ULAS_PPDIR_IFNDEF,
+  ULAS_PPDIR_ENDIF
+};
+
+enum ulas_ppdefs {
+  ULAS_PP_DEF,
+  ULAS_PP_MACRO,
+};
+
+struct ulas_ppdef {
+  enum ulas_ppdefs type;
+  bool undef;
+};
+
+struct ulas_preproc {
+  struct ulas_ppdef *defs;
+  size_t defslen;
+
+  const char *srcname;
+  const char *dstname;
+
+  struct ulas_str tok;
+  struct ulas_str line;
 };
 
 /**
@@ -174,9 +217,37 @@ typedef int (*ulas_tokrule)(int current);
 // returns the amount of bytes of line that were
 // consumed or -1 on error
 // returns 0 when no more tokens can be read
-int ulas_tok(char *dst, const char *line, size_t n, ulas_tokrule rule);
+int ulas_tok(struct ulas_str *dst, const char *line, size_t n,
+             ulas_tokrule rule);
 
 // smae as ulas_tok but modifies line
-int ulas_tokline(char *dst, const char **line, size_t n, ulas_tokrule rule);
+int ulas_tokline(struct ulas_str *dst, const char **line, size_t n,
+                 ulas_tokrule rule);
+
+/**
+ * str
+ */
+
+// create a string buffer
+struct ulas_str ulas_str(size_t n);
+
+// ensure the string buffer is at least n bytes long, if not realloc
+struct ulas_str ulas_strensr(struct ulas_str *s, size_t maxlen);
+
+void ulas_strfree(struct ulas_str *s);
+
+/*
+ * Preprocessor
+ */
+
+/**
+ * Tokenize and apply the preprocessor
+ */
+int ulas_preproc(FILE *dst, const char *dstname, FILE *src,
+                 const char *srcname);
+
+// expand preproc into dst line
+char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
+                         size_t *n);
 
 #endif
