@@ -8,6 +8,7 @@ FILE *ulasin = NULL;
 FILE *ulasout = NULL;
 FILE *ulaserr = NULL;
 struct ulas_config ulascfg;
+struct ulas ulas;
 
 void ulas_init(struct ulas_config cfg) {
   if (ulasin == NULL) {
@@ -20,6 +21,8 @@ void ulas_init(struct ulas_config cfg) {
     ulaserr = stderr;
   }
   ulascfg = cfg;
+
+  memset(&ulas, 0, sizeof(ulas));
 }
 
 struct ulas_config ulas_cfg_from_env(void) {
@@ -136,26 +139,38 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
   // only expand macros if they match toks[0] though!
   // otherwise memcpy the read bytes 1:1 into the new string
   while ((read = ulas_tok(&pp->tok, &praw_line, *n))) {
-    bool found = false;
     for (size_t i = 0; i < pp->defslen; i++) {
       struct ulas_ppdef *def = &pp->defs[i];
       if (strncmp(def->name, pp->tok.buf, pp->tok.maxlen) != 0) {
         continue;
       }
 
-      // if so... expand now
-      found = true;
+      // if so... expand now and leave
+      goto found;
     }
     // if not found: copy everythin from prev to the current raw_line point -
     // tok lenght -> this keeps the line in-tact as is
-    if (!found) {
-      ulas_strensr(&pp->line, (*n) + 1);
-      strncat(pp->line.buf, praw_line - read, read);
-    }
+    ulas_strensr(&pp->line, (*n) + 1);
+    strncat(pp->line.buf, praw_line - read, read);
+
+    // bit of a hack to allow labels at the end of a compound statement
+  found:
+    continue;
   }
 
   *n = strlen(pp->line.buf);
   return pp->line.buf;
+}
+
+int ulas_preprocdef(struct ulas_preproc *pp, struct ulas_ppdef def) {
+  pp->defslen++;
+  void *defs = realloc(pp->defs, pp->defslen * sizeof(struct ulas_ppdef));
+  if (defs) {
+    ULASPANIC("%s\n", strerror(errno));
+  }
+  pp->defs = defs;
+  pp->defs[pp->defslen - 1] = def;
+  return 0;
 }
 
 int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, const char *raw_line,
@@ -193,6 +208,33 @@ found:
     // TODO: process directive
     printf("%s preproc directive!\n", pp->tok.buf);
     fputc('\0', dst);
+
+    switch (found_dir) {
+    case ULAS_PPDIR_DEF: {
+      // next token is a name
+      // and then the entire remainder of the line is a value
+      struct ulas_ppdef def = {found_dir, "", "", false};
+      break;
+    }
+    case ULAS_PPDIR_MACRO:
+    case ULAS_PPDIR_ENDMACRO:
+    case ULAS_PPDIR_IFDEF:
+    case ULAS_PPDIR_IFNDEF:
+    case ULAS_PPDIR_ENDIF:
+      // TODO: implement
+      ULASPANIC("Preproc directive is not implemented!\n");
+      break;
+    default:
+      // this should not happen!
+      break;
+    }
+
+    // the end of a directive should have no further tokens!
+    if (ulas_tok(&pp->tok, &pline, n) != 0) {
+      ULASERR("Stray tokens at end of preprocessor directive\n");
+      return -1;
+    }
+
   } else {
     assert(fwrite(line, 1, n, dst) == n);
   }
@@ -200,21 +242,20 @@ found:
   return 0;
 }
 
-int ulas_preproc(FILE *dst, const char *dstname, FILE *src,
-                 const char *srcname) {
+int ulas_preproc(FILE *dst, FILE *src) {
   char buf[ULAS_LINEMAX];
   memset(buf, 0, ULAS_LINEMAX);
   int rc = 0;
 
   if (!dst || !src) {
-    ULASERR("[%s] Unable to read from dst or write to src!\n", srcname);
+    ULASERR("[%s] Unable to read from dst or write to src!\n", ulas.filename);
     return -1;
   }
 
-  struct ulas_preproc pp = {NULL,    0,           srcname,
-                            dstname, ulas_str(1), ulas_str(1)};
+  struct ulas_preproc pp = {NULL,    0, ulas_str(1), ulas_str(1)};
 
   while (fgets(buf, ULAS_LINEMAX, src) != NULL) {
+    ulas.line++;
     if (ulas_preprocline(&pp, dst, buf, strlen(buf)) == -1) {
       rc = -1;
       goto fail;
@@ -224,5 +265,18 @@ int ulas_preproc(FILE *dst, const char *dstname, FILE *src,
 fail:
   ulas_strfree(&pp.line);
   ulas_strfree(&pp.tok);
+
+  for (size_t i = 0; i < pp.defslen; i++) {
+    if (pp.defs[i].name) {
+      free(pp.defs[i].name);
+    }
+    if (pp.defs[i].value) {
+      free(pp.defs[i].value);
+    }
+  }
+  if (pp.defs) {
+    free(pp.defs);
+  }
+
   return rc;
 }

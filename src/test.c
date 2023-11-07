@@ -17,7 +17,6 @@
     int i = 0;                                                                 \
     const char *pline = line;                                                  \
     while (ulas_tok(&dst, &pline, n)) {                                        \
-      puts(dst.buf);                                                           \
       assert(expect[i]);                                                       \
       assert(strcmp(dst.buf, expect[i]) == 0);                                 \
       i++;                                                                     \
@@ -61,7 +60,7 @@ void test_strbuf(void) {
     memset(dstbuf, 0, ULAS_LINEMAX);                                           \
     FILE *src = fmemopen((input), strlen((input)), "re");                      \
     FILE *dst = fmemopen(dstbuf, ULAS_LINEMAX, "we");                          \
-    assert(ulas_preproc(dst, "testdst", src, "testsrc") == (expect_ret));      \
+    assert(ulas_preproc(dst, src) == (expect_ret));                            \
     fclose(src);                                                               \
     fclose(dst);                                                               \
     assert(strcmp(dstbuf, (expect_dst)) == 0);                                 \
@@ -72,7 +71,7 @@ void test_preproc(void) {
 
   // should just echo back line as is
   assert_preproc("  test line", 0, "  test line");
-  assert_preproc("", 0, "  #define test");
+  assert_preproc("123", 0, "  #define test 123\ntest");
 
   TESTEND("preproc");
 }

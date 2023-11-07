@@ -86,7 +86,12 @@ struct ulas_str {
 struct ulas {
   char **strs;
   size_t strslen;
+
+  char *filename;
+  size_t line;
 };
+
+extern struct ulas ulas;
 
 /**
  * Preproc
@@ -117,9 +122,6 @@ struct ulas_ppdef {
 struct ulas_preproc {
   struct ulas_ppdef *defs;
   size_t defslen;
-
-  const char *srcname;
-  const char *dstname;
 
   struct ulas_str tok;
   struct ulas_str line;
@@ -230,8 +232,7 @@ void ulas_strfree(struct ulas_str *s);
 /**
  * Tokenize and apply the preprocessor
  */
-int ulas_preproc(FILE *dst, const char *dstname, FILE *src,
-                 const char *srcname);
+int ulas_preproc(FILE *dst, FILE *src);
 
 // expand preproc into dst line
 char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
