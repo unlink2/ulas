@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <assert.h>
 
+#define ULAS_TOKMAX 64
+
 #define TESTBEGIN(name) printf("[test %s]\n", (name));
 #define TESTEND(name) printf("[%s ok]\n", (name));
 

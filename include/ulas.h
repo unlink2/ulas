@@ -8,10 +8,6 @@
 
 #define ULAS_PATHMAX 4096
 #define ULAS_LINEMAX 4096
-#define ULAS_TOKMAX 64
-
-// max tokens per line...
-#define ULAS_TOKSMAX 64
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))

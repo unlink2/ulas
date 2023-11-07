@@ -124,7 +124,7 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
   // if so expand it
   // only expand macros if they match toks[0] though!
   // otherwise memcpy the read bytes 1:1 into the new string
-  while (ulas_tokline(&pp->tok, &praw_line, ULAS_TOKMAX, isalnum)) {
+  while (ulas_tokline(&pp->tok, &praw_line, *n, isalnum)) {
   }
 
   // TODO: actually expand here...
@@ -135,11 +135,6 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
 
 int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, const char *raw_line,
                      size_t n) {
-  if (n > ULAS_LINEMAX) {
-    ULASERR("%s: line exceeds %d (LINEMAX)\n", raw_line, ULAS_LINEMAX);
-    return -1;
-  }
-
   char *line = ulas_preprocexpand(pp, raw_line, &n);
   const char *pline = line;
 
@@ -152,13 +147,13 @@ int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, const char *raw_line,
   enum ulas_ppdirs found_dir = ULAS_PPDIR_NONE;
 
   // check if the first token is any of the valid preproc directives
-  if (ulas_tokline(&pp->tok, &pline, ULAS_TOKMAX, isspace)) {
+  if (ulas_tokline(&pp->tok, &pline, n, isspace)) {
     // not a preproc directive...
     if (pp->tok.buf[0] != ULAS_TOK_PREPROC_BEGIN) {
       goto found;
     }
     for (size_t i = 0; dirstrs[i]; i++) {
-      if (strncmp(dirstrs[i], pp->tok.buf, ULAS_TOKMAX) == 0) {
+      if (strncmp(dirstrs[i], pp->tok.buf, pp->tok.maxlen) == 0) {
         found_dir = dirs[i];
         goto found;
       }
@@ -191,10 +186,8 @@ int ulas_preproc(FILE *dst, const char *dstname, FILE *src,
     return -1;
   }
 
-  struct ulas_preproc pp = {NULL, 0, srcname, dstname};
-
-  pp.line = ulas_str(1);
-  pp.tok = ulas_str(1);
+  struct ulas_preproc pp = {NULL,    0,           srcname,
+                            dstname, ulas_str(1), ulas_str(1)};
 
   while (fgets(buf, ULAS_LINEMAX, src) != NULL) {
     if (ulas_preprocline(&pp, dst, buf, strlen(buf)) == -1) {
