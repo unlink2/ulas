@@ -249,6 +249,8 @@ int ulas_preproc(FILE *dst, FILE *src);
 // returns 0 if no more data can be read
 //         1 if data was read
 //         -1 on error
+// it also places the processed line into pp->line.buf
+// note that this is overwritten by every call!
 int ulas_preprocnext(struct ulas_preproc *pp, FILE *dst, FILE *src, char *buf,
                      int n);
 
