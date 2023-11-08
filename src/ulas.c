@@ -207,6 +207,27 @@ int ulas_preprocdef(struct ulas_preproc *pp, struct ulas_ppdef def) {
   return 0;
 }
 
+int ulas_preprochasstray(struct ulas_preproc *pp, const char *pline, size_t n) {
+
+  // the end of a directive should have no further tokens!
+  if (ulas_tok(&pp->tok, &pline, n) != 0) {
+    ULASERR("Stray tokens '%s' at end of preprocessor directive\n",
+            pp->tok.buf);
+    return 1;
+  }
+
+  return 0;
+}
+
+void ulas_trimend(char c, char *buf, size_t n) {
+  size_t buflen = strnlen(buf, n);
+  // remove trailing new line if present
+  while (buf[buflen - 1] == '\n') {
+    buf[buflen - 1] = '\0';
+    buflen--;
+  }
+}
+
 int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, FILE *src,
                      const char *raw_line, size_t n) {
   char *line = ulas_preprocexpand(pp, raw_line, &n);
@@ -244,6 +265,8 @@ int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, FILE *src,
 found:
 
   if (found_dir != ULAS_PPDIR_NONE) {
+    ulas_trimend('\n', line, strlen(line));
+
     switch (found_dir) {
     case ULAS_PPDIR_DEF: {
       // next token is a name
@@ -278,14 +301,36 @@ found:
         return -1;
       }
 
-      struct ulas_str val = ulas_str(32);
+      if (ulas_preprochasstray(pp, pline, n)) {
+        return -1;
+      }
 
-      // TODO: handle lines here
+      struct ulas_str val = ulas_str(32);
+      memset(val.buf, 0, 32);
+
+      char buf[ULAS_LINEMAX];
+      memset(buf, 0, ULAS_LINEMAX);
+
+      // consume lines until #endmacro is read
+      // if reaching end of input without #endmacro we have an unterminated
+      // macro. pass NULL as dst to consume lines that are being read instead of
+      // echoing them back
+      int rc = 0;
+      while ((rc = ulas_preprocnext(pp, NULL, src, buf, ULAS_LINEMAX)) > 0) {
+        if (rc == ULAS_PPDIR_ENDMACRO) {
+          break;
+        }
+      }
+
+      if (rc != ULAS_PPDIR_ENDMACRO) {
+        ULASERR("Unterminated macro directive\n");
+        ulas_strfree(&val);
+        return -1;
+      }
 
       // we leak the str's buffer into the def now
       // this is ok because we call free for it later anyway
-      struct ulas_ppdef def = {ULAS_PPDEF, strdup(pp->tok.buf), strdup(val.buf),
-                               false};
+      struct ulas_ppdef def = {ULAS_PPDEF, strdup(pp->tok.buf), val.buf, false};
       ulas_preprocdef(pp, def);
 
       goto dirdone;
@@ -304,14 +349,12 @@ found:
     }
 
     // the end of a directive should have no further tokens!
-    if (ulas_tok(&pp->tok, &pline, n) != 0) {
-      ULASERR("Stray tokens '%s' at end of preprocessor directive\n",
-              pp->tok.buf);
+    if (ulas_preprochasstray(pp, pline, n)) {
       return -1;
     }
   dirdone:
     return found_dir;
-  } else {
+  } else if (dst) {
     fwrite(line, 1, n, dst);
   }
 
@@ -325,11 +368,6 @@ int ulas_preprocnext(struct ulas_preproc *pp, FILE *dst, FILE *src, char *buf,
     ulas.line++;
 
     size_t buflen = strlen(buf);
-
-    // remove trailing new line if present
-    if (buf[buflen - 1] == '\n') {
-      buf[buflen - 1] = '\0';
-    }
 
     rc = ulas_preprocline(pp, dst, src, buf, buflen);
   } else {

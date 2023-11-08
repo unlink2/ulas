@@ -75,6 +75,8 @@ void test_preproc(void) {
   assert_preproc("", -1, "  #define 1test 123\n");
   assert_preproc("this is a 123 for defs", 0,
                  "  #define test 123\nthis is a test for defs");
+  assert_preproc("  line 1\n  line 2\n  line 3\n", 0,
+                 "#macro test\n  line 1\n  line 2\n  line 3\n#endmacro\ntest");
 
   TESTEND("preproc");
 }
