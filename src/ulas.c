@@ -260,19 +260,38 @@ found:
 
       struct ulas_ppdef def = {ULAS_PPDEF, strdup(pp->tok.buf), strdup(pline),
                                false};
-      size_t val_len = strlen(def.value);
-
-      // remove trailing new line if present
-      if (def.value[val_len - 1] == '\n') {
-        def.value[val_len - 1] = '\0';
-      }
       ulas_preprocdef(pp, def);
       // define short-circuits the rest of the logic
       // because it just takes the entire rest of the line as a value!
       goto dirdone;
     }
-    case ULAS_PPDIR_MACRO:
+    case ULAS_PPDIR_MACRO: {
+      // get a name, ensure no more tokens come after
+      // and then consume lines until ENDMACRO is seen
+      if (ulas_tok(&pp->tok, &pline, n) == 0) {
+        ULASERR("Expected name for #macro\n");
+        return -1;
+      }
+
+      if (!ulas_isname(pp->tok.buf, strlen(pp->tok.buf))) {
+        ULASERR("'%s' is not a valid #macro name!\n", pp->tok.buf);
+        return -1;
+      }
+
+      struct ulas_str val = ulas_str(32);
+
+      // TODO: handle lines here
+
+      // we leak the str's buffer into the def now
+      // this is ok because we call free for it later anyway
+      struct ulas_ppdef def = {ULAS_PPDEF, strdup(pp->tok.buf), strdup(val.buf),
+                               false};
+      ulas_preprocdef(pp, def);
+
+      goto dirdone;
+    }
     case ULAS_PPDIR_ENDMACRO:
+      break;
     case ULAS_PPDIR_IFDEF:
     case ULAS_PPDIR_IFNDEF:
     case ULAS_PPDIR_ENDIF:
@@ -304,7 +323,15 @@ int ulas_preprocnext(struct ulas_preproc *pp, FILE *dst, FILE *src, char *buf,
   int rc = 1;
   if (fgets(buf, n, src) != NULL) {
     ulas.line++;
-    rc = ulas_preprocline(pp, dst, src, buf, strlen(buf));
+
+    size_t buflen = strlen(buf);
+
+    // remove trailing new line if present
+    if (buf[buflen - 1] == '\n') {
+      buf[buflen - 1] = '\0';
+    }
+
+    rc = ulas_preprocline(pp, dst, src, buf, buflen);
   } else {
     rc = 0;
   }
