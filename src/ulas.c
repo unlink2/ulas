@@ -86,39 +86,45 @@ int ulas_tok(struct ulas_str *dst, const char **out_line, size_t n) {
     i++;
   }
 
-  char c = line[i];
+  while (weld_tokcond) {
+    char c = line[i];
 
-  switch (c) {
-  case ',':
-  case '+':
-  case '-':
-  case '*':
-  case '/':
-  case '\\':
-  case ULAS_TOK_COMMENT:
-    // single char tokens
-    dst->buf[write++] = line[i++];
-    break;
-  case '$':
-    // special var for preprocessor
-    // make sure we have enough space in buffer
-    ulas_strensr(dst, write + 2);
-    // escape char tokens
-    dst->buf[write++] = line[i++];
-    dst->buf[write++] = line[i++];
-    break;
-  default:
-    while (weld_tokcond) {
+    switch (c) {
+    case ',':
+    case '+':
+    case '-':
+    case '*':
+    case '/':
+    case '\\':
+    case ULAS_TOK_COMMENT:
+      if (write) {
+        goto tokdone;
+      }
+      // single char tokens
+      dst->buf[write++] = line[i++];
+      goto tokdone;
+    case '$':
+      if (write) {
+        goto tokdone;
+      }
+      // special var for preprocessor
+      // make sure we have enough space in buffer
+      ulas_strensr(dst, write + 2);
+      // escape char tokens
+      dst->buf[write++] = line[i++];
+      dst->buf[write++] = line[i++];
+      goto tokdone;
+    default:
       if (isspace(line[i])) {
-        break;
+        goto tokdone;
       }
       dst->buf[write] = line[i];
-      i++;
       write++;
+      break;
     }
-    break;
+    i++;
   }
-
+tokdone:
 #undef weld_tokcond
 
   dst->buf[write] = '\0';
