@@ -94,13 +94,16 @@ int ulas_tok(struct ulas_str *dst, const char **out_line, size_t n) {
   case '-':
   case '*':
   case '/':
-  case '\\':
   case ULAS_TOK_COMMENT:
     // single char tokens
     dst->buf[write++] = line[i++];
     break;
-    // consume rest of the line but do not write anything to tokens
-    i = (int)n;
+  case '\\':
+    // make sure we have enough space in buffer
+    ulas_strensr(dst, write + 2);
+    // escape char tokens
+    dst->buf[write++] = line[i++];
+    dst->buf[write++] = line[i++];
     break;
   default:
     while (weld_tokcond) {

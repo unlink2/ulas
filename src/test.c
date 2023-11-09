@@ -31,9 +31,9 @@
 void test_tok(void) {
   TESTBEGIN("tok");
 
-  assert_tok(
-      "  test  tokens   with   line / * + - , ;",
-      {"test", "tokens", "with", "line", "/", "*", "+", "-", ",", ";", NULL});
+  assert_tok("  test  tokens   with   line / * + - , ; \\1",
+             {"test", "tokens", "with", "line", "/", "*", "+", "-", ",", ";",
+              "\\1", NULL});
 
   TESTEND("tok");
 }
