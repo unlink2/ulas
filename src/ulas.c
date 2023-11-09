@@ -303,8 +303,10 @@ found:
         ULASERR("'%s' is not a valid #macro name!\n", pp->tok.buf);
         return -1;
       }
+      char *name = strdup(pp->tok.buf);
 
       if (ulas_preprochasstray(pp, pline, n)) {
+        free(name);
         return -1;
       }
 
@@ -323,17 +325,22 @@ found:
         if (rc == ULAS_PPDIR_ENDMACRO) {
           break;
         }
+
+        size_t len = strnlen(pp->line.buf, pp->line.maxlen);
+        ulas_strensr(&val, val.maxlen + len);
+        strncat(val.buf, pp->line.buf, val.maxlen);
       }
 
       if (rc != ULAS_PPDIR_ENDMACRO) {
         ULASERR("Unterminated macro directive\n");
         ulas_strfree(&val);
+        free(name);
         return -1;
       }
 
       // we leak the str's buffer into the def now
       // this is ok because we call free for it later anyway
-      struct ulas_ppdef def = {ULAS_PPDEF, strdup(pp->tok.buf), val.buf, false};
+      struct ulas_ppdef def = {ULAS_PPMACRO, name, val.buf, false};
       ulas_preprocdef(pp, def);
 
       goto dirdone;
