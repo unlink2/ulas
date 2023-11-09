@@ -79,14 +79,15 @@ int ulas_tok(struct ulas_str *dst, const char **out_line, size_t n) {
   int i = 0;
   int write = 0;
 
-#define weld_tokcond (i < n && write < n && line[i])
+#define WELD_TOKISTERM write
+#define WELD_TOKCOND (i < n && write < n && line[i])
 
   // always skip leading terminators
-  while (weld_tokcond && isspace(line[i])) {
+  while (WELD_TOKCOND && isspace(line[i])) {
     i++;
   }
 
-  while (weld_tokcond) {
+  while (WELD_TOKCOND) {
     char c = line[i];
 
     switch (c) {
@@ -97,14 +98,14 @@ int ulas_tok(struct ulas_str *dst, const char **out_line, size_t n) {
     case '/':
     case '\\':
     case ULAS_TOK_COMMENT:
-      if (write) {
+      if (WELD_TOKISTERM) {
         goto tokdone;
       }
       // single char tokens
       dst->buf[write++] = line[i++];
       goto tokdone;
     case '$':
-      if (write) {
+      if (WELD_TOKISTERM) {
         goto tokdone;
       }
       // special var for preprocessor
@@ -125,7 +126,8 @@ int ulas_tok(struct ulas_str *dst, const char **out_line, size_t n) {
     i++;
   }
 tokdone:
-#undef weld_tokcond
+#undef WELD_TOKCOND
+#undef WLED_TOKISTERM
 
   dst->buf[write] = '\0';
 
