@@ -221,7 +221,7 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
         // there can be more than 9 args, but anything after the 9th arg can
         // only be accessed via $0
         const char *line = praw_line;
-        size_t linelne = strlen(praw_line);
+        size_t linelen = strlen(praw_line);
         // clear all params from previous attempt
         for (size_t i = 0; i < ULAS_MACROPARAMMAX; i++) {
           pp->macroparam[i].buf[0] = '\0';
@@ -230,14 +230,48 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
         // loop until 9 args are found or the line ends
         int paramc = 0;
         while (paramc < ULAS_MACROPARAMMAX &&
-               ulas_tokuntil(&pp->macroparam[i], ',', &praw_line, *n) > 0) {
+               ulas_tokuntil(&pp->macroparam[paramc], ',', &praw_line, *n) >
+                   0) {
           paramc++;
         }
+        ulas_strensr(&pp->line, strlen(def->value) + 2);
 
+        const char *macro_argname[ULAS_MACROPARAMMAX] = {
+            "$1", "$2", "$3", "$4", "$5", "$6", "$7", "$8", "$9"};
+
+        const char *val = def->value;
+        size_t vallen = strlen(def->value);
+        size_t valread = 0;
         // now tokenize the macro's value and look for $0-$9
         // and replace those instances
         // eveyrthing else will just be copied as is
+        while ((valread = ulas_tok(&pp->macrobuf, &val, vallen)) > 0) {
+          bool found = false;
+          for (size_t mi = 0; mi < ULAS_MACROPARAMMAX; mi++) {
+            const char *name = macro_argname[mi];
+            if (pp->macroparam[mi].buf[0] &&
+                strncmp((name), pp->macrobuf.buf, pp->macrobuf.maxlen) == 0) {
+              ulas_strensr(&pp->line, pp->line.maxlen +
+                                          strnlen(pp->macroparam[mi].buf,
+                                                  pp->macroparam[mi].maxlen));
+              strncat(pp->line.buf, pp->macroparam[mi].buf,
+                      pp->macroparam[mi].maxlen);
+              found = true;
+              break;
+            }
+          }
 
+          if (linelen &&
+              strncmp("$0", pp->macrobuf.buf, pp->macrobuf.maxlen) == 0) {
+            ulas_strensr(&pp->line, pp->line.maxlen + linelen);
+            strncat(pp->line.buf, line, linelen);
+            found = true;
+          }
+
+          if (!found) {
+            strncat(pp->line.buf, val - valread, valread);
+          }
+        }
         goto end;
       }
       }
