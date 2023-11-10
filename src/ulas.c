@@ -215,6 +215,8 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
         strncat(pp->line.buf, def->value, val_len);
         break;
       case ULAS_PPMACRO: {
+        // TODO: i am sure we can optimize the resize of line buffers here...
+
         // get 9 comma separated values.
         // $1-$9 will reference the respective arg
         // $0 will reference the entire line after the macro name
