@@ -190,6 +190,7 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
       case ULAS_PPMACRO:
         // TODO: Implement
         ULASPANIC("PPMACRO is not implemented!\n");
+
         break;
       }
 
