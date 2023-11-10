@@ -128,12 +128,19 @@ struct ulas_ppdef {
   bool undef;
 };
 
+#define ULAS_MACROPARAMMAX 9
+
 struct ulas_preproc {
   struct ulas_ppdef *defs;
   size_t defslen;
 
   struct ulas_str tok;
   struct ulas_str line;
+
+  // macro parameter buffers
+  struct ulas_str macroparam[ULAS_MACROPARAMMAX];
+  // macro expansion buffer
+  struct ulas_str macrobuf;
 };
 
 /**
@@ -221,6 +228,8 @@ char *ulas_strndup(const char *src, size_t n);
 // consumed or -1 on error
 // returns 0 when no more tokens can be read
 int ulas_tok(struct ulas_str *dst, const char **out_line, size_t n);
+int ulas_tokuntil(struct ulas_str *dst, char c, const char **out_line,
+                  size_t n);
 
 /**
  * str

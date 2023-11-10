@@ -28,12 +28,35 @@
     ulas_strfree(&dst);                                                        \
   }
 
+#define assert_tokuntil(line, c, ...)                                          \
+  {                                                                            \
+    const char *expect[] = __VA_ARGS__;                                        \
+    size_t n = strlen(line);                                                   \
+    struct ulas_str dst = ulas_str(n);                                         \
+    memset(dst.buf, 0, n);                                                     \
+    int i = 0;                                                                 \
+    const char *pline = line;                                                  \
+    while (ulas_tokuntil(&dst, c, &pline, n)) {                                \
+      assert(expect[i]);                                                       \
+      assert(strcmp(dst.buf, expect[i]) == 0);                                 \
+      i++;                                                                     \
+    }                                                                          \
+    size_t expect_n = 0;                                                       \
+    for (expect_n = 0; expect[expect_n]; expect_n++) {                         \
+    }                                                                          \
+    assert(i == expect_n);                                                     \
+    ulas_strfree(&dst);                                                        \
+  }
+
 void test_tok(void) {
   TESTBEGIN("tok");
 
   assert_tok("  test  tokens   with,   line / * + - , ; $1",
              {"test", "tokens", "with", ",", "line", "/", "*", "+", "-", ",",
               ";", "$1", NULL});
+
+  assert_tokuntil(" this is a, test for tok , until", ',',
+                  {" this is a", " test for tok ", " until", NULL});
 
   TESTEND("tok");
 }
@@ -76,7 +99,7 @@ void test_preproc(void) {
   assert_preproc("this is a 123 for defs", 0,
                  "  #define test 123\nthis is a test for defs");
   assert_preproc("  line 1\n  line 2\n  line 3\n", 0,
-                 "#macro test\n  line 1\n  line 2\n  line 3\n#endmacro\ntest");
+                 "#macro test\n  line $1 1\n  line $2 2\n  line $3 3 $0\n#endmacro\ntest p1, p2, p3");
 
   TESTEND("preproc");
 }

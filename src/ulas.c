@@ -72,15 +72,15 @@ int ulas_isname(const char *tok, size_t n) {
   return 1;
 }
 
+#define WELD_TOKISTERM write
+#define WELD_TOKCOND (i < n && write < n && line[i])
+
 int ulas_tok(struct ulas_str *dst, const char **out_line, size_t n) {
   const char *line = *out_line;
   ulas_strensr(dst, n + 1);
 
   int i = 0;
   int write = 0;
-
-#define WELD_TOKISTERM write
-#define WELD_TOKCOND (i < n && write < n && line[i])
 
   // always skip leading terminators
   while (WELD_TOKCOND && isspace(line[i])) {
@@ -126,14 +126,41 @@ int ulas_tok(struct ulas_str *dst, const char **out_line, size_t n) {
     i++;
   }
 tokdone:
-#undef WELD_TOKCOND
-#undef WLED_TOKISTERM
 
   dst->buf[write] = '\0';
 
   *out_line += i;
   return i;
 }
+
+// tokenize until the char c is seen
+// this will also consume c and out_line will point to the next valid char
+// this is useful if the next expected token is well defined and we want to
+// capture everything between
+int ulas_tokuntil(struct ulas_str *dst, char c, const char **out_line,
+                  size_t n) {
+  const char *line = *out_line;
+  ulas_strensr(dst, n + 1);
+
+  int i = 0;
+  int write = 0;
+
+  while (WELD_TOKCOND && line[i] != c) {
+    dst->buf[write++] = line[i++];
+  }
+
+  if (line[i] == c) {
+    i++;
+  }
+
+  dst->buf[write] = '\0';
+
+  *out_line += i;
+  return i;
+}
+
+#undef WELD_TOKCOND
+#undef WLED_TOKISTERM
 
 struct ulas_str ulas_str(size_t n) {
   struct ulas_str str = {malloc(n), n};
@@ -187,11 +214,32 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
         ulas_strensr(&pp->line, (*n) + 1);
         strncat(pp->line.buf, def->value, val_len);
         break;
-      case ULAS_PPMACRO:
-        // TODO: Implement
-        ULASPANIC("PPMACRO is not implemented!\n");
+      case ULAS_PPMACRO: {
+        // get 9 comma separated values.
+        // $1-$9 will reference the respective arg
+        // $0 will reference the entire line after the macro name
+        // there can be more than 9 args, but anything after the 9th arg can
+        // only be accessed via $0
+        const char *line = praw_line;
+        size_t linelne = strlen(praw_line);
+        // clear all params from previous attempt
+        for (size_t i = 0; i < ULAS_MACROPARAMMAX; i++) {
+          pp->macroparam[i].buf[0] = '\0';
+        }
 
-        break;
+        // loop until 9 args are found or the line ends
+        int paramc = 0;
+        while (paramc < ULAS_MACROPARAMMAX &&
+               ulas_tokuntil(&pp->macroparam[i], ',', &praw_line, *n) > 0) {
+          paramc++;
+        }
+
+        // now tokenize the macro's value and look for $0-$9
+        // and replace those instances
+        // eveyrthing else will just be copied as is
+
+        goto end;
+      }
       }
 
       goto found;
@@ -206,6 +254,7 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
     continue;
   }
 
+end:
   *n = strlen(pp->line.buf);
   return pp->line.buf;
 }
@@ -404,6 +453,10 @@ int ulas_preproc(FILE *dst, FILE *src) {
   int rc = 0;
 
   struct ulas_preproc pp = {NULL, 0, ulas_str(1), ulas_str(1)};
+  for (size_t i = 0; i < ULAS_MACROPARAMMAX; i++) {
+    pp.macroparam[i] = ulas_str(8);
+  }
+  pp.macrobuf = ulas_str(8);
 
   while ((rc = ulas_preprocnext(&pp, dst, src, buf, ULAS_LINEMAX)) > 0) {
   }
@@ -419,6 +472,12 @@ int ulas_preproc(FILE *dst, FILE *src) {
       free(pp.defs[i].value);
     }
   }
+
+  for (size_t i = 0; i < ULAS_MACROPARAMMAX; i++) {
+    ulas_strfree(&pp.macroparam[i]);
+  }
+  ulas_strfree(&pp.macrobuf);
+
   if (pp.defs) {
     free(pp.defs);
   }
