@@ -139,6 +139,7 @@ tokdone:
 // this will also consume c and out_line will point to the next valid char
 // this is useful if the next expected token is well defined and we want to
 // capture everything between
+// will remove leading white spaces
 int ulas_tokuntil(struct ulas_str *dst, char c, const char **out_line,
                   size_t n) {
   const char *line = *out_line;
@@ -146,6 +147,10 @@ int ulas_tokuntil(struct ulas_str *dst, char c, const char **out_line,
 
   int i = 0;
   int write = 0;
+
+  while (WELD_TOKCOND && isspace(line[i])) {
+    i++;
+  }
 
   while (WELD_TOKCOND && line[i] != c) {
     dst->buf[write++] = line[i++];
@@ -200,6 +205,20 @@ struct ulas_ppdef *ulas_preprocgetdef(struct ulas_preproc *pp, const char *name,
   return NULL;
 }
 
+// inserts all leading white space from praw_line into linebuf
+int ulas_preproclws(struct ulas_preproc *pp, const char *praw_line,
+                    size_t maxlen) {
+  int i = 0;
+  while (i < maxlen && praw_line[i] && isspace(praw_line[i])) {
+    i++;
+  }
+
+  size_t linelen = strnlen(pp->line.buf, maxlen);
+  ulas_strensr(&pp->line, linelen + i + 1);
+  strncat(pp->line.buf, praw_line, i);
+  return i;
+}
+
 char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
                          size_t *n) {
   const char *praw_line = raw_line;
@@ -226,14 +245,23 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
     if (def) {
       // if so... expand now and leave
       switch (def->type) {
-      case ULAS_PPDEF:
-        // adjust total length
-        *n -= strlen(pp->tok.buf);
+      case ULAS_PPDEF: {
         size_t val_len = strlen(def->value);
-        *n += val_len;
-        ulas_strensr(&pp->line, (*n) + 1);
-        strncat(pp->line.buf, def->value, val_len);
+        if (val_len) {
+          // make sure to include leading white space
+          int wsi = ulas_preproclws(pp, praw_line - read, *n);
+          // adjust total length
+          *n -= strlen(pp->tok.buf);
+          *n += val_len;
+          ulas_strensr(&pp->line, (*n) + 1 + wsi);
+          if (val_len > 1) {
+            strncat(pp->line.buf, def->value + 1, val_len - 1);
+          } else {
+            strncat(pp->line.buf, def->value, val_len);
+          }
+        }
         break;
+      }
       case ULAS_PPMACRO: {
         // TODO: i am sure we can optimize the resize of line buffers here...
 
@@ -264,41 +292,65 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
         const char *val = def->value;
         size_t vallen = strlen(def->value);
         size_t valread = 0;
+
+        const char *tocat = NULL;
+        size_t tocatlen = 0;
+
         // now tokenize the macro's value and look for $0-$9
         // and replace those instances
         // eveyrthing else will just be copied as is
         while ((valread = ulas_tok(&pp->macrobuf, &val, vallen)) > 0) {
-          int found = 0;
+          tocat = NULL;
+          char numbuf[128];
+
           for (size_t mi = 0; mi < ULAS_MACROPARAMMAX; mi++) {
             const char *name = macro_argname[mi];
             if (pp->macroparam[mi].buf[0] &&
                 strncmp((name), pp->macrobuf.buf, pp->macrobuf.maxlen) == 0) {
-              ulas_strensr(&pp->line, pp->line.maxlen +
+              ulas_strensr(&pp->line, strnlen(pp->line.buf, pp->line.maxlen) +
                                           strnlen(pp->macroparam[mi].buf,
-                                                  pp->macroparam[mi].maxlen));
-              strncat(pp->line.buf, pp->macroparam[mi].buf,
-                      pp->macroparam[mi].maxlen);
-              found = 1;
+                                                  pp->macroparam[mi].maxlen) +
+                                          1);
+
+              tocat = pp->macroparam[mi].buf;
+              tocatlen = pp->macroparam[mi].maxlen;
+
               break;
             }
           }
 
           if (linelen &&
               strncmp("$0", pp->macrobuf.buf, pp->macrobuf.maxlen) == 0) {
-            ulas_strensr(&pp->line, pp->line.maxlen + linelen);
-            strncat(pp->line.buf, line, linelen);
-            found = 1;
+            ulas_strensr(&pp->line,
+                         strnlen(pp->line.buf, pp->line.maxlen) + linelen + 1);
+
+            if (linelen > 1) {
+              // this skips the separating token which is usually a space
+              // all further spaces are included though!
+              tocat = line + 1;
+              tocatlen = linelen - 1;
+            } else {
+              // do not do this if the line is literally empty!
+              tocat = line;
+              tocatlen = linelen;
+            }
           } else if (linelen && strncmp("$$", pp->macrobuf.buf,
                                         pp->macrobuf.maxlen) == 0) {
-            char numbuf[128];
             sprintf(numbuf, "%x", ulas_icntr());
-            ulas_strensr(&pp->line, pp->line.maxlen + 128);
-            strncat(pp->line.buf, numbuf, 128);
-            found = 1;
+            ulas_strensr(&pp->line,
+                         strnlen(pp->line.buf, pp->line.maxlen) + 128 + 1);
+            tocat = numbuf;
+            tocatlen = 128;
           }
 
-          if (!found) {
+          if (!tocat) {
             strncat(pp->line.buf, val - valread, valread);
+          } else {
+            // make sure to include leading white space
+            int wsi = ulas_preproclws(pp, val - valread, vallen);
+            ulas_strensr(&pp->line, strnlen(pp->line.buf, pp->line.maxlen) +
+                                        tocatlen + wsi + 1);
+            strncat(pp->line.buf, tocat, tocatlen);
           }
         }
         goto end;
@@ -447,7 +499,7 @@ found:
         }
 
         size_t len = strnlen(pp->line.buf, pp->line.maxlen);
-        ulas_strensr(&val, val.maxlen + len);
+        ulas_strensr(&val, strnlen(val.buf, val.maxlen) + len + 1);
         strncat(val.buf, pp->line.buf, val.maxlen);
       }
 

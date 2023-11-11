@@ -56,7 +56,7 @@ void test_tok(void) {
               ";", "$1", NULL});
 
   assert_tokuntil(" this is a, test for tok , until", ',',
-                  {" this is a", " test for tok ", " until", NULL});
+                  {"this is a", "test for tok ", "until", NULL});
 
   TESTEND("tok");
 }
@@ -96,21 +96,21 @@ void test_preproc(void) {
   assert_preproc("  test line", 0, "  test line");
 
   // define
-  assert_preproc(" 123", 0, "  #define test 123\ntest");
+  assert_preproc("123", 0, "  #define test 123\ntest");
   assert_preproc("", -1, "  #define 1test 123\n");
   assert_preproc("", -1, "  #define\n");
   assert_preproc("this is a 123 for defs", 0,
                  "  #define test 123\nthis is a test for defs");
 
   // undefined
-  assert_preproc(" 123\ntest", 0,
+  assert_preproc("123\ntest", 0,
                  "#define test 123\ntest\n#undefine test\ntest");
 
   // macro
-  assert_preproc("  line p1 1 label01,2\n  line p2 2\n  line p3 3 p1, p2, p3\n",
-                 0,
-                 "#macro test\n  line $1 1 label$$$$,$$\n  line $2 2\n  line $3 3 "
-                 "$0\n#endmacro\ntest p1, p2, p3");
+  assert_preproc(
+      "  line p1 1 label01,2\n  line p2 2\n  line p3 3 p1, p2, p3\n", 0,
+      "#macro test\n  line $1 1 label$$$$,$$\n  line $2 2\n  line $3 3 "
+      "$0\n#endmacro\ntest p1, p2, p3");
   assert_preproc("test macro with no args\n", 0,
                  "#macro test\ntest macro with no args\n#endmacro\ntest");
   assert_preproc("", -1, "#macro test\n not terminated\n");
