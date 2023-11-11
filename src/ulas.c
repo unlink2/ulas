@@ -247,9 +247,9 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
       switch (def->type) {
       case ULAS_PPDEF: {
         size_t val_len = strlen(def->value);
+        int wsi = ulas_preproclws(pp, praw_line - read, *n);
         if (val_len) {
           // make sure to include leading white space
-          int wsi = ulas_preproclws(pp, praw_line - read, *n);
           // adjust total length
           *n -= strlen(pp->tok.buf);
           *n += val_len;

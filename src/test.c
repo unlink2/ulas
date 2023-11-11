@@ -97,7 +97,7 @@ void test_preproc(void) {
 
   // define
   assert_preproc("123", 0, "  #define test 123\ntest");
-  assert_preproc("this is a", 0, "  #define test\nthis is a test");
+  assert_preproc("this is a ", 0, "  #define test\nthis is a test");
   assert_preproc("", -1, "  #define 1test 123\n");
   assert_preproc("", -1, "  #define\n");
   assert_preproc("this is a 123 for defs", 0,
