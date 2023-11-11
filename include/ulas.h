@@ -98,9 +98,15 @@ struct ulas {
 
   char *filename;
   size_t line;
+
+  // internal counter
+  // used whenever a new unique number might be needed
+  int icntr;
 };
 
 extern struct ulas ulas;
+
+int ulas_icntr(void);
 
 /**
  * Preproc
@@ -229,6 +235,7 @@ char *ulas_strndup(const char *src, size_t n);
 // consumed or -1 on error
 // returns 0 when no more tokens can be read
 int ulas_tok(struct ulas_str *dst, const char **out_line, size_t n);
+
 int ulas_tokuntil(struct ulas_str *dst, char c, const char **out_line,
                   size_t n);
 

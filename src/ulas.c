@@ -25,6 +25,8 @@ void ulas_init(struct ulas_config cfg) {
   memset(&ulas, 0, sizeof(ulas));
 }
 
+int ulas_icntr(void) { return ulas.icntr++; }
+
 struct ulas_config ulas_cfg_from_env(void) {
   struct ulas_config cfg;
   memset(&cfg, 0, sizeof(cfg));
@@ -286,6 +288,13 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
             ulas_strensr(&pp->line, pp->line.maxlen + linelen);
             strncat(pp->line.buf, line, linelen);
             found = 1;
+          } else if (linelen && strncmp("$$", pp->macrobuf.buf,
+                                        pp->macrobuf.maxlen) == 0) {
+            char numbuf[128];
+            sprintf(numbuf, "%x", ulas_icntr());
+            ulas_strensr(&pp->line, pp->line.maxlen + 128);
+            strncat(pp->line.buf, numbuf, 128);
+            found = 1;
           }
 
           if (!found) {
@@ -469,7 +478,6 @@ found:
         return -1;
       }
       struct ulas_ppdef *def = NULL;
-      printf("name: %s\n", pp->tok.buf);
       while ((def = ulas_preprocgetdef(pp, pp->tok.buf, pp->tok.maxlen))) {
         def->undef = 1;
       }
