@@ -40,7 +40,7 @@ void ulas_getopt(int argc, char **argv, struct ulas_config *cfg) {
       exit(0);
       break;
     case 'v':
-      cfg->verbose = true;
+      cfg->verbose = 1;
       break;
     case 'o':
       cfg->output_path = strndup(optarg, ULAS_PATHMAX);

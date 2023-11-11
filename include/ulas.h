@@ -3,7 +3,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdbool.h>
 #include <string.h>
 
 #define ULAS_PATHMAX 4096
@@ -77,7 +76,7 @@ struct ulas_config {
 
   char *output_path;
 
-  bool verbose;
+  int verbose;
 };
 
 /**
@@ -125,7 +124,7 @@ struct ulas_ppdef {
   enum ulas_ppdefs type;
   char *name;
   char *value;
-  bool undef;
+  int undef;
 };
 
 #define ULAS_MACROPARAMMAX 9

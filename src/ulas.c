@@ -248,7 +248,7 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
         // and replace those instances
         // eveyrthing else will just be copied as is
         while ((valread = ulas_tok(&pp->macrobuf, &val, vallen)) > 0) {
-          bool found = false;
+          int found = 0;
           for (size_t mi = 0; mi < ULAS_MACROPARAMMAX; mi++) {
             const char *name = macro_argname[mi];
             if (pp->macroparam[mi].buf[0] &&
@@ -258,7 +258,7 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
                                                   pp->macroparam[mi].maxlen));
               strncat(pp->line.buf, pp->macroparam[mi].buf,
                       pp->macroparam[mi].maxlen);
-              found = true;
+              found = 1;
               break;
             }
           }
@@ -267,7 +267,7 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
               strncmp("$0", pp->macrobuf.buf, pp->macrobuf.maxlen) == 0) {
             ulas_strensr(&pp->line, pp->line.maxlen + linelen);
             strncat(pp->line.buf, line, linelen);
-            found = true;
+            found = 1;
           }
 
           if (!found) {
@@ -381,7 +381,7 @@ found:
       }
 
       struct ulas_ppdef def = {ULAS_PPDEF, strdup(pp->tok.buf), strdup(pline),
-                               false};
+                               0};
       ulas_preprocdef(pp, def);
       // define short-circuits the rest of the logic
       // because it just takes the entire rest of the line as a value!
@@ -439,7 +439,7 @@ found:
 
       // we leak the str's buffer into the def now
       // this is ok because we call free for it later anyway
-      struct ulas_ppdef def = {ULAS_PPMACRO, name, val.buf, false};
+      struct ulas_ppdef def = {ULAS_PPMACRO, name, val.buf, 0};
       ulas_preprocdef(pp, def);
 
       goto dirdone;
