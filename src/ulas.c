@@ -296,6 +296,8 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
         size_t vallen = strlen(def->value);
         size_t valread = 0;
 
+        // the pointer to tocat will be the variable's value if any
+        // exists
         const char *tocat = NULL;
         size_t tocatlen = 0;
 
@@ -306,6 +308,7 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
           tocat = NULL;
           char numbuf[128];
 
+          // decide what tocat should be
           for (size_t mi = 0; mi < ULAS_MACROPARAMMAX; mi++) {
             const char *name = macro_argname[mi];
             if (pp->macroparam[mi].buf[0] &&
