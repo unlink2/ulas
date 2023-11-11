@@ -43,7 +43,11 @@ label$$:
 
 my_macro a, b
 
+Define:
 
+#define name value 
+name ; will be replaced with 'value'
+#undefine name
 
 .SH ASSEMBLY SYNTAX
 
