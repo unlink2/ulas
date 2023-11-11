@@ -97,6 +97,7 @@ void test_preproc(void) {
 
   // define
   assert_preproc("123", 0, "  #define test 123\ntest");
+  assert_preproc("this is a", 0, "  #define test\nthis is a test");
   assert_preproc("", -1, "  #define 1test 123\n");
   assert_preproc("", -1, "  #define\n");
   assert_preproc("this is a 123 for defs", 0,
@@ -108,8 +109,8 @@ void test_preproc(void) {
 
   // macro
   assert_preproc(
-      "  line p1 1 label01,2\n  line p2 2\n  line p3 3 p1, p2, p3\n", 0,
-      "#macro test\n  line $1 1 label$$$$,$$\n  line $2 2\n  line $3 3 "
+      "  line p1 1 label01,2 3\n  line p2 2\n  line p3 3 p1, p2, p3\n", 0,
+      "#macro test\n  line $1 1 label$$$$,$$ $$\n  line $2 2\n  line $3 3 "
       "$0\n#endmacro\ntest p1, p2, p3");
   assert_preproc("test macro with no args\n", 0,
                  "#macro test\ntest macro with no args\n#endmacro\ntest");

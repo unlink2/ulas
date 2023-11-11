@@ -254,6 +254,9 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
           *n -= strlen(pp->tok.buf);
           *n += val_len;
           ulas_strensr(&pp->line, (*n) + 1 + wsi);
+
+          // only remove the first white space char if the lenght of value
+          // is greater than 1, otherwise just leave it be...
           if (val_len > 1) {
             strncat(pp->line.buf, def->value + 1, val_len - 1);
           } else {
