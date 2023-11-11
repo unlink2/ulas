@@ -107,9 +107,9 @@ void test_preproc(void) {
                  "#define test 123\ntest\n#undefine test\ntest");
 
   // macro
-  assert_preproc("  line p1 1 label01\n  line p2 2\n  line p3 3 p1, p2, p3\n",
+  assert_preproc("  line p1 1 label01,2\n  line p2 2\n  line p3 3 p1, p2, p3\n",
                  0,
-                 "#macro test\n  line $1 1 label$$$$\n  line $2 2\n  line $3 3 "
+                 "#macro test\n  line $1 1 label$$$$,$$\n  line $2 2\n  line $3 3 "
                  "$0\n#endmacro\ntest p1, p2, p3");
   assert_preproc("test macro with no args\n", 0,
                  "#macro test\ntest macro with no args\n#endmacro\ntest");
