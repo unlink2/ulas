@@ -108,6 +108,7 @@ extern struct ulas ulas;
 enum ulas_ppdirs {
   ULAS_PPDIR_NONE = 1,
   ULAS_PPDIR_DEF,
+  ULAS_PPDIR_UNDEF,
   ULAS_PPDIR_MACRO,
   ULAS_PPDIR_ENDMACRO,
   ULAS_PPDIR_IFDEF,

@@ -186,6 +186,18 @@ void ulas_strfree(struct ulas_str *s) {
   }
 }
 
+struct ulas_ppdef *ulas_preprocgetdef(struct ulas_preproc *pp, const char *name,
+                                      size_t maxlen) {
+  for (size_t i = 0; i < pp->defslen; i++) {
+    struct ulas_ppdef *def = &pp->defs[i];
+    if (!def->undef && strncmp(def->name, name, maxlen) == 0) {
+      return def;
+    }
+  }
+
+  return NULL;
+}
+
 char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
                          size_t *n) {
   const char *praw_line = raw_line;
@@ -198,12 +210,9 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
   // only expand macros if they match toks[0] though!
   // otherwise memcpy the read bytes 1:1 into the new string
   while ((read = ulas_tok(&pp->tok, &praw_line, *n))) {
-    for (size_t i = 0; i < pp->defslen; i++) {
-      struct ulas_ppdef *def = &pp->defs[i];
-      if (strncmp(def->name, pp->tok.buf, pp->tok.maxlen) != 0) {
-        continue;
-      }
-
+    struct ulas_ppdef *def =
+        ulas_preprocgetdef(pp, pp->tok.buf, pp->tok.maxlen);
+    if (def) {
       // if so... expand now and leave
       switch (def->type) {
       case ULAS_PPDEF:
@@ -278,16 +287,12 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
       }
       }
 
-      goto found;
+    } else {
+      // if not found: copy everythin from prev to the current raw_line point -
+      // tok lenght -> this keeps the line in-tact as is
+      ulas_strensr(&pp->line, (*n) + 1);
+      strncat(pp->line.buf, praw_line - read, read);
     }
-    // if not found: copy everythin from prev to the current raw_line point -
-    // tok lenght -> this keeps the line in-tact as is
-    ulas_strensr(&pp->line, (*n) + 1);
-    strncat(pp->line.buf, praw_line - read, read);
-
-    // bit of a hack to allow labels at the end of a compound statement
-  found:
-    continue;
   }
 
 end:
