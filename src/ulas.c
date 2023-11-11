@@ -419,6 +419,9 @@ found:
       int rc = 0;
       while ((rc = ulas_preprocnext(pp, NULL, src, buf, ULAS_LINEMAX)) > 0) {
         if (rc == ULAS_PPDIR_ENDMACRO) {
+          // we need to clear the line buffer to now echo back
+          // the #endmacro directive
+          pp->line.buf[0] = '\0';
           break;
         }
 
@@ -488,15 +491,18 @@ int ulas_preproc(FILE *dst, FILE *src) {
   memset(buf, 0, ULAS_LINEMAX);
   int rc = 0;
 
+  // init
   struct ulas_preproc pp = {NULL, 0, ulas_str(1), ulas_str(1)};
   for (size_t i = 0; i < ULAS_MACROPARAMMAX; i++) {
     pp.macroparam[i] = ulas_str(8);
   }
   pp.macrobuf = ulas_str(8);
 
+  // preproc
   while ((rc = ulas_preprocnext(&pp, dst, src, buf, ULAS_LINEMAX)) > 0) {
   }
 
+  // cleanup
   ulas_strfree(&pp.line);
   ulas_strfree(&pp.tok);
 
