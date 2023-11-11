@@ -92,11 +92,21 @@ void test_strbuf(void) {
 void test_preproc(void) {
   TESTBEGIN("preproc");
 
+  // no directive
   assert_preproc("  test line", 0, "  test line");
+
+  // define
   assert_preproc(" 123", 0, "  #define test 123\ntest");
   assert_preproc("", -1, "  #define 1test 123\n");
+  assert_preproc("", -1, "  #define\n");
   assert_preproc("this is a 123 for defs", 0,
                  "  #define test 123\nthis is a test for defs");
+
+  // undefined
+  assert_preproc(" 123\ntest", 0,
+                 "#define test 123\ntest\n#undefine test\ntest");
+
+  // macro
   assert_preproc("  line p1 1\n  line p2 2\n  line p3 3 p1, p2, p3\n", 0,
                  "#macro test\n  line $1 1\n  line $2 2\n  line $3 3 "
                  "$0\n#endmacro\ntest p1, p2, p3");

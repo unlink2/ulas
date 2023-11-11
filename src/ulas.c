@@ -204,12 +204,21 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
   memset(pp->line.buf, 0, pp->line.maxlen);
 
   int read = 0;
+  int first_tok = 1;
 
   // go through all tokens, see if a define matches the token,
   // if so expand it
   // only expand macros if they match toks[0] though!
   // otherwise memcpy the read bytes 1:1 into the new string
   while ((read = ulas_tok(&pp->tok, &praw_line, *n))) {
+    // if it is the first token, and it begins with a # do not process at all!
+    if (first_tok && pp->tok.buf[0] == ULAS_TOK_PREPROC_BEGIN) {
+      ulas_strensr(&pp->line, (*n) + 1);
+      strncat(pp->line.buf, raw_line, *n);
+      break;
+    }
+    first_tok = 0;
+
     struct ulas_ppdef *def =
         ulas_preprocgetdef(pp, pp->tok.buf, pp->tok.maxlen);
     if (def) {
@@ -337,16 +346,14 @@ int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, FILE *src,
   char *line = ulas_preprocexpand(pp, raw_line, &n);
   const char *pline = line;
 
-  const char *dirstrs[] = {ULAS_PPSTR_DEF,
-                           ULAS_PPSTR_MACRO,
-                           ULAS_PPSTR_IFDEF,
-                           ULAS_PPSTR_IFNDEF,
-                           ULAS_PPSTR_ENDIF,
-                           ULAS_PPSTR_ENDMACRO,
-                           NULL};
+  const char *dirstrs[] = {ULAS_PPSTR_DEF,   ULAS_PPSTR_MACRO,
+                           ULAS_PPSTR_IFDEF, ULAS_PPSTR_IFNDEF,
+                           ULAS_PPSTR_ENDIF, ULAS_PPSTR_ENDMACRO,
+                           ULAS_PPSTR_UNDEF, NULL};
   enum ulas_ppdirs dirs[] = {ULAS_PPDIR_DEF,   ULAS_PPDIR_MACRO,
                              ULAS_PPDIR_IFDEF, ULAS_PPDIR_IFNDEF,
-                             ULAS_PPDIR_ENDIF, ULAS_PPDIR_ENDMACRO};
+                             ULAS_PPDIR_ENDIF, ULAS_PPDIR_ENDMACRO,
+                             ULAS_PPDIR_UNDEF};
 
   enum ulas_ppdirs found_dir = ULAS_PPDIR_NONE;
 
@@ -456,7 +463,19 @@ found:
     case ULAS_PPDIR_ENDIF:
       // TODO: implement
       ULASPANIC("Preproc directive is not implemented!\n");
+    case ULAS_PPDIR_UNDEF: {
+      if (ulas_tok(&pp->tok, &pline, n) == 0) {
+        ULASERR("Expected name for #undef\n");
+        return -1;
+      }
+      struct ulas_ppdef *def = NULL;
+      printf("name: %s\n", pp->tok.buf);
+      while ((def = ulas_preprocgetdef(pp, pp->tok.buf, pp->tok.maxlen))) {
+        def->undef = 1;
+      }
+
       break;
+    }
     default:
       // this should not happen!
       break;
@@ -464,6 +483,7 @@ found:
 
     // the end of a directive should have no further tokens!
     if (ulas_preprochasstray(pp, pline, n)) {
+      ULASERR("Stray token at end of preprocessor directive!");
       return -1;
     }
   dirdone:

@@ -26,6 +26,7 @@
 #define ULAS_PPSTR_ENDIF "#endif"
 #define ULAS_PPSTR_IFNDEF "#ifndef"
 #define ULAS_PPSTR_ENDMACRO "#endmacro"
+#define ULAS_PPSTR_UNDEF "#undefine"
 
 // configurable tokens
 #define ULAS_TOK_COMMENT ';'
