@@ -120,8 +120,23 @@ void test_preproc(void) {
       "#macro test\nnested macro $1\n#macro "
       "nested\ncontent $1\n#endmacro\nafter\nnested n1\n#endmacro\ntest t1");
 
-  assert_preproc("test defined!\n", 0,
-                 "#define test\n#ifdef test\ntest defined!\n#endif");
+  // ifdef
+  assert_preproc(
+      "before\nifdeftest defined!\nafter", 0,
+      "before\n#define test\n#ifdef test\nifdeftest defined!\n#endif\nafter");
+  assert_preproc("before\nafter", 0,
+                 "before\n#ifdef test\nifdeftest defined!\n#endif\nafter");
+  assert_preproc("ifdeftest defined!\n", -1,
+                 "#define test\n#ifdef test\nifdeftest defined!\n");
+
+  // ifndef
+  assert_preproc("before\nifndeftest defined!\nafter", 0,
+                 "before\n#ifndef test\nifndeftest defined!\n#endif\nafter");
+  assert_preproc(
+      "before\nafter", 0,
+      "before\n#define test\n#ifndef test\nifndeftest defined!\n#endif\nafter");
+  assert_preproc("ifndeftest defined!\n", -1,
+                 "#ifndef test\nifndeftest defined!\n");
 
   TESTEND("preproc");
 }

@@ -411,6 +411,11 @@ void ulas_trimend(char c, char *buf, size_t n) {
 
 int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, FILE *src,
                      const char *raw_line, size_t n) {
+  /**
+   * We do use raw pointers to the line here... which is fine
+   * as long as it is never used after a recursive call to the preprocessor!
+   * never use this pointer after such a recursive call!
+   */
   char *line = ulas_preprocexpand(pp, raw_line, &n);
   const char *pline = line;
 
@@ -445,7 +450,6 @@ found:
 
   if (found_dir != ULAS_PPDIR_NONE) {
     ulas_trimend('\n', line, strlen(line));
-
     switch (found_dir) {
     case ULAS_PPDIR_DEF: {
       // next token is a name
@@ -536,6 +540,8 @@ found:
         ULASERR("Expected name for #if(n)def\n");
         return -1;
       }
+      struct ulas_ppdef *def =
+          ulas_preprocgetdef(pp, pp->tok.buf, pp->tok.maxlen);
 
       // the end of a directive should have no further tokens!
       if (ulas_preprochasstray(pp, pline, n)) {
@@ -546,14 +552,18 @@ found:
       char buf[ULAS_LINEMAX];
       memset(buf, 0, ULAS_LINEMAX);
 
-      FILE *defdst = dst;
+      FILE *defdst = NULL;
+      if ((def && found_dir == ULAS_PPDIR_IFDEF) ||
+          (!def && found_dir == ULAS_PPDIR_IFNDEF)) {
+        defdst = dst;
+      }
 
       // loop until end of line or endif
       int rc = 0;
       while ((rc = ulas_preprocnext(pp, defdst, src, buf, ULAS_LINEMAX)) > 0) {
         if (rc == ULAS_PPDIR_ENDIF) {
           // we need to clear the line buffer to now echo back
-          // the #endmacro directive
+          // the #endif directive
           pp->line.buf[0] = '\0';
           break;
         }
