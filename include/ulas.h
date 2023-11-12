@@ -276,7 +276,7 @@ int ulas_preprocnext(struct ulas_preproc *pp, FILE *dst, FILE *src, char *buf,
 //          enum ulas_ppdirs id for preprocessor directive
 //          -1 on error
 //  Warning: calling this recursively may clobber pp buffers and those should
-//  not be called in the caller after recursvion finishes!
+//  not be used in the caller after recursvion finishes!
 int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, FILE *src,
                      const char *raw_line, size_t n);
 
