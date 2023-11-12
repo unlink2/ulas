@@ -255,6 +255,15 @@ int ulas_preproclws(struct ulas_preproc *pp, const char *praw_line,
   return i;
 }
 
+void ulas_trimend(char c, char *buf, size_t n) {
+  size_t buflen = strnlen(buf, n);
+  // remove trailing new line if present
+  while (buf[buflen - 1] == '\n') {
+    buf[buflen - 1] = '\0';
+    buflen--;
+  }
+}
+
 char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
                          size_t *n) {
   const char *praw_line = raw_line;
@@ -321,6 +330,9 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
         while (paramc < ULAS_MACROPARAMMAX &&
                ulas_tokuntil(&pp->macroparam[paramc], ',', &praw_line, *n) >
                    0) {
+          // trim new lines from the end of macro params
+          ulas_trimend('\n', pp->macroparam[paramc].buf,
+                       strlen(pp->macroparam[paramc].buf));
           paramc++;
         }
         ulas_strensr(&pp->line, strlen(def->value) + 2);
@@ -422,15 +434,6 @@ int ulas_preprocdef(struct ulas_preproc *pp, struct ulas_ppdef def) {
   pp->defs = defs;
   pp->defs[pp->defslen - 1] = def;
   return 0;
-}
-
-void ulas_trimend(char c, char *buf, size_t n) {
-  size_t buflen = strnlen(buf, n);
-  // remove trailing new line if present
-  while (buf[buflen - 1] == '\n') {
-    buf[buflen - 1] = '\0';
-    buflen--;
-  }
 }
 
 int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, FILE *src,
