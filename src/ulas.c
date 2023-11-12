@@ -524,13 +524,47 @@ found:
 
       goto dirdone;
     }
+    case ULAS_PPDIR_ENDIF:
     case ULAS_PPDIR_ENDMACRO:
       break;
     case ULAS_PPDIR_IFDEF:
-    case ULAS_PPDIR_IFNDEF:
-    case ULAS_PPDIR_ENDIF:
-      // TODO: implement
-      ULASPANIC("Preproc directive is not implemented!\n");
+    case ULAS_PPDIR_IFNDEF: {
+      // get the name
+      // get a name, ensure no more tokens come after
+      // and then consume lines until ENDMACRO is seen
+      if (ulas_tok(&pp->tok, &pline, n) == 0) {
+        ULASERR("Expected name for #if(n)def\n");
+        return -1;
+      }
+
+      // the end of a directive should have no further tokens!
+      if (ulas_preprochasstray(pp, pline, n)) {
+        ULASERR("Stray token at end of preprocessor directive!");
+        return -1;
+      }
+
+      char buf[ULAS_LINEMAX];
+      memset(buf, 0, ULAS_LINEMAX);
+
+      FILE *defdst = dst;
+
+      // loop until end of line or endif
+      int rc = 0;
+      while ((rc = ulas_preprocnext(pp, defdst, src, buf, ULAS_LINEMAX)) > 0) {
+        if (rc == ULAS_PPDIR_ENDIF) {
+          // we need to clear the line buffer to now echo back
+          // the #endmacro directive
+          pp->line.buf[0] = '\0';
+          break;
+        }
+      }
+
+      if (rc != ULAS_PPDIR_ENDIF) {
+        ULASERR("Unterminated if(n)def directive\n");
+        return -1;
+      }
+      goto dirdone;
+    }
     case ULAS_PPDIR_UNDEF: {
       if (ulas_tok(&pp->tok, &pline, n) == 0) {
         ULASERR("Expected name for #undef\n");
