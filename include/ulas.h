@@ -78,6 +78,7 @@ struct ulas_config {
   char *output_path;
 
   int verbose;
+  int preproc_only;
 };
 
 /**

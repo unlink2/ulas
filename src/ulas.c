@@ -35,6 +35,7 @@ struct ulas_config ulas_cfg_from_env(void) {
 }
 
 int ulas_main(struct ulas_config cfg) {
+  int rc = 0;
   if (cfg.output_path) {
     ulasout = fopen(cfg.output_path, "we");
     if (!ulasout) {
@@ -44,15 +45,50 @@ int ulas_main(struct ulas_config cfg) {
     }
   }
 
+  if (cfg.argc > 0) {
+    ulasin = fopen(cfg.argv[0], "re");
+    if (!ulasin) {
+      fprintf(ulaserr, "%s: %s\n", cfg.argv[0], strerror(errno));
+      return -1;
+    }
+  }
+
   ulas_init(cfg);
+
+  FILE *preprocdst = NULL;
+
+  if (cfg.preproc_only) {
+    preprocdst = ulasout;
+  } else {
+    preprocdst = tmpfile();
+  }
+
+  if (ulas_preproc(preprocdst, ulasin) == -1) {
+    rc = -1;
+    goto cleanup;
+  }
+
+  if (cfg.preproc_only) {
+    goto cleanup;
+  }
+
+  // TODO: rest of steps here
+
+cleanup:
+  if (!cfg.preproc_only) {
+    fclose(preprocdst);
+  }
 
   if (cfg.output_path) {
     fclose(ulasout);
     free(cfg.output_path);
-    return -1;
   }
 
-  return 0;
+  if (cfg.argc > 0) {
+    fclose(ulasin);
+  }
+
+  return rc;
 }
 
 int ulas_isname(const char *tok, size_t n) {
@@ -412,6 +448,7 @@ void ulas_trimend(char c, char *buf, size_t n) {
 int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, FILE *src,
                      const char *raw_line, size_t n) {
   /**
+   * Footgun warning:
    * We do use raw pointers to the line here... which is fine
    * as long as it is never used after a recursive call to the preprocessor!
    * never use this pointer after such a recursive call!

@@ -9,7 +9,7 @@
 #define ULAS_VER "0.0.1"
 
 // args without value
-#define ULAS_OPTS "hvV"
+#define ULAS_OPTS "hvVp"
 
 // args with value
 #define ULAS_OPTS_ARG "o:"
@@ -22,6 +22,7 @@ void ulas_help(void) {
   ULAS_HELP("h", "display this help and exit");
   ULAS_HELP("V", "display version info and exit");
   ULAS_HELP("v", "verbose output");
+  ULAS_HELP("p", "Stop after preprocessor");
   ULAS_HELP("o=path", "Output file");
 }
 
@@ -44,6 +45,9 @@ void ulas_getopt(int argc, char **argv, struct ulas_config *cfg) {
       break;
     case 'o':
       cfg->output_path = strndup(optarg, ULAS_PATHMAX);
+      break;
+    case 'p':
+      cfg->preproc_only = 1;
       break;
     case '?':
       break;
