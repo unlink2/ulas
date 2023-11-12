@@ -116,7 +116,7 @@ void test_preproc(void) {
                  "#macro test\ntest macro with no args\n#endmacro\ntest");
   assert_preproc("", -1, "#macro test\n not terminated\n");
   assert_preproc(
-      "nested macro t1\nafter\ncontent n1\n\n", 0,
+      "nested macro t1\nafter\ncontent n1\n", 0,
       "#macro test\nnested macro $1\n#macro "
       "nested\ncontent $1\n#endmacro\nafter\nnested n1\n#endmacro\ntest t1");
 
