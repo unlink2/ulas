@@ -20,7 +20,7 @@
 .SH PREPROCESSOR 
 
 The preprocessor is a text based way of modifying the input before 
-the assembly step.
+the assembly step. Stray tokens after a directive are ignored!
 
 Preprocessor directives start with a # and have to be the first non-space character in a line.
 All lines that are not a preprocessor directive, or are not part of a preprocessor block (macro, or if)

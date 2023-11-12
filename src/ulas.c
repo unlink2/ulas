@@ -424,18 +424,6 @@ int ulas_preprocdef(struct ulas_preproc *pp, struct ulas_ppdef def) {
   return 0;
 }
 
-int ulas_preprochasstray(struct ulas_preproc *pp, const char *pline, size_t n) {
-
-  // the end of a directive should have no further tokens!
-  if (ulas_tok(&pp->tok, &pline, n) != 0) {
-    ULASERR("Stray tokens '%s' at end of preprocessor directive\n",
-            pp->tok.buf);
-    return 1;
-  }
-
-  return 0;
-}
-
 void ulas_trimend(char c, char *buf, size_t n) {
   size_t buflen = strnlen(buf, n);
   // remove trailing new line if present
@@ -522,11 +510,6 @@ found:
       }
       char *name = strdup(pp->tok.buf);
 
-      if (ulas_preprochasstray(pp, pline, n)) {
-        free(name);
-        return -1;
-      }
-
       struct ulas_str val = ulas_str(32);
       memset(val.buf, 0, 32);
 
@@ -580,12 +563,6 @@ found:
       struct ulas_ppdef *def =
           ulas_preprocgetdef(pp, pp->tok.buf, pp->tok.maxlen);
 
-      // the end of a directive should have no further tokens!
-      if (ulas_preprochasstray(pp, pline, n)) {
-        ULASERR("Stray token at end of preprocessor directive!");
-        return -1;
-      }
-
       char buf[ULAS_LINEMAX];
       memset(buf, 0, ULAS_LINEMAX);
 
@@ -629,11 +606,6 @@ found:
       break;
     }
 
-    // the end of a directive should have no further tokens!
-    if (ulas_preprochasstray(pp, pline, n)) {
-      ULASERR("Stray token at end of preprocessor directive!");
-      return -1;
-    }
   dirdone:
     return found_dir;
   } else if (dst) {
