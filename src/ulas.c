@@ -689,13 +689,23 @@ int ulas_preproc(FILE *dst, FILE *src) {
  * Assembly step
  */
 
+int ulas_asmline(FILE *dst, FILE *src, const char *line, size_t n) {
+  int rc = 0;
+
+  fprintf(dst, "%s", line);
+
+  return rc;
+}
+
 int ulas_asmnext(FILE *dst, FILE *src, char *buf, int n) {
   int rc = 1;
   if (fgets(buf, n, src) != NULL) {
     ulas.line++;
 
-    fprintf(dst, "%s", buf);
-    // size_t buflen = strlen(buf);
+    size_t buflen = strlen(buf);
+    if (ulas_asmline(dst, src, buf, buflen) == -1) {
+      rc = -1;
+    }
   } else {
     rc = 0;
   }
