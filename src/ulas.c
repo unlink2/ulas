@@ -11,6 +11,7 @@ struct ulas_config ulascfg;
 struct ulas ulas;
 
 void ulas_init(struct ulas_config cfg) {
+  // init global cfg
   if (ulasin == NULL) {
     ulasin = stdin;
   }
@@ -22,8 +23,13 @@ void ulas_init(struct ulas_config cfg) {
   }
   ulascfg = cfg;
 
+  // init assembly context
   memset(&ulas, 0, sizeof(ulas));
+
+  ulas.tok = ulas_str(8);
 }
+
+void ulas_free(void) { ulas_strfree(&ulas.tok); }
 
 int ulas_icntr(void) { return ulas.icntr++; }
 
@@ -88,6 +94,8 @@ cleanup:
   if (cfg.argc > 0) {
     fclose(ulasin);
   }
+
+  ulas_free();
 
   return rc;
 }
@@ -222,6 +230,10 @@ struct ulas_str ulas_strensr(struct ulas_str *s, size_t maxlen) {
   }
 
   return *s;
+}
+
+struct ulas_str ulas_strreq(struct ulas_str *s, size_t n) {
+  return ulas_strensr(s, strnlen(s->buf, s->maxlen)+n); 
 }
 
 void ulas_strfree(struct ulas_str *s) {
@@ -693,6 +705,8 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, size_t n) {
   int rc = 0;
 
   fprintf(dst, "%s", line);
+
+  // read the first token and decide
 
   return rc;
 }

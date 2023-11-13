@@ -94,11 +94,11 @@ struct ulas_str {
  */
 
 struct ulas {
-  char **strs;
-  size_t strslen;
-
   char *filename;
   size_t line;
+
+  // holds the current token
+  struct ulas_str tok;
 
   // internal counter
   // used whenever a new unique number might be needed
@@ -226,6 +226,7 @@ extern struct ulas_config ulascfg;
 
 struct ulas_config ulas_cfg_from_env(void);
 void ulas_init(struct ulas_config cfg);
+void ulas_free(void);
 
 int ulas_main(struct ulas_config cfg);
 
@@ -249,6 +250,9 @@ struct ulas_str ulas_str(size_t n);
 
 // ensure the string buffer is at least n bytes long, if not realloc
 struct ulas_str ulas_strensr(struct ulas_str *s, size_t maxlen);
+
+// require at least n bytes + the current strlen
+struct ulas_str ulas_strreq(struct ulas_str *s, size_t n);
 
 void ulas_strfree(struct ulas_str *s);
 

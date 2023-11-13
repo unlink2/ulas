@@ -152,5 +152,7 @@ int main(int arc, char **argv) {
   test_strbuf();
   test_preproc();
 
+  ulas_free();
+
   return 0;
 }
