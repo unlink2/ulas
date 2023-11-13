@@ -100,6 +100,8 @@ struct ulas {
   // holds the current token
   struct ulas_str tok;
 
+  unsigned int address;
+
   // internal counter
   // used whenever a new unique number might be needed
   int icntr;
@@ -115,12 +117,21 @@ int ulas_icntr(void);
 
 enum ulas_ppdirs {
   ULAS_PPDIR_NONE = 1,
+  // #define name value
   ULAS_PPDIR_DEF,
+  // #undefine name
   ULAS_PPDIR_UNDEF,
+  // #macro name
+  // value
+  // value
   ULAS_PPDIR_MACRO,
+  // #endmacro
   ULAS_PPDIR_ENDMACRO,
+  // ifdef name
   ULAS_PPDIR_IFDEF,
+  // ifndef name
   ULAS_PPDIR_IFNDEF,
+  // endif
   ULAS_PPDIR_ENDIF
 };
 
@@ -220,6 +231,26 @@ union ulas_expdat {
 struct ulas_expr {
   enum ulas_exprs type;
   union ulas_expdat dat;
+};
+
+/**
+ * asm
+ */
+enum ulas_asmdir {
+  // .org <address>
+  ULAS_ASMDIR_ORG,
+  // .set name = <expr>
+  ULAS_ASMDIR_SET,
+  // .byte <expr>, <expr>, <expr>, ...
+  ULAS_ASMDIR_BYTE,
+  // .str "String value"
+  ULAS_ASMDIR_STR,
+  // .fill <expr>, n
+  ULAS_ASMDIR_FILL,
+  // .pad <expr>, <addr>
+  ULAS_ASMDIR_PAD,
+  // .incbin <filename>
+  ULAS_ASMDIR_INCBIN,
 };
 
 extern struct ulas_config ulascfg;
