@@ -281,12 +281,19 @@ int ulas_preprocnext(struct ulas_preproc *pp, FILE *dst, FILE *src, char *buf,
 //          -1 on error
 //  Warning: calling this recursively may clobber pp buffers and those should
 //  not be used in the caller after recursvion finishes!
-//  or initialize a new preproc object if the old state is important! (preprocinit and preprocfree)
+//  or initialize a new preproc object if the old state is important!
+//  (preprocinit and preprocfree)
 int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, FILE *src,
                      const char *raw_line, size_t n);
 
 // expand preproc into dst line
 char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
                          size_t *n);
+
+/**
+ * Assembly step 
+ */
+
+int ulas_asm(FILE *dst, FILE *src);
 
 #endif

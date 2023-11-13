@@ -72,7 +72,8 @@ int ulas_main(struct ulas_config cfg) {
     goto cleanup;
   }
 
-  // TODO: rest of steps here
+  fseek(preprocdst, 0, SEEK_SET);
+  rc = ulas_asm(ulasout, preprocdst);
 
 cleanup:
   if (!cfg.preproc_only) {
@@ -680,6 +681,16 @@ int ulas_preproc(FILE *dst, FILE *src) {
 
   // cleanup
   ulas_preprocfree(&pp);
+
+  return rc;
+}
+
+/**
+ * Assembly step
+ */
+
+int ulas_asm(FILE *dst, FILE *src) {
+  int rc = 0;
 
   return rc;
 }
