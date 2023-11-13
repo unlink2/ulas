@@ -701,11 +701,20 @@ int ulas_preproc(FILE *dst, FILE *src) {
  */
 
 int ulas_asmline(FILE *dst, FILE *src, const char *line, size_t n) {
+  // const char *start = line;
   int rc = 0;
 
   fprintf(dst, "%s", line);
 
   // read the first token and decide
+  ulas_tok(&ulas.tok, &line, n);
+
+  if (ulas.tok.buf[0] == ULAS_TOK_ASMDIR_BEGIN) {
+    // is directive!
+    puts("Directive");
+  } else {
+    // is regular line in form of [label:] instruction ; comment
+  }
 
   return rc;
 }

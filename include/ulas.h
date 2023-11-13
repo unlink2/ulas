@@ -31,7 +31,7 @@
 // configurable tokens
 #define ULAS_TOK_COMMENT ';'
 // start of as directives such as .org
-#define ULAS_TOK_ASDIR_BEGIN '.'
+#define ULAS_TOK_ASMDIR_BEGIN '.'
 // start of preprocessor directives such as #define or #include
 #define ULAS_TOK_PREPROC_BEGIN '#'
 
