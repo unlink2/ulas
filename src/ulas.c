@@ -233,7 +233,7 @@ struct ulas_str ulas_strensr(struct ulas_str *s, size_t maxlen) {
 }
 
 struct ulas_str ulas_strreq(struct ulas_str *s, size_t n) {
-  return ulas_strensr(s, strnlen(s->buf, s->maxlen)+n); 
+  return ulas_strensr(s, strnlen(s->buf, s->maxlen) + n);
 }
 
 void ulas_strfree(struct ulas_str *s) {
@@ -262,8 +262,7 @@ int ulas_preproclws(struct ulas_preproc *pp, const char *praw_line,
     i++;
   }
 
-  size_t linelen = strnlen(pp->line.buf, maxlen);
-  ulas_strensr(&pp->line, linelen + i + 1);
+  ulas_strreq(&pp->line, i + 1);
   strncat(pp->line.buf, praw_line, i);
   return i;
 }
