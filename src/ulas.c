@@ -728,6 +728,4 @@ int ulas_asm(FILE *dst, FILE *src) {
   ulas_preprocfree(&pp);
 
   return rc;
-
-  return rc;
 }
