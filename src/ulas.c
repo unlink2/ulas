@@ -689,8 +689,35 @@ int ulas_preproc(FILE *dst, FILE *src) {
  * Assembly step
  */
 
+int ulas_asmnext(FILE *dst, FILE *src, char *buf, int n) {
+  int rc = 1;
+  if (fgets(buf, n, src) != NULL) {
+    ulas.line++;
+
+    fprintf(dst, "%s", buf);
+    // size_t buflen = strlen(buf);
+  } else {
+    rc = 0;
+  }
+  return rc;
+}
+
 int ulas_asm(FILE *dst, FILE *src) {
+  char buf[ULAS_LINEMAX];
+  memset(buf, 0, ULAS_LINEMAX);
   int rc = 0;
+
+  // init
+  struct ulas_preproc pp = ulas_preprocinit();
+
+  // preproc
+  while ((rc = ulas_asmnext(dst, src, buf, ULAS_LINEMAX)) > 0) {
+  }
+
+  // cleanup
+  ulas_preprocfree(&pp);
+
+  return rc;
 
   return rc;
 }

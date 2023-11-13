@@ -291,9 +291,13 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
                          size_t *n);
 
 /**
- * Assembly step 
+ * Assembly step
  */
 
+// returns 0 if no more data can be read
+//         > 0 if data was read
+//         -1 on error
+int ulas_asmnext(FILE *dst, FILE *src, char *buf, int n);
 int ulas_asm(FILE *dst, FILE *src);
 
 #endif
