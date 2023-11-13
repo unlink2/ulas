@@ -256,6 +256,9 @@ void ulas_strfree(struct ulas_str *s);
  * Preprocessor
  */
 
+struct ulas_preproc ulas_preprocinit(void);
+void ulas_preprocfree(struct ulas_preproc *pp);
+
 /**
  * Tokenize and apply the preprocessor
  * returns 0: no error
@@ -278,6 +281,7 @@ int ulas_preprocnext(struct ulas_preproc *pp, FILE *dst, FILE *src, char *buf,
 //          -1 on error
 //  Warning: calling this recursively may clobber pp buffers and those should
 //  not be used in the caller after recursvion finishes!
+//  or initialize a new preproc object if the old state is important! (preprocinit and preprocfree)
 int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, FILE *src,
                      const char *raw_line, size_t n);
 

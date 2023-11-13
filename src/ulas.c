@@ -634,43 +634,52 @@ int ulas_preprocnext(struct ulas_preproc *pp, FILE *dst, FILE *src, char *buf,
   return rc;
 }
 
+struct ulas_preproc ulas_preprocinit(void) {
+  struct ulas_preproc pp = {NULL, 0, ulas_str(1), ulas_str(1)};
+  for (size_t i = 0; i < ULAS_MACROPARAMMAX; i++) {
+    pp.macroparam[i] = ulas_str(8);
+  }
+  pp.macrobuf = ulas_str(8);
+  return pp;
+}
+
+void ulas_preprocfree(struct ulas_preproc *pp) {
+  ulas_strfree(&pp->line);
+  ulas_strfree(&pp->tok);
+
+  for (size_t i = 0; i < pp->defslen; i++) {
+    if (pp->defs[i].name) {
+      free(pp->defs[i].name);
+    }
+    if (pp->defs[i].value) {
+      free(pp->defs[i].value);
+    }
+  }
+
+  for (size_t i = 0; i < ULAS_MACROPARAMMAX; i++) {
+    ulas_strfree(&pp->macroparam[i]);
+  }
+  ulas_strfree(&pp->macrobuf);
+
+  if (pp->defs) {
+    free(pp->defs);
+  }
+}
+
 int ulas_preproc(FILE *dst, FILE *src) {
   char buf[ULAS_LINEMAX];
   memset(buf, 0, ULAS_LINEMAX);
   int rc = 0;
 
   // init
-  struct ulas_preproc pp = {NULL, 0, ulas_str(1), ulas_str(1)};
-  for (size_t i = 0; i < ULAS_MACROPARAMMAX; i++) {
-    pp.macroparam[i] = ulas_str(8);
-  }
-  pp.macrobuf = ulas_str(8);
+  struct ulas_preproc pp = ulas_preprocinit();
 
   // preproc
   while ((rc = ulas_preprocnext(&pp, dst, src, buf, ULAS_LINEMAX)) > 0) {
   }
 
   // cleanup
-  ulas_strfree(&pp.line);
-  ulas_strfree(&pp.tok);
-
-  for (size_t i = 0; i < pp.defslen; i++) {
-    if (pp.defs[i].name) {
-      free(pp.defs[i].name);
-    }
-    if (pp.defs[i].value) {
-      free(pp.defs[i].value);
-    }
-  }
-
-  for (size_t i = 0; i < ULAS_MACROPARAMMAX; i++) {
-    ulas_strfree(&pp.macroparam[i]);
-  }
-  ulas_strfree(&pp.macrobuf);
-
-  if (pp.defs) {
-    free(pp.defs);
-  }
+  ulas_preprocfree(&pp);
 
   return rc;
 }
