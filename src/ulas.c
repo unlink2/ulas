@@ -78,9 +78,6 @@ int ulas_main(struct ulas_config cfg) {
     goto cleanup;
   }
 
-  fseek(preprocdst, 0, SEEK_SET);
-  rc = ulas_asm(ulasout, preprocdst);
-
 cleanup:
   if (!cfg.preproc_only) {
     fclose(preprocdst);
@@ -679,6 +676,7 @@ void ulas_preprocfree(struct ulas_preproc *pp) {
 }
 
 int ulas_preproc(FILE *dst, FILE *src) {
+  FILE *asmsrc = dst;
   char buf[ULAS_LINEMAX];
   memset(buf, 0, ULAS_LINEMAX);
   int rc = 0;
@@ -686,10 +684,24 @@ int ulas_preproc(FILE *dst, FILE *src) {
   // init
   struct ulas_preproc pp = ulas_preprocinit();
 
+  long prevseek = 0;
   // preproc
   while ((rc = ulas_preprocnext(&pp, dst, src, buf, ULAS_LINEMAX)) > 0) {
+    if (ulascfg.preproc_only) {
+      continue;
+    }
+
+    // after each preproc line we assembly it by reading it back
+    // from the temporary buffer
+    fseek(asmsrc, prevseek, SEEK_SET);
+    if (ulas_asm(ulasout, asmsrc) == -1) {
+      rc = -1;
+      goto fail;
+    }
+    prevseek = ftell(asmsrc);
   }
 
+fail:
   // cleanup
   ulas_preprocfree(&pp);
 
@@ -710,20 +722,39 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, size_t n) {
   ulas_tok(&ulas.tok, &line, n);
 
   if (ulas.tok.buf[0] == ULAS_TOK_ASMDIR_BEGIN) {
-    // is directive!
-    puts("Directive");
+    const char *dirstrs[] = {
+        ULAS_ASMSTR_ORG,  ULAS_ASMSTR_SET, ULAS_ASMSTR_BYTE,   ULAS_ASMSTR_STR,
+        ULAS_ASMSTR_FILL, ULAS_ASMSTR_PAD, ULAS_ASMSTR_INCBIN, NULL};
+    enum ulas_asmdir dirs[] = {
+        ULAS_ASMDIR_ORG,  ULAS_ASMDIR_SET, ULAS_ASMDIR_BYTE,  ULAS_ASMDIR_STR,
+        ULAS_ASMDIR_FILL, ULAS_ASMDIR_PAD, ULAS_ASMDIR_INCBIN};
+
+    enum ulas_asmdir dir = ULAS_ASMDIR_NONE;
+
+    for (long i = 0; dirstrs[i]; i++) {
+      if (strncmp(ulas.tok.buf, dirstrs[i], n) == 0) {
+        dir = dirs[i];
+        break;
+      }
+    }
+
+    if (!dir) {
+      ULASERR("Unexpected directive\n");
+      rc = -1;
+      goto fail;
+    }
+
   } else {
     // is regular line in form of [label:] instruction ; comment
   }
 
+fail:
   return rc;
 }
 
 int ulas_asmnext(FILE *dst, FILE *src, char *buf, int n) {
   int rc = 1;
   if (fgets(buf, n, src) != NULL) {
-    ulas.line++;
-
     size_t buflen = strlen(buf);
     if (ulas_asmline(dst, src, buf, buflen) == -1) {
       rc = -1;
@@ -739,15 +770,9 @@ int ulas_asm(FILE *dst, FILE *src) {
   memset(buf, 0, ULAS_LINEMAX);
   int rc = 0;
 
-  // init
-  struct ulas_preproc pp = ulas_preprocinit();
-
   // preproc
   while ((rc = ulas_asmnext(dst, src, buf, ULAS_LINEMAX)) > 0) {
   }
-
-  // cleanup
-  ulas_preprocfree(&pp);
 
   return rc;
 }

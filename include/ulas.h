@@ -28,6 +28,14 @@
 #define ULAS_PPSTR_ENDMACRO "#endmacro"
 #define ULAS_PPSTR_UNDEF "#undefine"
 
+#define ULAS_ASMSTR_ORG ".org"
+#define ULAS_ASMSTR_SET ".set"
+#define ULAS_ASMSTR_BYTE ".db"
+#define ULAS_ASMSTR_STR ".str"
+#define ULAS_ASMSTR_FILL ".fill"
+#define ULAS_ASMSTR_PAD ".pad"
+#define ULAS_ASMSTR_INCBIN ".incbin"
+
 // configurable tokens
 #define ULAS_TOK_COMMENT ';'
 // start of as directives such as .org
@@ -237,6 +245,7 @@ struct ulas_expr {
  * asm
  */
 enum ulas_asmdir {
+  ULAS_ASMDIR_NONE = 0,
   // .org <address>
   ULAS_ASMDIR_ORG,
   // .set name = <expr>

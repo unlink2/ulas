@@ -90,6 +90,7 @@ void test_strbuf(void) {
   }
 
 void test_preproc(void) {
+  ulascfg.preproc_only = 1;
   TESTBEGIN("preproc");
 
   // no directive
@@ -139,6 +140,7 @@ void test_preproc(void) {
                  "#ifndef test\nifndeftest defined!\n");
 
   TESTEND("preproc");
+  ulascfg.preproc_only = 0;
 }
 
 int main(int arc, char **argv) {
