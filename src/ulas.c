@@ -27,6 +27,10 @@ void ulas_init(struct ulas_config cfg) {
   memset(&ulas, 0, sizeof(ulas));
 
   ulas.tok = ulas_str(8);
+
+  if (cfg.argc) {
+    ulas.filename = cfg.argv[0];
+  }
 }
 
 void ulas_free(void) { ulas_strfree(&ulas.tok); }
@@ -712,8 +716,10 @@ fail:
  * Assembly step
  */
 
+int ulas_intexpr(const char **line, size_t n, int *rc) { return -1; }
+
 int ulas_asmline(FILE *dst, FILE *src, const char *line, size_t n) {
-  // const char *start = line;
+  const char *start = line;
   int rc = 0;
 
   fprintf(dst, "%s", line);
@@ -742,6 +748,21 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, size_t n) {
       ULASERR("Unexpected directive\n");
       rc = -1;
       goto fail;
+    }
+
+    switch (dir) {
+    case ULAS_ASMDIR_NONE:
+    case ULAS_ASMDIR_ORG:
+      ulas.address = ulas_intexpr(&line, strnlen(start, n), &rc);
+      break;
+    case ULAS_ASMDIR_SET:
+    case ULAS_ASMDIR_BYTE:
+    case ULAS_ASMDIR_STR:
+    case ULAS_ASMDIR_FILL:
+    case ULAS_ASMDIR_PAD:
+    case ULAS_ASMDIR_INCBIN:
+      ULASPANIC("asmdir not implemented\n");
+      break;
     }
 
   } else {

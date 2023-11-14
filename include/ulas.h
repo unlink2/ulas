@@ -344,4 +344,7 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
 int ulas_asmnext(FILE *dst, FILE *src, char *buf, int n);
 int ulas_asm(FILE *dst, FILE *src);
 
+// parses and executes a 32 bit signed int math expressions
+int ulas_intexpr(const char **line, size_t n, int *rc);
+
 #endif
