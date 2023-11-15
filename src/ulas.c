@@ -217,6 +217,34 @@ int ulas_tokuntil(struct ulas_str *dst, char c, const char **out_line,
   return i;
 }
 
+struct ulas_tok ulas_totok(const char *buf, size_t n, int *rc) {
+  struct ulas_tok tok;
+  memset(&tok, 0, sizeof(tok));
+
+  if (n == 0) {
+    *rc = -1;
+    goto end;
+  }
+
+  unsigned char first = buf[0];
+
+  switch (first) {
+  case ';':
+    tok.type = first;
+    goto end;
+  case '"':
+    // string
+    break;
+  default:
+    ULASERR("Unexpected token: %s\n", buf);
+    *rc = -1;
+    goto end;
+  }
+
+end:
+  return tok;
+}
+
 #undef WELD_TOKCOND
 #undef WLED_TOKISTERM
 
@@ -773,7 +801,22 @@ void ulas_tokbuffree(struct ulas_tokbuf *tb) { free(tb->buf); }
  * Assembly step
  */
 
-int ulas_intexpr(const char **line, size_t n, int *rc) { return -1; }
+int ulas_intexpr(const char **line, size_t n, int *rc) {
+  // read tokens until the next token is end of line, ; or ,
+
+  int tokrc = 0;
+  while ((tokrc = ulas_tok(&ulas.tok, line, n) > 0)) {
+    if (tokrc == -1) {
+      *rc = -1;
+      goto fail;
+    }
+
+    // interpret the token
+  }
+
+fail:
+  return -1;
+}
 
 int ulas_asmline(FILE *dst, FILE *src, const char *line, size_t n) {
   const char *start = line;
