@@ -89,8 +89,8 @@ struct ulas_str {
  * Tokens
  */
 
-// any token before 256 is just the literal char value 
-enum ulas_toks { ULAS_TOKLITERAL = 256, ULAS_TOKINT, ULAS_TOKCHAR, ULAS_TOKSTRING };
+// any token before 256 is just the literal char value
+enum ulas_toks { ULAS_TOKLITERAL = 256, ULAS_TOKSYMBOL };
 
 // primitive data types
 enum ulas_type { ULAS_INT, ULAS_STR };
@@ -280,7 +280,7 @@ char *ulas_strndup(const char *src, unsigned long n);
 int ulas_tok(struct ulas_str *dst, const char **out_line, unsigned long n);
 
 // converts a token string to a token struct
-struct ulas_tok ulas_totok(const char *buf, unsigned long n, int *rc);
+struct ulas_tok ulas_totok(char *buf, unsigned long n, int *rc);
 
 int ulas_tokuntil(struct ulas_str *dst, char c, const char **out_line,
                   unsigned long n);

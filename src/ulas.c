@@ -1,6 +1,7 @@
 #include "ulas.h"
 #include <ctype.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
@@ -217,7 +218,7 @@ int ulas_tokuntil(struct ulas_str *dst, char c, const char **out_line,
   return i;
 }
 
-struct ulas_tok ulas_totok(const char *buf, unsigned long n, int *rc) {
+struct ulas_tok ulas_totok(char *buf, unsigned long n, int *rc) {
   struct ulas_tok tok;
   memset(&tok, 0, sizeof(tok));
 
@@ -227,6 +228,7 @@ struct ulas_tok ulas_totok(const char *buf, unsigned long n, int *rc) {
   }
 
   unsigned char first = buf[0];
+  buf++;
 
   switch (first) {
   case ';':
@@ -238,10 +240,20 @@ struct ulas_tok ulas_totok(const char *buf, unsigned long n, int *rc) {
   default:
     if (isdigit(first)) {
       // integer
+      tok.type = ULAS_TOKLITERAL;
+      tok.lit.type = ULAS_INT;
+      tok.lit.val.int_value = (int)strtol(buf, &buf, 0);
+    } else if (n == 3 && first == '\'') {
+      tok.type = ULAS_TOKLITERAL;
+      tok.lit.type = ULAS_INT;
+      // TODO: read char value between ' and ' and unescape
     } else if (ulas_isname(buf, n)) {
       // literal. we can resolve it now
       // because literals need to be able to be resolved
       // for every line, unless they are a label!
+      // TODO: read and unescape striing between " and "
+      tok.type = ULAS_TOKSYMBOL;
+      tok.lit.type = ULAS_STR;
     } else {
 
       ULASERR("Unexpected token: %s\n", buf);
@@ -252,6 +264,11 @@ struct ulas_tok ulas_totok(const char *buf, unsigned long n, int *rc) {
   }
 
 end:
+  // did we consume the entire token?
+  if (buf[0] != '\0') {
+    *rc = -1;
+  }
+
   return tok;
 }
 
