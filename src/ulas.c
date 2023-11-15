@@ -236,9 +236,19 @@ struct ulas_tok ulas_totok(const char *buf, unsigned long n, int *rc) {
     // string
     break;
   default:
-    ULASERR("Unexpected token: %s\n", buf);
-    *rc = -1;
-    goto end;
+    if (isdigit(first)) {
+      // integer
+    } else if (ulas_isname(buf, n)) {
+      // literal. we can resolve it now
+      // because literals need to be able to be resolved
+      // for every line, unless they are a label!
+    } else {
+
+      ULASERR("Unexpected token: %s\n", buf);
+      *rc = -1;
+      goto end;
+    }
+    break;
   }
 
 end:
