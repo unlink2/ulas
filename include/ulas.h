@@ -86,6 +86,39 @@ struct ulas_str {
 };
 
 /**
+ * Tokens
+ */
+
+enum ulas_toks { ULAS_TOKLITERAL, ULAS_TOKINT, ULAS_TOKCHAR, ULAS_TOKSTRING };
+
+// primitive data types
+enum ulas_type { ULAS_INT, ULAS_STR };
+
+// data type value
+union ulas_val {
+  int int_value;
+  char *str_value;
+};
+
+// literal value
+struct ulas_lit {
+  enum ulas_type type;
+  union ulas_val val;
+};
+
+struct ulas_tok {
+  enum ulas_toks type;
+  struct ulas_lit lit;
+};
+
+// the token buffer is a dynamically allocated token store
+struct ulas_tokbuf {
+  struct ulas_tok *buf;
+  long len;
+  long maxlen;
+};
+
+/**
  * Assembly context
  */
 
@@ -95,6 +128,9 @@ struct ulas {
 
   // holds the current token
   struct ulas_str tok;
+
+  // current token stream
+  struct ulas_tokbuf toks;
 
   unsigned int address;
 
@@ -156,39 +192,6 @@ struct ulas_preproc {
   struct ulas_str macroparam[ULAS_MACROPARAMMAX];
   // macro expansion buffer
   struct ulas_str macrobuf;
-};
-
-/**
- * Tokens
- */
-
-enum ulas_toks { ULAS_TOKLITERAL, ULAS_TOKINT, ULAS_TOKCHAR, ULAS_TOKSTRING };
-
-// primitive data types
-enum ulas_type { ULAS_INT, ULAS_STR };
-
-// data type value
-union ulas_val {
-  int int_value;
-  char *str_value;
-};
-
-// literal value
-struct ulas_lit {
-  enum ulas_type type;
-  union ulas_val val;
-};
-
-struct ulas_tok {
-  enum ulas_toks type;
-  struct ulas_lit lit;
-};
-
-// the token buffer is a dynamically allocated token store
-struct ulas_tokbuf {
-  struct ulas_tok *buf;
-  long len;
-  long maxlen;
 };
 
 /**
@@ -339,6 +342,11 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
 int ulas_litint(struct ulas_lit *lit, int *rc);
 // convert literal to its char value
 char *ulas_litchar(struct ulas_lit *lit, int *rc);
+
+struct ulas_tokbuf ulas_tokbuf(void);
+void ulas_tokbufpush(struct ulas_tokbuf *tb, struct ulas_tok tok);
+void ulas_tokbufclear(struct ulas_tokbuf *tb);
+void ulas_tokbuffree(struct ulas_tokbuf *tb);
 
 /**
  * Assembly step

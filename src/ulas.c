@@ -31,9 +31,14 @@ void ulas_init(struct ulas_config cfg) {
   if (cfg.argc) {
     ulas.filename = cfg.argv[0];
   }
+
+  ulas.toks = ulas_tokbuf();
 }
 
-void ulas_free(void) { ulas_strfree(&ulas.tok); }
+void ulas_free(void) {
+  ulas_strfree(&ulas.tok);
+  ulas_tokbuffree(&ulas.toks);
+}
 
 int ulas_icntr(void) { return ulas.icntr++; }
 
@@ -733,6 +738,36 @@ char *ulas_litchar(struct ulas_lit *lit, int *rc) {
 
   return lit->val.str_value;
 }
+
+struct ulas_tokbuf ulas_tokbuf(void) {
+  struct ulas_tokbuf tb;
+  memset(&tb, 0, sizeof(tb));
+
+  tb.maxlen = 5;
+  tb.buf = malloc(tb.maxlen * sizeof(struct ulas_tok));
+  tb.len = 0;
+
+  return tb;
+}
+
+void ulas_tokbufpush(struct ulas_tokbuf *tb, struct ulas_tok tok) {
+  if (tb->len >= tb->maxlen) {
+    tb->maxlen += 5;
+    void *n = realloc(tb->buf, tb->maxlen * sizeof(struct ulas_tok));
+    if (!n) {
+      ULASPANIC("%s\n", strerror(errno));
+    }
+
+    tb->buf = n;
+  }
+
+  tb->buf[tb->len] = tok;
+  tb->len++;
+}
+
+void ulas_tokbufclear(struct ulas_tokbuf *tb) { tb->len = 0; }
+
+void ulas_tokbuffree(struct ulas_tokbuf *tb) { free(tb->buf); }
 
 /**
  * Assembly step
