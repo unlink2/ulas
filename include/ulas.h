@@ -82,7 +82,7 @@ struct ulas_config {
  */
 struct ulas_str {
   char *buf;
-  size_t maxlen;
+  unsigned long maxlen;
 };
 
 /**
@@ -125,7 +125,7 @@ struct ulas_tokbuf {
 
 struct ulas {
   char *filename;
-  size_t line;
+  unsigned long line;
 
   // holds the current token
   struct ulas_str tok;
@@ -184,7 +184,7 @@ struct ulas_ppdef {
 
 struct ulas_preproc {
   struct ulas_ppdef *defs;
-  size_t defslen;
+  unsigned long defslen;
 
   struct ulas_str tok;
   struct ulas_str line;
@@ -271,32 +271,32 @@ void ulas_free(void);
 
 int ulas_main(struct ulas_config cfg);
 
-char *ulas_strndup(const char *src, size_t n);
+char *ulas_strndup(const char *src, unsigned long n);
 
 // tokenisze according to pre-defined rules
 // returns the amount of bytes of line that were
 // consumed or -1 on error
 // returns 0 when no more tokens can be read
-int ulas_tok(struct ulas_str *dst, const char **out_line, size_t n);
+int ulas_tok(struct ulas_str *dst, const char **out_line, unsigned long n);
 
 // converts a token string to a token struct
-struct ulas_tok ulas_totok(const char *buf, size_t n, int *rc);
+struct ulas_tok ulas_totok(const char *buf, unsigned long n, int *rc);
 
 int ulas_tokuntil(struct ulas_str *dst, char c, const char **out_line,
-                  size_t n);
+                  unsigned long n);
 
 /**
  * str
  */
 
 // create a string buffer
-struct ulas_str ulas_str(size_t n);
+struct ulas_str ulas_str(unsigned long n);
 
 // ensure the string buffer is at least n bytes long, if not realloc
-struct ulas_str ulas_strensr(struct ulas_str *s, size_t maxlen);
+struct ulas_str ulas_strensr(struct ulas_str *s, unsigned long maxlen);
 
 // require at least n bytes + the current strlen
-struct ulas_str ulas_strreq(struct ulas_str *s, size_t n);
+struct ulas_str ulas_strreq(struct ulas_str *s, unsigned long n);
 
 void ulas_strfree(struct ulas_str *s);
 
@@ -332,11 +332,11 @@ int ulas_preprocnext(struct ulas_preproc *pp, FILE *dst, FILE *src, char *buf,
 //  or initialize a new preproc object if the old state is important!
 //  (preprocinit and preprocfree)
 int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, FILE *src,
-                     const char *raw_line, size_t n);
+                     const char *raw_line, unsigned long n);
 
 // expand preproc into dst line
 char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
-                         size_t *n);
+                         unsigned long *n);
 
 /**
  * Literals, tokens and expressions
@@ -363,6 +363,6 @@ int ulas_asmnext(FILE *dst, FILE *src, char *buf, int n);
 int ulas_asm(FILE *dst, FILE *src);
 
 // parses and executes a 32 bit signed int math expressions
-int ulas_intexpr(const char **line, size_t n, int *rc);
+int ulas_intexpr(const char **line, unsigned long n, int *rc);
 
 #endif

@@ -106,7 +106,7 @@ cleanup:
   return rc;
 }
 
-int ulas_isname(const char *tok, size_t n) {
+int ulas_isname(const char *tok, unsigned long n) {
   if (n == 0) {
     return 0;
   }
@@ -115,7 +115,7 @@ int ulas_isname(const char *tok, size_t n) {
     return 0;
   }
 
-  for (size_t i = 0; i < n; i++) {
+  for (unsigned long i = 0; i < n; i++) {
     char c = tok[i];
     if (c != '_' && !isalnum(c)) {
       return 0;
@@ -128,7 +128,7 @@ int ulas_isname(const char *tok, size_t n) {
 #define WELD_TOKISTERM write
 #define WELD_TOKCOND (i < n && write < n && line[i])
 
-int ulas_tok(struct ulas_str *dst, const char **out_line, size_t n) {
+int ulas_tok(struct ulas_str *dst, const char **out_line, unsigned long n) {
   const char *line = *out_line;
   ulas_strensr(dst, n + 1);
 
@@ -192,7 +192,7 @@ tokdone:
 // capture everything between
 // will remove leading white spaces
 int ulas_tokuntil(struct ulas_str *dst, char c, const char **out_line,
-                  size_t n) {
+                  unsigned long n) {
   const char *line = *out_line;
   ulas_strensr(dst, n + 1);
 
@@ -217,7 +217,7 @@ int ulas_tokuntil(struct ulas_str *dst, char c, const char **out_line,
   return i;
 }
 
-struct ulas_tok ulas_totok(const char *buf, size_t n, int *rc) {
+struct ulas_tok ulas_totok(const char *buf, unsigned long n, int *rc) {
   struct ulas_tok tok;
   memset(&tok, 0, sizeof(tok));
 
@@ -248,12 +248,12 @@ end:
 #undef WELD_TOKCOND
 #undef WLED_TOKISTERM
 
-struct ulas_str ulas_str(size_t n) {
+struct ulas_str ulas_str(unsigned long n) {
   struct ulas_str str = {malloc(n), n};
   return str;
 }
 
-struct ulas_str ulas_strensr(struct ulas_str *s, size_t maxlen) {
+struct ulas_str ulas_strensr(struct ulas_str *s, unsigned long maxlen) {
   if (s->maxlen < maxlen) {
     char *c = realloc(s->buf, maxlen);
     if (!c) {
@@ -266,7 +266,7 @@ struct ulas_str ulas_strensr(struct ulas_str *s, size_t maxlen) {
   return *s;
 }
 
-struct ulas_str ulas_strreq(struct ulas_str *s, size_t n) {
+struct ulas_str ulas_strreq(struct ulas_str *s, unsigned long n) {
   return ulas_strensr(s, strnlen(s->buf, s->maxlen) + n);
 }
 
@@ -277,8 +277,8 @@ void ulas_strfree(struct ulas_str *s) {
 }
 
 struct ulas_ppdef *ulas_preprocgetdef(struct ulas_preproc *pp, const char *name,
-                                      size_t maxlen) {
-  for (size_t i = 0; i < pp->defslen; i++) {
+                                      unsigned long maxlen) {
+  for (unsigned long i = 0; i < pp->defslen; i++) {
     struct ulas_ppdef *def = &pp->defs[i];
     if (!def->undef && strncmp(def->name, name, maxlen) == 0) {
       return def;
@@ -290,7 +290,7 @@ struct ulas_ppdef *ulas_preprocgetdef(struct ulas_preproc *pp, const char *name,
 
 // inserts all leading white space from praw_line into linebuf
 int ulas_preproclws(struct ulas_preproc *pp, const char *praw_line,
-                    size_t maxlen) {
+                    unsigned long maxlen) {
   int i = 0;
   while (i < maxlen && praw_line[i] && isspace(praw_line[i])) {
     i++;
@@ -301,8 +301,8 @@ int ulas_preproclws(struct ulas_preproc *pp, const char *praw_line,
   return i;
 }
 
-void ulas_trimend(char c, char *buf, size_t n) {
-  size_t buflen = strnlen(buf, n);
+void ulas_trimend(char c, char *buf, unsigned long n) {
+  unsigned long buflen = strnlen(buf, n);
   // remove trailing new line if present
   while (buf[buflen - 1] == '\n') {
     buf[buflen - 1] = '\0';
@@ -311,7 +311,7 @@ void ulas_trimend(char c, char *buf, size_t n) {
 }
 
 char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
-                         size_t *n) {
+                         unsigned long *n) {
   const char *praw_line = raw_line;
   memset(pp->line.buf, 0, pp->line.maxlen);
 
@@ -337,7 +337,7 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
       // if so... expand now and leave
       switch (def->type) {
       case ULAS_PPDEF: {
-        size_t val_len = strlen(def->value);
+        unsigned long val_len = strlen(def->value);
         int wsi = ulas_preproclws(pp, praw_line - read, *n);
         if (val_len) {
           // make sure to include leading white space
@@ -365,9 +365,9 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
         // there can be more than 9 args, but anything after the 9th arg can
         // only be accessed via $0
         const char *line = praw_line;
-        size_t linelen = strlen(praw_line);
+        unsigned long linelen = strlen(praw_line);
         // clear all params from previous attempt
-        for (size_t i = 0; i < ULAS_MACROPARAMMAX; i++) {
+        for (unsigned long i = 0; i < ULAS_MACROPARAMMAX; i++) {
           pp->macroparam[i].buf[0] = '\0';
         }
 
@@ -387,13 +387,13 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
             "$1", "$2", "$3", "$4", "$5", "$6", "$7", "$8", "$9"};
 
         const char *val = def->value;
-        size_t vallen = strlen(def->value);
-        size_t valread = 0;
+        unsigned long vallen = strlen(def->value);
+        unsigned long valread = 0;
 
         // the pointer to tocat will be the variable's value if any
         // exists
         const char *tocat = NULL;
-        size_t tocatlen = 0;
+        unsigned long tocatlen = 0;
 
         // now tokenize the macro's value and look for $0-$9
         // and replace those instances
@@ -403,7 +403,7 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
           char numbuf[128];
 
           // decide what tocat should be
-          for (size_t mi = 0; mi < ULAS_MACROPARAMMAX; mi++) {
+          for (unsigned long mi = 0; mi < ULAS_MACROPARAMMAX; mi++) {
             const char *name = macro_argname[mi];
             if (pp->macroparam[mi].buf[0] &&
                 strncmp((name), pp->macrobuf.buf, pp->macrobuf.maxlen) == 0) {
@@ -483,7 +483,7 @@ int ulas_preprocdef(struct ulas_preproc *pp, struct ulas_ppdef def) {
 }
 
 int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, FILE *src,
-                     const char *raw_line, size_t n) {
+                     const char *raw_line, unsigned long n) {
   /**
    * Footgun warning:
    * We do use raw pointers to the line here... which is fine
@@ -510,7 +510,7 @@ int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, FILE *src,
     if (pp->tok.buf[0] != ULAS_TOK_PREPROC_BEGIN) {
       goto found;
     }
-    for (size_t i = 0; dirstrs[i]; i++) {
+    for (unsigned long i = 0; dirstrs[i]; i++) {
       if (strncmp(dirstrs[i], pp->tok.buf, pp->tok.maxlen) == 0) {
         found_dir = dirs[i];
         goto found;
@@ -578,7 +578,7 @@ found:
           break;
         }
 
-        size_t len = strnlen(pp->line.buf, pp->line.maxlen);
+        unsigned long len = strnlen(pp->line.buf, pp->line.maxlen);
         ulas_strensr(&val, strnlen(val.buf, val.maxlen) + len + 1);
         strncat(val.buf, pp->line.buf, val.maxlen);
       }
@@ -670,7 +670,7 @@ int ulas_preprocnext(struct ulas_preproc *pp, FILE *dst, FILE *src, char *buf,
   if (fgets(buf, n, src) != NULL) {
     ulas.line++;
 
-    size_t buflen = strlen(buf);
+    unsigned long buflen = strlen(buf);
 
     rc = ulas_preprocline(pp, dst, src, buf, buflen);
   } else {
@@ -682,7 +682,7 @@ int ulas_preprocnext(struct ulas_preproc *pp, FILE *dst, FILE *src, char *buf,
 
 struct ulas_preproc ulas_preprocinit(void) {
   struct ulas_preproc pp = {NULL, 0, ulas_str(1), ulas_str(1)};
-  for (size_t i = 0; i < ULAS_MACROPARAMMAX; i++) {
+  for (unsigned long i = 0; i < ULAS_MACROPARAMMAX; i++) {
     pp.macroparam[i] = ulas_str(8);
   }
   pp.macrobuf = ulas_str(8);
@@ -693,7 +693,7 @@ void ulas_preprocfree(struct ulas_preproc *pp) {
   ulas_strfree(&pp->line);
   ulas_strfree(&pp->tok);
 
-  for (size_t i = 0; i < pp->defslen; i++) {
+  for (unsigned long i = 0; i < pp->defslen; i++) {
     if (pp->defs[i].name) {
       free(pp->defs[i].name);
     }
@@ -702,7 +702,7 @@ void ulas_preprocfree(struct ulas_preproc *pp) {
     }
   }
 
-  for (size_t i = 0; i < ULAS_MACROPARAMMAX; i++) {
+  for (unsigned long i = 0; i < ULAS_MACROPARAMMAX; i++) {
     ulas_strfree(&pp->macroparam[i]);
   }
   ulas_strfree(&pp->macrobuf);
@@ -801,7 +801,7 @@ void ulas_tokbuffree(struct ulas_tokbuf *tb) { free(tb->buf); }
  * Assembly step
  */
 
-int ulas_intexpr(const char **line, size_t n, int *rc) {
+int ulas_intexpr(const char **line, unsigned long n, int *rc) {
   // read tokens until the next token is end of line, ; or ,
 
   int tokrc = 0;
@@ -818,7 +818,7 @@ fail:
   return -1;
 }
 
-int ulas_asmline(FILE *dst, FILE *src, const char *line, size_t n) {
+int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
   const char *start = line;
   int rc = 0;
 
@@ -876,7 +876,7 @@ fail:
 int ulas_asmnext(FILE *dst, FILE *src, char *buf, int n) {
   int rc = 1;
   if (fgets(buf, n, src) != NULL) {
-    size_t buflen = strlen(buf);
+    unsigned long buflen = strlen(buf);
     if (ulas_asmline(dst, src, buf, buflen) == -1) {
       rc = -1;
     }

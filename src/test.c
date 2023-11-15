@@ -1,5 +1,4 @@
 #include "ulas.h"
-#include <ctype.h>
 #include <stdio.h>
 #include <assert.h>
 
@@ -11,7 +10,7 @@
 #define assert_tok(line, ...)                                                  \
   {                                                                            \
     const char *expect[] = __VA_ARGS__;                                        \
-    size_t n = strlen(line);                                                   \
+    unsigned long n = strlen(line);                                            \
     struct ulas_str dst = ulas_str(n);                                         \
     memset(dst.buf, 0, n);                                                     \
     int i = 0;                                                                 \
@@ -21,7 +20,7 @@
       assert(strcmp(dst.buf, expect[i]) == 0);                                 \
       i++;                                                                     \
     }                                                                          \
-    size_t expect_n = 0;                                                       \
+    unsigned long expect_n = 0;                                                \
     for (expect_n = 0; expect[expect_n]; expect_n++) {                         \
     }                                                                          \
     assert(i == expect_n);                                                     \
@@ -31,7 +30,7 @@
 #define assert_tokuntil(line, c, ...)                                          \
   {                                                                            \
     const char *expect[] = __VA_ARGS__;                                        \
-    size_t n = strlen(line);                                                   \
+    unsigned long n = strlen(line);                                            \
     struct ulas_str dst = ulas_str(n);                                         \
     memset(dst.buf, 0, n);                                                     \
     int i = 0;                                                                 \
@@ -41,7 +40,7 @@
       assert(strcmp(dst.buf, expect[i]) == 0);                                 \
       i++;                                                                     \
     }                                                                          \
-    size_t expect_n = 0;                                                       \
+    unsigned long expect_n = 0;                                                \
     for (expect_n = 0; expect[expect_n]; expect_n++) {                         \
     }                                                                          \
     assert(i == expect_n);                                                     \
