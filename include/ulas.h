@@ -63,18 +63,6 @@ extern FILE *ulasin;
 extern FILE *ulasout;
 extern FILE *ulaserr;
 
-// NULL for int based lookup
-#define INULL (-1)
-
-// expression index in the expression list
-typedef int iexpr;
-
-// token index in the token list
-typedef int itok;
-
-// string index in the string list
-typedef int istr;
-
 struct ulas_expr;
 struct ulas_tok;
 
@@ -174,25 +162,33 @@ struct ulas_preproc {
  * Tokens
  */
 
-enum ulas_toks {
-  ULAS_TOKLITERAL,
-  ULAS_TOKINT,
-  ULAS_TOKFLOAT,
-  ULAS_TOKCHAR,
-  ULAS_TOKSTRING
+enum ulas_toks { ULAS_TOKLITERAL, ULAS_TOKINT, ULAS_TOKCHAR, ULAS_TOKSTRING };
+
+// primitive data types
+enum ulas_type { ULAS_INT, ULAS_STR };
+
+// data type value
+union ulas_val {
+  int int_value;
+  char *str_value;
 };
 
-struct ulas_tokliteral {
-  istr literal;
-};
-
-union ulas_tokdat {
-  struct ulas_tokliteral literal;
+// literal value
+struct ulas_lit {
+  enum ulas_type type;
+  union ulas_val val;
 };
 
 struct ulas_tok {
   enum ulas_toks type;
-  union ulas_tokdat dat;
+  struct ulas_lit lit;
+};
+
+// the token buffer is a dynamically allocated token store
+struct ulas_tokbuf {
+  struct ulas_tok *buf;
+  long len;
+  long maxlen;
 };
 
 /**
@@ -200,7 +196,8 @@ struct ulas_tok {
  */
 
 struct ulas_sym {
-  istr name;
+  char *name;
+  struct ulas_lit lit;
 };
 
 /**
@@ -216,18 +213,18 @@ struct ulas_sym {
 enum ulas_exprs { ULAS_EXPUNARY, ULAS_EXPBINARY, ULAS_EXPLITERAL };
 
 struct ulas_expunary {
-  iexpr left;
-  itok op;
+  struct ulas_expr *expr;
+  struct ulas_tok *op;
 };
 
 struct ulas_expbinary {
-  iexpr left;
-  iexpr right;
-  itok op;
+  struct ulas_expr *left;
+  struct ulas_expr *right;
+  struct ulas_tok *op;
 };
 
 struct ulas_expliteral {
-  itok tok;
+  struct ulas_tok *tok;
 };
 
 union ulas_expdat {
@@ -333,6 +330,15 @@ int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, FILE *src,
 // expand preproc into dst line
 char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
                          size_t *n);
+
+/**
+ * Literals, tokens and expressions
+ */
+
+// convert literal to its int value
+int ulas_litint(struct ulas_lit *lit, int *rc);
+// convert literal to its char value
+char *ulas_litchar(struct ulas_lit *lit, int *rc);
 
 /**
  * Assembly step

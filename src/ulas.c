@@ -713,6 +713,28 @@ fail:
 }
 
 /**
+ * Literals, tokens and expressions
+ */
+
+int ulas_litint(struct ulas_lit *lit, int *rc) {
+  if (lit->type != ULAS_INT) {
+    *rc = -1;
+    return 0;
+  }
+
+  return lit->val.int_value;
+}
+
+char *ulas_litchar(struct ulas_lit *lit, int *rc) {
+  if (lit->type != ULAS_STR) {
+    *rc = -1;
+    return NULL;
+  }
+
+  return lit->val.str_value;
+}
+
+/**
  * Assembly step
  */
 
