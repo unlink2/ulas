@@ -258,11 +258,53 @@ struct ulas_tok ulas_totok(char *buf, unsigned long n, int *rc) {
   buf++;
 
   switch (first) {
+  case '+':
+  case '-':
+  case '*':
+  case '/':
+  case '!':
+  case '~':
+  case '|':
+  case '&':
+  case '%':
+  case '(':
+  case ')':
+  case '[':
+  case ']':
+  case ',':
   case ';':
+    // single char tokens
     tok.type = first;
     goto end;
   case '"':
     // string
+    tok.type = ULAS_TOKLITERAL;
+    tok.lit.type = ULAS_STR;
+
+    // FIXME: this likely mallocs a few extra bytes
+    // but honestly its probably fine
+    tok.lit.val.strv = malloc(n * sizeof(char) + 1);
+    memset(tok.lit.val.strv, 0, n);
+
+    long i = 0;
+    while (*buf && *buf != '\"') {
+      if (*buf == '\\') {
+        buf++;
+        tok.lit.val.strv[i] = ulas_unescape(*buf, rc);
+      } else {
+        tok.lit.val.strv[i] = *buf;
+      }
+      i++;
+      buf++;
+    }
+    tok.lit.val.strv[i] = '\0';
+
+    if (*buf != '\"') {
+      *rc = -1;
+      ULASERR("Unterminated string sequence\n");
+      goto end;
+    }
+    buf++;
     break;
   default:
     if (isdigit(first)) {

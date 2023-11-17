@@ -152,6 +152,17 @@ void test_preproc(void) {
     assert(tok.lit.val.intv == (expected_val));                                \
   }
 
+#define ASSERT_STR_TOTOK(expected_val, expected_rc, token)                     \
+  {                                                                            \
+    int rc = 0;                                                                \
+    struct ulas_tok tok = ulas_totok((token), strlen(token), &rc);             \
+    assert((expected_rc) == rc);                                               \
+    assert(tok.type == ULAS_TOKLITERAL);                                       \
+    assert(tok.lit.type == ULAS_STR);                                          \
+    assert(strcmp((expected_val), tok.lit.val.strv) == 0);                     \
+    free(tok.lit.val.strv);                                                    \
+  }
+
 void test_totok(void) {
   TESTBEGIN("totok");
 
@@ -170,6 +181,11 @@ void test_totok(void) {
   ASSERT_INT_TOTOK(0, -1, "'\\z'");
   // unterminated escape
   ASSERT_INT_TOTOK('\n', -1, "'\\n");
+
+  // string token
+  ASSERT_STR_TOTOK("test", 0, "\"test\"");
+  
+  ASSERT_STR_TOTOK("test\n\"123\"", 0, "\"test\\n\\\"123\\\"\"");
 
   TESTEND("totok");
 }
