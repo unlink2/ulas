@@ -218,6 +218,35 @@ int ulas_tokuntil(struct ulas_str *dst, char c, const char **out_line,
   return i;
 }
 
+int ulas_unescape(char c, int *rc) {
+  switch (c) {
+  case '\'':
+  case '\\':
+  case '"':
+    return c;
+  case 'n':
+    return '\n';
+  case 'a':
+    return '\a';
+  case 'b':
+    return '\b';
+  case 'f':
+    return '\f';
+  case 'r':
+    return '\r';
+  case '?':
+    return '\?';
+  case '0':
+    return '\0';
+  default:
+    ULASERR("Unexpected esxcape sequence: \\%c\n", c);
+    *rc = -1;
+    break;
+  }
+
+  return '\0';
+}
+
 struct ulas_tok ulas_totok(char *buf, unsigned long n, int *rc) {
   struct ulas_tok tok;
   memset(&tok, 0, sizeof(tok));
@@ -243,10 +272,22 @@ struct ulas_tok ulas_totok(char *buf, unsigned long n, int *rc) {
       tok.type = ULAS_TOKLITERAL;
       tok.lit.type = ULAS_INT;
       tok.lit.val.int_value = (int)strtol(buf, &buf, 0);
-    } else if (n == 3 && first == '\'') {
+    } else if (first == '\'') {
       tok.type = ULAS_TOKLITERAL;
       tok.lit.type = ULAS_INT;
-      // TODO: read char value between ' and ' and unescape
+      buf++;
+      if (*buf == '\\') {
+        buf++;
+        tok.lit.val.int_value = ulas_unescape(*buf, rc);
+      } else {
+        tok.lit.val.int_value = (int)*buf;
+      }
+      buf++;
+      if (*buf != '\'') {
+        *rc = -1;
+        ULASERR("Unterminated character sequence\n");
+      }
+      break;
     } else if (ulas_isname(buf, n)) {
       // literal. we can resolve it now
       // because literals need to be able to be resolved

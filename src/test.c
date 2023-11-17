@@ -142,6 +142,11 @@ void test_preproc(void) {
   ulascfg.preproc_only = 0;
 }
 
+void test_totok(void) {
+  TESTBEGIN("totok");
+  TESTEND("totok");
+}
+
 int main(int arc, char **argv) {
   ulas_init(ulas_cfg_from_env());
 
@@ -152,6 +157,7 @@ int main(int arc, char **argv) {
   test_tok();
   test_strbuf();
   test_preproc();
+  test_totok();
 
   ulas_free();
 
