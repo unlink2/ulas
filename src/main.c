@@ -71,5 +71,9 @@ int main(int argc, char **argv) {
 
   int res = ulas_main(cfg);
 
+  if (cfg.output_path) {
+    free(cfg.output_path);
+  }
+
   return res;
 }

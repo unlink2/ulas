@@ -56,7 +56,6 @@ int ulas_main(struct ulas_config cfg) {
     ulasout = fopen(cfg.output_path, "we");
     if (!ulasout) {
       fprintf(ulaserr, "%s: %s\n", cfg.output_path, strerror(errno));
-      free(cfg.output_path);
       return -1;
     }
   }
@@ -95,7 +94,6 @@ cleanup:
 
   if (cfg.output_path) {
     fclose(ulasout);
-    free(cfg.output_path);
   }
 
   if (cfg.argc > 0) {

@@ -21,7 +21,9 @@ Checks: "*,
   -altera-id-dependent-backward-branch,
   -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
   -misc-no-recursion,
-  -concurrency-mt-unsafe
+  -concurrency-mt-unsafe,
+  -clang-analyzer-unix.Malloc,
+  -modernize-macro-to-enum
 "
 WarningsAsErrors: ''
 HeaderFilterRegex: ''

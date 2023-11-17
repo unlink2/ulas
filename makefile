@@ -55,6 +55,10 @@ install:
 tags:
 	ctags --recurse=yes --exclude=.git --exclude=bin --exclude=obj --exclude=scripts
 
+.PHONY:
+ccmds:
+	bear -- make SHELL="sh -x -e" --always-make
+
 .PHONY: format
 format:
 	clang-format -i ./src/*.c ./include/*.h
@@ -63,5 +67,6 @@ format:
 lint:
 	clang-tidy ./include/*.h ./src/*.c
 
+.PHONY: runtest
 runtest:
 	./$(BDIR)/$(TEST_BNAME)
