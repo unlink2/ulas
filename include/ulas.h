@@ -312,7 +312,7 @@ void ulas_preprocfree(struct ulas_preproc *pp);
  * returns 0: no error
  *        -1: error
  */
-int ulas_preproc(FILE * dst, FILE * src);
+int ulas_preproc(FILE *dst, FILE *src);
 
 // reads the next line
 // returns 0 if no more data can be read
@@ -320,7 +320,7 @@ int ulas_preproc(FILE * dst, FILE * src);
 //         -1 on error
 // it also places the processed line into pp->line.buf
 // note that this is overwritten by every call!
-int ulas_preprocnext(struct ulas_preproc *pp, FILE * dst, FILE * src, char *buf,
+int ulas_preprocnext(struct ulas_preproc *pp, FILE *dst, FILE *src, char *buf,
                      int n);
 
 // process a line of preproc
@@ -331,7 +331,7 @@ int ulas_preprocnext(struct ulas_preproc *pp, FILE * dst, FILE * src, char *buf,
 //  not be used in the caller after recursvion finishes!
 //  or initialize a new preproc object if the old state is important!
 //  (preprocinit and preprocfree)
-int ulas_preprocline(struct ulas_preproc *pp, FILE * dst, FILE * src,
+int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, FILE *src,
                      const char *raw_line, unsigned long n);
 
 // expand preproc into dst line
@@ -359,8 +359,8 @@ void ulas_tokbuffree(struct ulas_tokbuf *tb);
 // returns 0 if no more data can be read
 //         > 0 if data was read
 //         -1 on error
-int ulas_asmnext(FILE * dst, FILE * src, char *buf, int n);
-int ulas_asm(FILE * dst, FILE * src);
+int ulas_asmnext(FILE *dst, FILE *src, char *buf, int n);
+int ulas_asm(FILE *dst, FILE *src);
 
 // parses and executes a 32 bit signed int math expressions
 int ulas_intexpr(const char **line, unsigned long n, int *rc);

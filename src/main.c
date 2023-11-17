@@ -26,9 +26,7 @@ void ulas_help(void) {
   ULAS_HELP("o=path", "Output file");
 }
 
-void ulas_version(void) {
-  printf("%s version %s\n", ULAS_NAME, ULAS_VER);
-}
+void ulas_version(void) { printf("%s version %s\n", ULAS_NAME, ULAS_VER); }
 
 void ulas_getopt(int argc, char **argv, struct ulas_config *cfg) {
   int c = 0;

@@ -41,9 +41,7 @@ void ulas_free(void) {
   ulas_tokbuffree(&ulas.toks);
 }
 
-int ulas_icntr(void) {
-  return ulas.icntr++;
-}
+int ulas_icntr(void) { return ulas.icntr++; }
 
 struct ulas_config ulas_cfg_from_env(void) {
   struct ulas_config cfg;
@@ -317,9 +315,9 @@ struct ulas_tok ulas_totok(char *buf, unsigned long n, int *rc) {
       // 0b prefix is not supported in strtol... so we implement it by hand
       if (*buf == 'b') {
         buf++;
-        tok.lit.val.intv = (int) strtol(buf, &buf, 2);
+        tok.lit.val.intv = (int)strtol(buf, &buf, 2);
       } else {
-        tok.lit.val.intv = (int) strtol(buf - 1, &buf, 0);
+        tok.lit.val.intv = (int)strtol(buf - 1, &buf, 0);
       }
     } else if (first == '\'') {
       tok.type = ULAS_TOKLITERAL;
@@ -328,7 +326,7 @@ struct ulas_tok ulas_totok(char *buf, unsigned long n, int *rc) {
         buf++;
         tok.lit.val.intv = ulas_unescape(*buf, rc);
       } else {
-        tok.lit.val.intv = (int) *buf;
+        tok.lit.val.intv = (int)*buf;
       }
       buf++;
       if (*buf != '\'') {
@@ -366,7 +364,7 @@ end:
 #undef WLED_TOKISTERM
 
 struct ulas_str ulas_str(unsigned long n) {
-  struct ulas_str str = { malloc(n), n };
+  struct ulas_str str = {malloc(n), n};
   return str;
 }
 
@@ -449,11 +447,11 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
     first_tok = 0;
 
     struct ulas_ppdef *def =
-      ulas_preprocgetdef(pp, pp->tok.buf, pp->tok.maxlen);
+        ulas_preprocgetdef(pp, pp->tok.buf, pp->tok.maxlen);
     if (def) {
       // if so... expand now and leave
       switch (def->type) {
-      case ULAS_PPDEF:{
+      case ULAS_PPDEF: {
         unsigned long val_len = strlen(def->value);
         int wsi = ulas_preproclws(pp, praw_line - read, *n);
         if (val_len) {
@@ -473,7 +471,7 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
         }
         break;
       }
-      case ULAS_PPMACRO:{
+      case ULAS_PPMACRO: {
         // TODO: i am sure we can optimize the resize of line buffers here...
 
         // get 9 comma separated values.
@@ -492,7 +490,7 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
         int paramc = 0;
         while (paramc < ULAS_MACROPARAMMAX &&
                ulas_tokuntil(&pp->macroparam[paramc], ',', &praw_line, *n) >
-               0) {
+                   0) {
           // trim new lines from the end of macro params
           ulas_trimend('\n', pp->macroparam[paramc].buf,
                        strlen(pp->macroparam[paramc].buf));
@@ -501,8 +499,7 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
         ulas_strensr(&pp->line, strlen(def->value) + 2);
 
         const char *macro_argname[ULAS_MACROPARAMMAX] = {
-          "$1", "$2", "$3", "$4", "$5", "$6", "$7", "$8", "$9"
-        };
+            "$1", "$2", "$3", "$4", "$5", "$6", "$7", "$8", "$9"};
 
         const char *val = def->value;
         unsigned long vallen = strlen(def->value);
@@ -525,11 +522,10 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
             const char *name = macro_argname[mi];
             if (pp->macroparam[mi].buf[0] &&
                 strncmp((name), pp->macrobuf.buf, pp->macrobuf.maxlen) == 0) {
-              ulas_strensr(&pp->line,
-                           strnlen(pp->line.buf,
-                                   pp->line.maxlen) +
-                           strnlen(pp->macroparam[mi].buf,
-                                   pp->macroparam[mi].maxlen) + 1);
+              ulas_strensr(&pp->line, strnlen(pp->line.buf, pp->line.maxlen) +
+                                          strnlen(pp->macroparam[mi].buf,
+                                                  pp->macroparam[mi].maxlen) +
+                                          1);
 
               tocat = pp->macroparam[mi].buf;
               tocatlen = pp->macroparam[mi].maxlen;
@@ -569,7 +565,7 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
             // make sure to include leading white space
             int wsi = ulas_preproclws(pp, val - valread, vallen);
             ulas_strensr(&pp->line, strnlen(pp->line.buf, pp->line.maxlen) +
-                         tocatlen + wsi + 1);
+                                        tocatlen + wsi + 1);
             strncat(pp->line.buf, tocat, tocatlen);
           }
         }
@@ -612,16 +608,14 @@ int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, FILE *src,
   char *line = ulas_preprocexpand(pp, raw_line, &n);
   const char *pline = line;
 
-  const char *dirstrs[] = { ULAS_PPSTR_DEF, ULAS_PPSTR_MACRO,
-    ULAS_PPSTR_IFDEF, ULAS_PPSTR_IFNDEF,
-    ULAS_PPSTR_ENDIF, ULAS_PPSTR_ENDMACRO,
-    ULAS_PPSTR_UNDEF, NULL
-  };
-  enum ulas_ppdirs dirs[] = { ULAS_PPDIR_DEF, ULAS_PPDIR_MACRO,
-    ULAS_PPDIR_IFDEF, ULAS_PPDIR_IFNDEF,
-    ULAS_PPDIR_ENDIF, ULAS_PPDIR_ENDMACRO,
-    ULAS_PPDIR_UNDEF
-  };
+  const char *dirstrs[] = {ULAS_PPSTR_DEF,   ULAS_PPSTR_MACRO,
+                           ULAS_PPSTR_IFDEF, ULAS_PPSTR_IFNDEF,
+                           ULAS_PPSTR_ENDIF, ULAS_PPSTR_ENDMACRO,
+                           ULAS_PPSTR_UNDEF, NULL};
+  enum ulas_ppdirs dirs[] = {ULAS_PPDIR_DEF,   ULAS_PPDIR_MACRO,
+                             ULAS_PPDIR_IFDEF, ULAS_PPDIR_IFNDEF,
+                             ULAS_PPDIR_ENDIF, ULAS_PPDIR_ENDMACRO,
+                             ULAS_PPDIR_UNDEF};
 
   enum ulas_ppdirs found_dir = ULAS_PPDIR_NONE;
 
@@ -646,7 +640,7 @@ found:
   if (found_dir != ULAS_PPDIR_NONE) {
     ulas_trimend('\n', line, strlen(line));
     switch (found_dir) {
-    case ULAS_PPDIR_DEF:{
+    case ULAS_PPDIR_DEF: {
       // next token is a name
       // and then the entire remainder of the line is a value
       if (ulas_tok(&pp->tok, &pline, n) == 0) {
@@ -659,15 +653,14 @@ found:
         return -1;
       }
 
-      struct ulas_ppdef def = { ULAS_PPDEF, strdup(pp->tok.buf), strdup(pline),
-        0
-      };
+      struct ulas_ppdef def = {ULAS_PPDEF, strdup(pp->tok.buf), strdup(pline),
+                               0};
       ulas_preprocdef(pp, def);
       // define short-circuits the rest of the logic
       // because it just takes the entire rest of the line as a value!
       goto dirdone;
     }
-    case ULAS_PPDIR_MACRO:{
+    case ULAS_PPDIR_MACRO: {
       // get a name, ensure no more tokens come after
       // and then consume lines until ENDMACRO is seen
       if (ulas_tok(&pp->tok, &pline, n) == 0) {
@@ -713,7 +706,7 @@ found:
       }
       // we leak the str's buffer into the def now
       // this is ok because we call free for it later anyway
-      struct ulas_ppdef def = { ULAS_PPMACRO, name, val.buf, 0 };
+      struct ulas_ppdef def = {ULAS_PPMACRO, name, val.buf, 0};
       ulas_preprocdef(pp, def);
 
       goto dirdone;
@@ -722,7 +715,7 @@ found:
     case ULAS_PPDIR_ENDMACRO:
       break;
     case ULAS_PPDIR_IFDEF:
-    case ULAS_PPDIR_IFNDEF:{
+    case ULAS_PPDIR_IFNDEF: {
       // get the name
       // get a name, ensure no more tokens come after
       // and then consume lines until ENDMACRO is seen
@@ -731,7 +724,7 @@ found:
         return -1;
       }
       struct ulas_ppdef *def =
-        ulas_preprocgetdef(pp, pp->tok.buf, pp->tok.maxlen);
+          ulas_preprocgetdef(pp, pp->tok.buf, pp->tok.maxlen);
 
       char buf[ULAS_LINEMAX];
       memset(buf, 0, ULAS_LINEMAX);
@@ -758,7 +751,7 @@ found:
       }
       goto dirdone;
     }
-    case ULAS_PPDIR_UNDEF:{
+    case ULAS_PPDIR_UNDEF: {
       if (ulas_tok(&pp->tok, &pline, n) == 0) {
         ULASERR("Expected name for #undef\n");
         return -1;
@@ -801,7 +794,7 @@ int ulas_preprocnext(struct ulas_preproc *pp, FILE *dst, FILE *src, char *buf,
 }
 
 struct ulas_preproc ulas_preprocinit(void) {
-  struct ulas_preproc pp = { NULL, 0, ulas_str(1), ulas_str(1) };
+  struct ulas_preproc pp = {NULL, 0, ulas_str(1), ulas_str(1)};
   for (unsigned long i = 0; i < ULAS_MACROPARAMMAX; i++) {
     pp.macroparam[i] = ulas_str(8);
   }
@@ -912,13 +905,9 @@ void ulas_tokbufpush(struct ulas_tokbuf *tb, struct ulas_tok tok) {
   tb->len++;
 }
 
-void ulas_tokbufclear(struct ulas_tokbuf *tb) {
-  tb->len = 0;
-}
+void ulas_tokbufclear(struct ulas_tokbuf *tb) { tb->len = 0; }
 
-void ulas_tokbuffree(struct ulas_tokbuf *tb) {
-  free(tb->buf);
-}
+void ulas_tokbuffree(struct ulas_tokbuf *tb) { free(tb->buf); }
 
 /**
  * Assembly step
@@ -951,13 +940,11 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
 
   if (ulas.tok.buf[0] == ULAS_TOK_ASMDIR_BEGIN) {
     const char *dirstrs[] = {
-      ULAS_ASMSTR_ORG, ULAS_ASMSTR_SET, ULAS_ASMSTR_BYTE, ULAS_ASMSTR_STR,
-      ULAS_ASMSTR_FILL, ULAS_ASMSTR_PAD, ULAS_ASMSTR_INCBIN, NULL
-    };
+        ULAS_ASMSTR_ORG,  ULAS_ASMSTR_SET, ULAS_ASMSTR_BYTE,   ULAS_ASMSTR_STR,
+        ULAS_ASMSTR_FILL, ULAS_ASMSTR_PAD, ULAS_ASMSTR_INCBIN, NULL};
     enum ulas_asmdir dirs[] = {
-      ULAS_ASMDIR_ORG, ULAS_ASMDIR_SET, ULAS_ASMDIR_BYTE, ULAS_ASMDIR_STR,
-      ULAS_ASMDIR_FILL, ULAS_ASMDIR_PAD, ULAS_ASMDIR_INCBIN
-    };
+        ULAS_ASMDIR_ORG,  ULAS_ASMDIR_SET, ULAS_ASMDIR_BYTE,  ULAS_ASMDIR_STR,
+        ULAS_ASMDIR_FILL, ULAS_ASMDIR_PAD, ULAS_ASMDIR_INCBIN};
 
     enum ulas_asmdir dir = ULAS_ASMDIR_NONE;
 
