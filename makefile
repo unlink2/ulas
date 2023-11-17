@@ -50,3 +50,18 @@ clean:
 install:
 	cp ./$(BDIR)/$(BNAME) $(BIN_INSTALL_DIR)
 	cp ./doc/$(BNAME).man $(MAN_INSTALL_DIR)
+
+.PHONY: tags 
+tags:
+	ctags --recurse=yes --exclude=.git --exclude=bin --exclude=obj --exclude=scripts
+
+.PHONY: format
+format:
+	clang-format -i ./src/*.c ./include/*.h
+
+.PHONY: lint 
+lint:
+	clang-tidy ./include/*.h ./src/*.c
+
+runtest:
+	./$(BDIR)/$(TEST_BNAME)
