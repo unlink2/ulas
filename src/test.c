@@ -194,8 +194,8 @@ int main(int arc, char **argv) {
   ulas_init(ulas_cfg_from_env());
 
   /*if (!ulascfg.verbose) {
-     fclose(stderr);
-     } */
+    fclose(stderr);
+  }*/
 
   test_tok();
   test_strbuf();
