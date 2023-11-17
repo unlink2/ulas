@@ -57,7 +57,7 @@ tags:
 
 .PHONY: format
 format:
-	VERSION_CONTROL=none indent -kr -ci2 -cli2 -i2 -l80 -nut -brf src/*.c $(IDIR)/*.h
+	VERSION_CONTROL=none indent -kr -ci2 -cli2 -i2 -l80 -nut -brf -par src/*.c $(IDIR)/*.h
 
 .PHONY: lint
 lint:
