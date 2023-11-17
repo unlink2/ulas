@@ -34,30 +34,30 @@ void ulas_getopt(int argc, char **argv, struct ulas_config *cfg) {
   int c = 0;
   while ((c = getopt(argc, argv, ULAS_OPTS ULAS_OPTS_ARG)) != -1) {
     switch (c) {
-      case 'h':
-        ulas_help();
-        exit(0);
-        break;
-      case 'V':
-        ulas_version();
-        exit(0);
-        break;
-      case 'v':
-        cfg->verbose = 1;
-        break;
-      case 'o':
-        cfg->output_path = strndup(optarg, ULAS_PATHMAX);
-        break;
-      case 'p':
-        cfg->preproc_only = 1;
-        break;
-      case '?':
-        break;
-      default:
-        printf("%s: invalid option '%c'\nTry '%s -h' for more information.\n",
-               ULAS_NAME, c, ULAS_NAME);
-        exit(-1);
-        break;
+    case 'h':
+      ulas_help();
+      exit(0);
+      break;
+    case 'V':
+      ulas_version();
+      exit(0);
+      break;
+    case 'v':
+      cfg->verbose = 1;
+      break;
+    case 'o':
+      cfg->output_path = strndup(optarg, ULAS_PATHMAX);
+      break;
+    case 'p':
+      cfg->preproc_only = 1;
+      break;
+    case '?':
+      break;
+    default:
+      printf("%s: invalid option '%c'\nTry '%s -h' for more information.\n",
+             ULAS_NAME, c, ULAS_NAME);
+      exit(-1);
+      break;
     }
   }
 
