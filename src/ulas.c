@@ -269,22 +269,30 @@ struct ulas_tok ulas_totok(char *buf, unsigned long n, int *rc) {
       // integer
       tok.type = ULAS_TOKLITERAL;
       tok.lit.type = ULAS_INT;
-      tok.lit.val.int_value = (int)strtol(buf, &buf, 0);
+
+      // 0b prefix is not supported in strtol... so we implement it by hand
+      if (*buf == 'b') {
+        buf++;
+        tok.lit.val.intv = (int)strtol(buf, &buf, 2);
+      } else {
+        tok.lit.val.intv = (int)strtol(buf - 1, &buf, 0);
+      }
     } else if (first == '\'') {
       tok.type = ULAS_TOKLITERAL;
       tok.lit.type = ULAS_INT;
-      buf++;
       if (*buf == '\\') {
         buf++;
-        tok.lit.val.int_value = ulas_unescape(*buf, rc);
+        tok.lit.val.intv = ulas_unescape(*buf, rc);
       } else {
-        tok.lit.val.int_value = (int)*buf;
+        tok.lit.val.intv = (int)*buf;
       }
       buf++;
       if (*buf != '\'') {
         *rc = -1;
         ULASERR("Unterminated character sequence\n");
+        goto end;
       }
+      buf++;
       break;
     } else if (ulas_isname(buf, n)) {
       // literal. we can resolve it now
@@ -294,7 +302,6 @@ struct ulas_tok ulas_totok(char *buf, unsigned long n, int *rc) {
       tok.type = ULAS_TOKSYMBOL;
       tok.lit.type = ULAS_STR;
     } else {
-
       ULASERR("Unexpected token: %s\n", buf);
       *rc = -1;
       goto end;
@@ -821,7 +828,7 @@ int ulas_litint(struct ulas_lit *lit, int *rc) {
     return 0;
   }
 
-  return lit->val.int_value;
+  return lit->val.intv;
 }
 
 char *ulas_litchar(struct ulas_lit *lit, int *rc) {
@@ -830,7 +837,7 @@ char *ulas_litchar(struct ulas_lit *lit, int *rc) {
     return NULL;
   }
 
-  return lit->val.str_value;
+  return lit->val.strv;
 }
 
 struct ulas_tokbuf ulas_tokbuf(void) {

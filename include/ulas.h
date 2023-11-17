@@ -97,8 +97,8 @@ enum ulas_type { ULAS_INT, ULAS_STR };
 
 // data type value
 union ulas_val {
-  int int_value;
-  char *str_value;
+  int intv;
+  char *strv;
 };
 
 // literal value

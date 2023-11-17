@@ -142,8 +142,35 @@ void test_preproc(void) {
   ulascfg.preproc_only = 0;
 }
 
+#define ASSERT_INT_TOTOK(expected_val, expected_rc, token)                     \
+  {                                                                            \
+    int rc = 0;                                                                \
+    struct ulas_tok tok = ulas_totok((token), strlen(token), &rc);             \
+    assert((expected_rc) == rc);                                               \
+    assert(tok.type == ULAS_TOKLITERAL);                                       \
+    assert(tok.lit.type == ULAS_INT);                                          \
+    assert(tok.lit.val.intv == (expected_val));                                \
+  }
+
 void test_totok(void) {
   TESTBEGIN("totok");
+
+  // regular ints
+  ASSERT_INT_TOTOK(10, 0, "10");
+  ASSERT_INT_TOTOK(0x1A, 0, "0x1A");
+  ASSERT_INT_TOTOK(5, 0, "0b101");
+
+  // chars
+  ASSERT_INT_TOTOK('a', 0, "'a'");
+  ASSERT_INT_TOTOK('\n', 0, "'\\n'");
+  ASSERT_INT_TOTOK('\\', 0, "'\\\\'");
+  // char - not terminated
+  ASSERT_INT_TOTOK('a', -1, "'a");
+  // bad escape
+  ASSERT_INT_TOTOK(0, -1, "'\\z'");
+  // unterminated escape
+  ASSERT_INT_TOTOK('\n', -1, "'\\n");
+
   TESTEND("totok");
 }
 

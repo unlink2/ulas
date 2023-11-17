@@ -53,7 +53,7 @@ install:
 
 .PHONY: tags 
 tags:
-	ctags --recurse=yes --exclude=.git --exclude=bin --exclude=obj --exclude=scripts
+	ctags --recurse=yes --exclude=.git --exclude=bin --exclude=obj --extras=*  --fields=*  --c-kinds=* --language-force=C 
 
 .PHONY:
 ccmds:
