@@ -55,17 +55,13 @@ install:
 tags:
 	ctags --recurse=yes --exclude=.git --exclude=bin --exclude=obj --extras=*  --fields=*  --c-kinds=* --language-force=C 
 
-.PHONY:
-ccmds:
-	bear -- make SHELL="sh -x -e" --always-make
-
 .PHONY: format
 format:
-	clang-format -i ./src/*.c ./include/*.h
+	VERSION_CONTROL=none indent -kr -ci2 -cli2 -i2 -l80 -nut -brf src/*.c $(IDIR)/*.h
 
-.PHONY: lint 
+.PHONY: lint
 lint:
-	clang-tidy ./include/*.h ./src/*.c
+	splint src/*.c -I$(IDIR) -warnposix
 
 .PHONY: runtest
 runtest:

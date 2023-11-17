@@ -50,12 +50,12 @@
 void test_tok(void) {
   TESTBEGIN("tok");
 
-  assert_tok("  test  tokens   with,   line / * + - , ; $1",
-             {"test", "tokens", "with", ",", "line", "/", "*", "+", "-", ",",
-              ";", "$1", NULL});
+  assert_tok("  test  tokens   with,   line / * + - , ; $1", {
+             "test", "tokens", "with", ",", "line", "/", "*", "+", "-", ",",
+             ";", "$1", NULL});
 
-  assert_tokuntil(" this is a, test for tok , until", ',',
-                  {"this is a", "test for tok ", "until", NULL});
+  assert_tokuntil(" this is a, test for tok , until", ',', {
+                  "this is a", "test for tok ", "until", NULL});
 
   TESTEND("tok");
 }
@@ -108,22 +108,20 @@ void test_preproc(void) {
                  "#define test 123\ntest\n#undefine test\ntest");
 
   // macro
-  assert_preproc(
-      "  line p1 1 label01,2 3\n  line p2 2\n  line p3 3 p1, p2, p3\n", 0,
-      "#macro test\n  line $1 1 label$$$$,$$ $$\n  line $2 2\n  line $3 3 "
-      "$0\n#endmacro\ntest p1, p2, p3");
+  assert_preproc
+    ("  line p1 1 label01,2 3\n  line p2 2\n  line p3 3 p1, p2, p3\n", 0,
+     "#macro test\n  line $1 1 label$$$$,$$ $$\n  line $2 2\n  line $3 3 "
+     "$0\n#endmacro\ntest p1, p2, p3");
   assert_preproc("test macro with no args\n", 0,
                  "#macro test\ntest macro with no args\n#endmacro\ntest");
   assert_preproc("", -1, "#macro test\n not terminated\n");
-  assert_preproc(
-      "nested macro t1\nafter\ncontent n1\n", 0,
-      "#macro test\nnested macro $1\n#macro "
-      "nested\ncontent $1\n#endmacro\nafter\nnested n1\n#endmacro\ntest t1");
+  assert_preproc("nested macro t1\nafter\ncontent n1\n", 0,
+                 "#macro test\nnested macro $1\n#macro "
+                 "nested\ncontent $1\n#endmacro\nafter\nnested n1\n#endmacro\ntest t1");
 
   // ifdef
-  assert_preproc(
-      "before\nifdeftest defined!\nafter", 0,
-      "before\n#define test\n#ifdef test\nifdeftest defined!\n#endif\nafter");
+  assert_preproc("before\nifdeftest defined!\nafter", 0,
+                 "before\n#define test\n#ifdef test\nifdeftest defined!\n#endif\nafter");
   assert_preproc("before\nafter", 0,
                  "before\n#ifdef test\nifdeftest defined!\n#endif\nafter");
   assert_preproc("ifdeftest defined!\n", -1,
@@ -132,9 +130,8 @@ void test_preproc(void) {
   // ifndef
   assert_preproc("before\nifndeftest defined!\nafter", 0,
                  "before\n#ifndef test\nifndeftest defined!\n#endif\nafter");
-  assert_preproc(
-      "before\nafter", 0,
-      "before\n#define test\n#ifndef test\nifndeftest defined!\n#endif\nafter");
+  assert_preproc("before\nafter", 0,
+                 "before\n#define test\n#ifndef test\nifndeftest defined!\n#endif\nafter");
   assert_preproc("ifndeftest defined!\n", -1,
                  "#ifndef test\nifndeftest defined!\n");
 
@@ -184,7 +181,7 @@ void test_totok(void) {
 
   // string token
   ASSERT_STR_TOTOK("test", 0, "\"test\"");
-  
+
   ASSERT_STR_TOTOK("test\n\"123\"", 0, "\"test\\n\\\"123\\\"\"");
 
   TESTEND("totok");
@@ -194,8 +191,8 @@ int main(int arc, char **argv) {
   ulas_init(ulas_cfg_from_env());
 
   /*if (!ulascfg.verbose) {
-    fclose(stderr);
-  }*/
+     fclose(stderr);
+     } */
 
   test_tok();
   test_strbuf();
