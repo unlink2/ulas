@@ -336,13 +336,13 @@ struct ulas_tok ulas_totok(char *buf, unsigned long n, int *rc) {
       }
       buf++;
       break;
-    } else if (ulas_isname(buf, n)) {
-      // literal. we can resolve it now
-      // because literals need to be able to be resolved
-      // for every line, unless they are a label!
-      // TODO: read and unescape striing between " and "
+    } else if (ulas_isname(buf - 1, n)) {
+      // literal token
+      // we resolve it later, will need to malloc here for now
       tok.type = ULAS_TOKSYMBOL;
       tok.lit.type = ULAS_STR;
+      tok.lit.val.strv = strndup(buf - 1, n);
+      buf += n - 1;
     } else {
       ULASERR("Unexpected token: %s\n", buf);
       *rc = -1;
