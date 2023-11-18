@@ -174,13 +174,12 @@ void test_preproc(void) {
     free(tok.lit.val.strv);                                                    \
   }
 
-#define ASSERT_UNEXPECTED_TOTOK(expected_rc, token)                  \
+#define ASSERT_UNEXPECTED_TOTOK(expected_rc, token)                            \
   {                                                                            \
     int rc = 0;                                                                \
-    ulas_totok((token), strlen(token), &rc);             \
+    ulas_totok((token), strlen(token), &rc);                                   \
     assert((expected_rc) == rc);                                               \
   }
-
 
 void test_totok(void) {
   TESTBEGIN("totok");
@@ -217,6 +216,12 @@ void test_totok(void) {
   TESTEND("totok");
 }
 
+void test_intexpr(void) {
+  TESTBEGIN("intexpr");
+
+  TESTEND("intexpr");
+}
+
 int main(int arc, char **argv) {
   ulas_init(ulas_cfg_from_env());
 
@@ -228,6 +233,7 @@ int main(int arc, char **argv) {
   test_strbuf();
   test_preproc();
   test_totok();
+  test_intexpr();
 
   ulas_free();
 

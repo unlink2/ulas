@@ -9,6 +9,8 @@ LIBS=
 TEST_LIBS=
 LDFLAGS=$(DBGLDFLAGS) $(LIBS)
 
+TAG_LIBS=/usr/include/unistd.h /usr/include/stdio.h /usr/include/stdlib.h /usr/include/assert.h /usr/include/errno.h /usr/include/ctype.h
+
 ODIR=obj
 TEST_ODIR=obj/test
 BDIR=bin
@@ -53,7 +55,7 @@ install:
 
 .PHONY: tags 
 tags:
-	ctags --recurse=yes --exclude=.git --exclude=bin --exclude=obj --extras=*  --fields=*  --c-kinds=* --language-force=C 
+	ctags --recurse=yes --exclude=.git --exclude=bin --exclude=obj --extras=*  --fields=*  --c-kinds=* --language-force=C  $(TAG_LIBS)
 
 .PHONY:
 ccmds:

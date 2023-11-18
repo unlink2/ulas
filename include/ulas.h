@@ -90,7 +90,11 @@ struct ulas_str {
  */
 
 // any token before 256 is just the literal char value
-enum ulas_toks { ULAS_TOKLITERAL = 256, ULAS_TOKSYMBOL };
+enum ulas_toks {
+  ULAS_TOKLITERAL = 256,
+  ULAS_TOKSYMBOL,
+
+};
 
 // primitive data types
 enum ulas_type { ULAS_INT, ULAS_STR };
@@ -216,30 +220,30 @@ struct ulas_sym {
 
 enum ulas_exprs { ULAS_EXPUNARY, ULAS_EXPBINARY, ULAS_EXPLITERAL };
 
-struct ulas_expunary {
-  struct ulas_expr *expr;
-  struct ulas_tok *op;
+struct ulas_expun {
+  long expr;
+  long op;
 };
 
-struct ulas_expbinary {
-  struct ulas_expr *left;
-  struct ulas_expr *right;
-  struct ulas_tok *op;
+struct ulas_expbin {
+  long left;
+  long right;
+  long op;
 };
 
-struct ulas_expliteral {
-  struct ulas_tok *tok;
+struct ulas_explit {
+  long tok;
 };
 
-union ulas_expdat {
-  struct ulas_expunary unary;
-  struct ulas_expbinary binary;
-  struct ulas_expliteral literal;
+union ulas_expval {
+  struct ulas_expun un;
+  struct ulas_expbin bin;
+  struct ulas_explit lit;
 };
 
 struct ulas_expr {
   enum ulas_exprs type;
-  union ulas_expdat dat;
+  union ulas_expval val;
 };
 
 /**

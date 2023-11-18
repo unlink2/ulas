@@ -905,27 +905,57 @@ void ulas_tokbufpush(struct ulas_tokbuf *tb, struct ulas_tok tok) {
   tb->len++;
 }
 
-void ulas_tokbufclear(struct ulas_tokbuf *tb) { tb->len = 0; }
+void ulas_tokbufclear(struct ulas_tokbuf *tb) {
+  for (long i = 0; i < tb->len; i++) {
+    struct ulas_tok *t = &tb->buf[i];
+    if ((t->type == ULAS_TOKLITERAL || t->type == ULAS_TOKSYMBOL) &&
+        t->lit.type == ULAS_STR) {
+      free(t->lit.val.strv);
+    }
+  }
+  tb->len = 0;
+}
 
-void ulas_tokbuffree(struct ulas_tokbuf *tb) { free(tb->buf); }
+void ulas_tokbuffree(struct ulas_tokbuf *tb) {
+  ulas_tokbufclear(tb);
+  free(tb->buf);
+}
 
 /**
  * Assembly step
  */
 
-int ulas_intexpr(const char **line, unsigned long n, int *rc) {
-  // read tokens until the next token is end of line, ; or ,
+int ulas_tokexpr(const char **line, unsigned long n) {
+  ulas_tokbufclear(&ulas.toks);
 
   int tokrc = 0;
   while ((tokrc = ulas_tok(&ulas.tok, line, n) > 0)) {
     if (tokrc == -1) {
-      *rc = -1;
       goto fail;
     }
     // interpret the token
+    struct ulas_tok tok = ulas_totok(
+        ulas.tok.buf, strnlen(ulas.tok.buf, ulas.tok.maxlen), &tokrc);
+    if (tokrc == -1) {
+      goto fail;
+    }
+
+    // now we can loop token type, add all tokens to the token buffer
+    ulas_tokbufpush(&ulas.toks, tok);
   }
 
 fail:
+  return tokrc;
+}
+
+int ulas_intexpr(const char **line, unsigned long n, int *rc) {
+  if (ulas_tokexpr(line, n) == -1) {
+    *rc = -1;
+    return -1;
+  }
+
+  // now that we have all tokens in the buffer, create the tree strucute
+
   return -1;
 }
 
