@@ -51,6 +51,22 @@ name ; will be replaced with 'value'
 .SH ASSEMBLY SYNTAX
 
 
+
+.SH EXPRESSION SYNTAX
+
+Expressions are written in Reverse Polish Notation style and evaluated based on their expected data type.
+For example when an expression expects an int type the expression will assume all values that are pushed to it 
+are integers.
+
+.SH ASSEMBLY DIRECTIVES 
+
+During assembly sometimes it is required to set certain parameters of the assembler such as the base address (represented by the $@ symbol in expressions).
+
+Valid directives:
+
+  \.org <expression>  
+    Sets the base address
+
 .SH EXAMPLES
  
 .SH SEE ALSO

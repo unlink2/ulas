@@ -218,7 +218,7 @@ struct ulas_sym {
  * -1 denotes a NULL value
  */
 
-enum ulas_exprs { ULAS_EXPUNARY, ULAS_EXPBINARY, ULAS_EXPLITERAL };
+enum ulas_exprs { ULAS_EXPUN, ULAS_EXPBIN, ULAS_EXPLIT, ULAS_EXPGRP };
 
 struct ulas_expun {
   long expr;
@@ -235,10 +235,19 @@ struct ulas_explit {
   long tok;
 };
 
+struct ulas_expgrp {
+  // points to the first expression 
+  // in this group 
+  long expr;
+  // how many expressions belong to the group
+  long len;
+};
+
 union ulas_expval {
   struct ulas_expun un;
   struct ulas_expbin bin;
   struct ulas_explit lit;
+  struct ulas_expgrp grp;
 };
 
 struct ulas_expr {
