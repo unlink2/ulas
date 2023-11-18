@@ -184,8 +184,10 @@ void test_totok(void) {
 
   // string token
   ASSERT_STR_TOTOK("test", 0, "\"test\"");
-
+  // string with escape
   ASSERT_STR_TOTOK("test\n\"123\"", 0, "\"test\\n\\\"123\\\"\"");
+  // unterminated string
+  ASSERT_STR_TOTOK("test\n\"123\"", -1, "\"test\\n\\\"123\\\"");
 
   TESTEND("totok");
 }
