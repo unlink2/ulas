@@ -90,14 +90,13 @@ struct ulas_str {
  */
 
 // any token before 256 is just the literal char value
-enum ulas_toks {
-  ULAS_TOKLITERAL = 256,
-  ULAS_TOKSYMBOL,
-
-};
-
 // primitive data types
-enum ulas_type { ULAS_INT, ULAS_STR };
+enum ulas_type {
+
+  ULAS_SYMBOL = 256,
+  ULAS_INT,
+  ULAS_STR
+};
 
 // data type value
 union ulas_val {
@@ -105,15 +104,9 @@ union ulas_val {
   char *strv;
 };
 
-// literal value
-struct ulas_lit {
+struct ulas_tok {
   enum ulas_type type;
   union ulas_val val;
-};
-
-struct ulas_tok {
-  enum ulas_toks type;
-  struct ulas_lit lit;
 };
 
 // the token buffer is a dynamically allocated token store
@@ -205,7 +198,7 @@ struct ulas_preproc {
 
 struct ulas_sym {
   char *name;
-  struct ulas_lit lit;
+  struct ulas_tok tok;
 };
 
 /**
@@ -236,8 +229,8 @@ struct ulas_explit {
 };
 
 struct ulas_expgrp {
-  // points to the first expression 
-  // in this group 
+  // points to the first expression
+  // in this group
   long expr;
   // how many expressions belong to the group
   long len;
@@ -356,9 +349,9 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
  */
 
 // convert literal to its int value
-int ulas_litint(struct ulas_lit *lit, int *rc);
+int ulas_litint(struct ulas_tok *lit, int *rc);
 // convert literal to its char value
-char *ulas_litchar(struct ulas_lit *lit, int *rc);
+char *ulas_litchar(struct ulas_tok *lit, int *rc);
 
 struct ulas_tokbuf ulas_tokbuf(void);
 void ulas_tokbufpush(struct ulas_tokbuf *tb, struct ulas_tok tok);

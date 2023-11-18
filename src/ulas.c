@@ -278,26 +278,25 @@ struct ulas_tok ulas_totok(char *buf, unsigned long n, int *rc) {
     goto end;
   case '"':
     // string
-    tok.type = ULAS_TOKLITERAL;
-    tok.lit.type = ULAS_STR;
+    tok.type = ULAS_STR;
 
     // FIXME: this likely mallocs a few extra bytes
     // but honestly its probably fine
-    tok.lit.val.strv = malloc(n * sizeof(char) + 1);
-    memset(tok.lit.val.strv, 0, n);
+    tok.val.strv = malloc(n * sizeof(char) + 1);
+    memset(tok.val.strv, 0, n);
 
     long i = 0;
     while (*buf && *buf != '\"') {
       if (*buf == '\\') {
         buf++;
-        tok.lit.val.strv[i] = ulas_unescape(*buf, rc);
+        tok.val.strv[i] = ulas_unescape(*buf, rc);
       } else {
-        tok.lit.val.strv[i] = *buf;
+        tok.val.strv[i] = *buf;
       }
       i++;
       buf++;
     }
-    tok.lit.val.strv[i] = '\0';
+    tok.val.strv[i] = '\0';
 
     if (*buf != '\"') {
       *rc = -1;
@@ -309,24 +308,22 @@ struct ulas_tok ulas_totok(char *buf, unsigned long n, int *rc) {
   default:
     if (isdigit(first)) {
       // integer
-      tok.type = ULAS_TOKLITERAL;
-      tok.lit.type = ULAS_INT;
+      tok.type = ULAS_INT;
 
       // 0b prefix is not supported in strtol... so we implement it by hand
       if (*buf == 'b') {
         buf++;
-        tok.lit.val.intv = (int)strtol(buf, &buf, 2);
+        tok.val.intv = (int)strtol(buf, &buf, 2);
       } else {
-        tok.lit.val.intv = (int)strtol(buf - 1, &buf, 0);
+        tok.val.intv = (int)strtol(buf - 1, &buf, 0);
       }
     } else if (first == '\'') {
-      tok.type = ULAS_TOKLITERAL;
-      tok.lit.type = ULAS_INT;
+      tok.type = ULAS_INT;
       if (*buf == '\\') {
         buf++;
-        tok.lit.val.intv = ulas_unescape(*buf, rc);
+        tok.val.intv = ulas_unescape(*buf, rc);
       } else {
-        tok.lit.val.intv = (int)*buf;
+        tok.val.intv = (int)*buf;
       }
       buf++;
       if (*buf != '\'') {
@@ -339,9 +336,8 @@ struct ulas_tok ulas_totok(char *buf, unsigned long n, int *rc) {
     } else if (ulas_isname(buf - 1, n)) {
       // literal token
       // we resolve it later, will need to malloc here for now
-      tok.type = ULAS_TOKSYMBOL;
-      tok.lit.type = ULAS_STR;
-      tok.lit.val.strv = strndup(buf - 1, n);
+      tok.type = ULAS_SYMBOL;
+      tok.val.strv = strndup(buf - 1, n);
       buf += n - 1;
     } else {
       ULASERR("Unexpected token: %s\n", buf);
@@ -861,7 +857,7 @@ fail:
  * Literals, tokens and expressions
  */
 
-int ulas_litint(struct ulas_lit *lit, int *rc) {
+int ulas_litint(struct ulas_tok *lit, int *rc) {
   if (lit->type != ULAS_INT) {
     *rc = -1;
     return 0;
@@ -870,7 +866,7 @@ int ulas_litint(struct ulas_lit *lit, int *rc) {
   return lit->val.intv;
 }
 
-char *ulas_litchar(struct ulas_lit *lit, int *rc) {
+char *ulas_litchar(struct ulas_tok *lit, int *rc) {
   if (lit->type != ULAS_STR) {
     *rc = -1;
     return NULL;
@@ -908,9 +904,9 @@ void ulas_tokbufpush(struct ulas_tokbuf *tb, struct ulas_tok tok) {
 void ulas_tokbufclear(struct ulas_tokbuf *tb) {
   for (long i = 0; i < tb->len; i++) {
     struct ulas_tok *t = &tb->buf[i];
-    if ((t->type == ULAS_TOKLITERAL || t->type == ULAS_TOKSYMBOL) &&
-        t->lit.type == ULAS_STR) {
-      free(t->lit.val.strv);
+    if (t->type == ULAS_SYMBOL ||
+        t->type == ULAS_STR) {
+      free(t->val.strv);
     }
   }
   tb->len = 0;
