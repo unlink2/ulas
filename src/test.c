@@ -178,6 +178,16 @@ void test_preproc(void) {
     assert((expected_rc) == rc);                                               \
   }
 
+
+#define ASSERT_TOTOK(expected_val, expected_rc, token)                  \
+  {                                                                            \
+    int rc = 0;                                                                \
+    struct ulas_tok tok = ulas_totok((token), strlen(token), &rc);             \
+    assert((expected_rc) == rc);                                               \
+    assert(tok.type == (expected_val));                                           \
+    free(tok.val.strv);                                                        \
+  }
+
 void test_totok(void) {
   TESTBEGIN("totok");
 
@@ -209,6 +219,11 @@ void test_totok(void) {
   ASSERT_SYMBOL_TOTOK("symbol123", 0, "symbol123");
 
   ASSERT_UNEXPECTED_TOTOK(-1, "1symbol123");
+
+  // generic tokens with no value 
+  ASSERT_TOTOK(ULAS_EQ, 0, "==");
+  ASSERT_TOTOK('=', 0, "=");
+  ASSERT_TOTOK('+', 0, "+");
 
   TESTEND("totok");
 }

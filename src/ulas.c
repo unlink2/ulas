@@ -267,7 +267,6 @@ struct ulas_tok ulas_totok(char *buf, unsigned long n, int *rc) {
   case '-':
   case '*':
   case '/':
-  case '!':
   case '~':
   case '|':
   case '&':
@@ -309,6 +308,22 @@ struct ulas_tok ulas_totok(char *buf, unsigned long n, int *rc) {
       goto end;
     }
     buf++;
+    break;
+  case '=':
+    if (*buf == '=') {
+      tok.type = ULAS_EQ;
+      buf++;
+    } else {
+      tok.type = first;
+    }
+    break;
+  case '!':
+    if (*buf == '=') {
+      tok.type = ULAS_NEQ;
+      buf++;
+    } else {
+      tok.type = first;
+    }
     break;
   default:
     if (isdigit(first)) {

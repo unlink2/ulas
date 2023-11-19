@@ -92,7 +92,15 @@ struct ulas_str {
 
 // any token before 256 is just the literal char value
 // primitive data types
-enum ulas_type { ULAS_SYMBOL = 256, ULAS_INT, ULAS_STR };
+enum ulas_type {
+  ULAS_SYMBOL = 256,
+  ULAS_INT,
+  ULAS_STR,
+  ULAS_EQ,
+  ULAS_NEQ,
+  ULAS_GTEQ,
+  ULAS_LTEQ
+};
 
 // data type value
 union ulas_val {
