@@ -55,7 +55,7 @@ install:
 
 .PHONY: tags 
 tags:
-	ctags --recurse=yes --exclude=.git --exclude=bin --exclude=obj --extras=*  --fields=*  --c-kinds=* --language-force=C  $(TAG_LIBS)
+	ctags --recurse=yes --exclude=.git --exclude=bin --exclude=obj --extras=*  --fields=*  --c-kinds=* --language-force=C  $(TAG_LIBS) .
 
 .PHONY:
 ccmds:
