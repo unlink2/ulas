@@ -1012,15 +1012,61 @@ end:
   return tokrc;
 }
 
+/**
+ * Parse expressions from tokens 
+ * return tree-like structure
+ * all these functions return an int index into 
+ * the expression buffer.
+ * they also all take an index variable i which can be freely modified.
+ * i may never exceed toks->len.
+ * if i is not the same as toks->len when the parser finishes 
+ * we error out because of trailing tokens!
+ */
+
+int ulas_parseprim(int *i) {
+}
+
+int ulas_parseun(int *i) {
+  return ulas_parseprim(i);
+}
+
+int ulas_parsefact(int *i) {
+  int expr = ulas_parseun(i);
+
+  return expr;
+}
+
+int ulas_parseterm(int *i) {
+  int expr = ulas_parsefact(i);
+  return expr;
+}
+
+int ulas_parsecmp(int *i) {
+  int expr = ulas_parseterm(i);
+
+  return expr;
+}
+
+int ulas_parseeq(int *i) {
+  int expr = ulas_parsecmp(i);
+
+  return expr;
+}
+
 // parses tokens to expression tree
-int ulas_parseexpr(struct ulas_tokbuf *toks) {
+int ulas_parseexpr(void) {
   ulas_exprbufclear(&ulas.exprs);
 
-  int rc = 0;
-  for (long i = 0; i < toks->len; i++) {
+  struct ulas_tokbuf *toks = &ulas.toks;
+
+  int i = 0;
+  int rc = ulas_parseeq(&i); 
+
+  if (i != toks->len) {
+    ULASERR("Trailing token!\n");
+    rc = -1;
   }
 
-fail:
   return rc;
 }
 
@@ -1030,7 +1076,7 @@ int ulas_intexpr(const char **line, unsigned long n, int *rc) {
     return -1;
   }
 
-  if (ulas_parseexpr(&ulas.toks) == -1) {
+  if (ulas_parseexpr() == -1) {
     *rc = -1;
     return -1;
   }

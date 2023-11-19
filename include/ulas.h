@@ -221,7 +221,7 @@ struct ulas_sym {
  * -1 denotes a NULL value
  */
 
-enum ulas_exprs { ULAS_EXPUN, ULAS_EXPBIN, ULAS_EXPLIT, ULAS_EXPGRP };
+enum ulas_exprs { ULAS_EXPUN, ULAS_EXPBIN, ULAS_EXPPRIM, ULAS_EXPGRP };
 
 struct ulas_expun {
   long expr;
@@ -234,7 +234,7 @@ struct ulas_expbin {
   long op;
 };
 
-struct ulas_explit {
+struct ulas_expprim {
   long tok;
 };
 
@@ -249,7 +249,7 @@ struct ulas_expgrp {
 union ulas_expval {
   struct ulas_expun un;
   struct ulas_expbin bin;
-  struct ulas_explit lit;
+  struct ulas_expprim prim;
   struct ulas_expgrp grp;
 };
 
