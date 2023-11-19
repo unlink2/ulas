@@ -300,7 +300,7 @@ struct ulas_tok ulas_totok(char *buf, unsigned long n, int *rc) {
       while (*buf && *buf != '\"') {
         if (*buf == '\\') {
           buf++;
-          tok.val.strv[i] = ulas_unescape(*buf, rc);
+          tok.val.strv[i] = (char)ulas_unescape(*buf, rc);
         } else {
           tok.val.strv[i] = *buf;
         }
@@ -952,6 +952,34 @@ void ulas_tokbuffree(struct ulas_tokbuf *tb) {
   free(tb->buf);
 }
 
+struct ulas_exprbuf ulas_exprbuf(void) {
+  struct ulas_exprbuf eb;
+  memset(&eb, 0, sizeof(eb));
+
+  eb.maxlen = 10;
+  eb.buf = malloc(sizeof(struct ulas_expr) * eb.maxlen);
+
+  return eb;
+}
+
+void ulas_exprbufpush(struct ulas_exprbuf *eb, struct ulas_expr expr) {
+  if (eb->len >= eb->maxlen) {
+    eb->maxlen *= 2;
+    void *newbuf = realloc(eb->buf, eb->maxlen * sizeof(struct ulas_expr));
+    if (!newbuf) {
+      ULASPANIC("%s\n", strerror(errno));
+    }
+    eb->buf = newbuf;
+  }
+
+  eb->buf[eb->len] = expr;
+  eb->len++;
+}
+
+void ulas_exprbufclear(struct ulas_exprbuf *eb) { eb->len = 0; }
+
+void ulas_exprbuffree(struct ulas_exprbuf *eb) { free(eb->buf); }
+
 /**
  * Assembly step
  */
@@ -986,6 +1014,8 @@ end:
 
 // parses tokens to expression tree
 int ulas_parseexpr(struct ulas_tokbuf *toks) {
+  ulas_exprbufclear(&ulas.exprs);
+
   int rc = 0;
   for (long i = 0; i < toks->len; i++) {
   }

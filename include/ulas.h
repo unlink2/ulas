@@ -120,6 +120,13 @@ struct ulas_tokbuf {
   long maxlen;
 };
 
+// the expression buffer hold expression buffers
+struct ulas_exprbuf {
+  struct ulas_expr *buf;
+  unsigned long len;
+  unsigned long maxlen;
+};
+
 /**
  * Assembly context
  */
@@ -133,6 +140,7 @@ struct ulas {
 
   // current token stream
   struct ulas_tokbuf toks;
+  struct ulas_exprbuf exprs;
 
   unsigned int address;
 
@@ -253,12 +261,6 @@ struct ulas_expr {
   long next;
 };
 
-struct ulas_exprbuf {
-  struct ulas_expr *exprs;
-  unsigned long len;
-  unsigned long maxlen;
-};
-
 /**
  * asm
  */
@@ -372,6 +374,11 @@ struct ulas_tokbuf ulas_tokbuf(void);
 void ulas_tokbufpush(struct ulas_tokbuf *tb, struct ulas_tok tok);
 void ulas_tokbufclear(struct ulas_tokbuf *tb);
 void ulas_tokbuffree(struct ulas_tokbuf *tb);
+
+struct ulas_exprbuf ulas_exprbuf(void);
+void ulas_exprbufpush(struct ulas_exprbuf *eb, struct ulas_expr expr);
+void ulas_exprbufclear(struct ulas_exprbuf *eb);
+void ulas_exprbuffree(struct ulas_exprbuf *eb);
 
 /**
  * Assembly step

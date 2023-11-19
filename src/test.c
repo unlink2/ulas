@@ -230,8 +230,19 @@ void test_totok(void) {
   TESTEND("totok");
 }
 
+#define ASSERT_INTEXPR(expected_val, expected_rc, expr)                        \
+  {                                                                            \
+    int rc = 0;                                                                \
+    const char *oexpr = expr;                                                  \
+    int val = ulas_intexpr(&oexpr, strlen((expr)), &rc);                       \
+    assert(rc == (expected_rc));                                               \
+    assert(val == (expected_val));                                             \
+  }
+
 void test_intexpr(void) {
   TESTBEGIN("intexpr");
+
+  ASSERT_INTEXPR(1, 0, "1 == 1");
 
   TESTEND("intexpr");
 }
