@@ -240,6 +240,15 @@ union ulas_expval {
 struct ulas_expr {
   enum ulas_exprs type;
   union ulas_expval val;
+  // link to the next expression, 0 indicates
+  // there is no next expression
+  long next;
+};
+
+struct ulas_exprbuf {
+  struct ulas_expr *exprs;
+  unsigned long len;
+  unsigned long maxlen;
 };
 
 /**
