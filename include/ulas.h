@@ -256,7 +256,7 @@ union ulas_expval {
 struct ulas_expr {
   enum ulas_exprs type;
   union ulas_expval val;
-  // link to the next expression, 0 indicates
+  // link to the next expression, -1 indicates
   // there is no next expression
   long next;
 };
@@ -371,12 +371,18 @@ int ulas_litint(struct ulas_tok *lit, int *rc);
 char *ulas_litchar(struct ulas_tok *lit, int *rc);
 
 struct ulas_tokbuf ulas_tokbuf(void);
-void ulas_tokbufpush(struct ulas_tokbuf *tb, struct ulas_tok tok);
+
+// pushes new token, returns newly added index
+int ulas_tokbufpush(struct ulas_tokbuf *tb, struct ulas_tok tok);
+struct ulas_tok *ulas_tokbufget(struct ulas_tokbuf *tb, int i);
 void ulas_tokbufclear(struct ulas_tokbuf *tb);
 void ulas_tokbuffree(struct ulas_tokbuf *tb);
 
 struct ulas_exprbuf ulas_exprbuf(void);
-void ulas_exprbufpush(struct ulas_exprbuf *eb, struct ulas_expr expr);
+
+// pushes new expression, returns newly added index
+int ulas_exprbufpush(struct ulas_exprbuf *eb, struct ulas_expr expr);
+struct ulas_expr *ulas_exprbufget(struct ulas_exprbuf *eb, int i);
 void ulas_exprbufclear(struct ulas_exprbuf *eb);
 void ulas_exprbuffree(struct ulas_exprbuf *eb);
 

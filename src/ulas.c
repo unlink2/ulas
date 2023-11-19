@@ -34,11 +34,13 @@ void ulas_init(struct ulas_config cfg) {
   }
 
   ulas.toks = ulas_tokbuf();
+  ulas.exprs = ulas_exprbuf();
 }
 
 void ulas_free(void) {
   ulas_strfree(&ulas.tok);
   ulas_tokbuffree(&ulas.toks);
+  ulas_exprbuffree(&ulas.exprs);
 }
 
 int ulas_icntr(void) { return ulas.icntr++; }
@@ -922,7 +924,15 @@ struct ulas_tokbuf ulas_tokbuf(void) {
   return tb;
 }
 
-void ulas_tokbufpush(struct ulas_tokbuf *tb, struct ulas_tok tok) {
+struct ulas_tok *ulas_tokbufget(struct ulas_tokbuf *tb, int i) {
+  if (i >= tb->len) {
+    return NULL;
+  }
+
+  return &tb->buf[i];
+}
+
+int ulas_tokbufpush(struct ulas_tokbuf *tb, struct ulas_tok tok) {
   if (tb->len >= tb->maxlen) {
     tb->maxlen += 5;
     void *n = realloc(tb->buf, tb->maxlen * sizeof(struct ulas_tok));
@@ -934,7 +944,7 @@ void ulas_tokbufpush(struct ulas_tokbuf *tb, struct ulas_tok tok) {
   }
 
   tb->buf[tb->len] = tok;
-  tb->len++;
+  return tb->len++;
 }
 
 void ulas_tokbufclear(struct ulas_tokbuf *tb) {
@@ -962,7 +972,15 @@ struct ulas_exprbuf ulas_exprbuf(void) {
   return eb;
 }
 
-void ulas_exprbufpush(struct ulas_exprbuf *eb, struct ulas_expr expr) {
+struct ulas_expr *ulas_exprbufget(struct ulas_exprbuf *eb, int i) {
+  if (i >= eb->len) {
+    return NULL;
+  }
+
+  return &eb->buf[i];
+}
+
+int ulas_exprbufpush(struct ulas_exprbuf *eb, struct ulas_expr expr) {
   if (eb->len >= eb->maxlen) {
     eb->maxlen *= 2;
     void *newbuf = realloc(eb->buf, eb->maxlen * sizeof(struct ulas_expr));
@@ -973,7 +991,7 @@ void ulas_exprbufpush(struct ulas_exprbuf *eb, struct ulas_expr expr) {
   }
 
   eb->buf[eb->len] = expr;
-  eb->len++;
+  return eb->len++;
 }
 
 void ulas_exprbufclear(struct ulas_exprbuf *eb) { eb->len = 0; }
@@ -1013,22 +1031,31 @@ end:
 }
 
 /**
- * Parse expressions from tokens 
+ * Parse expressions from tokens
  * return tree-like structure
- * all these functions return an int index into 
+ * all these functions return an int index into
  * the expression buffer.
  * they also all take an index variable i which can be freely modified.
  * i may never exceed toks->len.
- * if i is not the same as toks->len when the parser finishes 
+ * if i is not the same as toks->len when the parser finishes
  * we error out because of trailing tokens!
  */
 
 int ulas_parseprim(int *i) {
+  struct ulas_tok *t = ulas_tokbufget(&ulas.tok, *i);
+  if (!t || (t->type != ULAS_INT && t->type != ULAS_STR)) {
+    ULASERR("Primary expression expected\n");
+    return -1;
+  }
+
+  *i += 1;
+  struct ulas_expprim prim = {*i};
+  union ulas_expval val = {.prim = prim};
+  struct ulas_expr e = {ULAS_EXPPRIM, val, -1};
+  return ulas_exprbufpush(&ulas.exprs, e);
 }
 
-int ulas_parseun(int *i) {
-  return ulas_parseprim(i);
-}
+int ulas_parseun(int *i) { return ulas_parseprim(i); }
 
 int ulas_parsefact(int *i) {
   int expr = ulas_parseun(i);
@@ -1049,6 +1076,12 @@ int ulas_parsecmp(int *i) {
 
 int ulas_parseeq(int *i) {
   int expr = ulas_parsecmp(i);
+  struct ulas_tok *t = NULL;
+  while ((t = ulas_tokbufget(&ulas.tok, *i)) &&
+         (t->type == ULAS_EQ || t->type == ULAS_NEQ)) {
+
+    *i += 1;
+  }
 
   return expr;
 }
@@ -1060,7 +1093,7 @@ int ulas_parseexpr(void) {
   struct ulas_tokbuf *toks = &ulas.toks;
 
   int i = 0;
-  int rc = ulas_parseeq(&i); 
+  int rc = ulas_parseeq(&i);
 
   if (i != toks->len) {
     ULASERR("Trailing token!\n");
