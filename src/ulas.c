@@ -124,6 +124,11 @@ int ulas_isname(const char *tok, unsigned long n) {
   return 1;
 }
 
+struct ulas_tok *ulas_symbolresolve(const char *name) {
+  // TODO: implement
+  return NULL;
+}
+
 #define WELD_TOKISTERM write
 #define WELD_TOKCOND (i < n && write < n && line[i])
 
@@ -904,8 +909,7 @@ void ulas_tokbufpush(struct ulas_tokbuf *tb, struct ulas_tok tok) {
 void ulas_tokbufclear(struct ulas_tokbuf *tb) {
   for (long i = 0; i < tb->len; i++) {
     struct ulas_tok *t = &tb->buf[i];
-    if (t->type == ULAS_SYMBOL ||
-        t->type == ULAS_STR) {
+    if (t->type == ULAS_SYMBOL || t->type == ULAS_STR) {
       free(t->val.strv);
     }
   }

@@ -7,6 +7,7 @@
 
 #define ULAS_PATHMAX 4096
 #define ULAS_LINEMAX 4096
+#define ULAS_MACROPARAMMAX 9
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
@@ -91,12 +92,7 @@ struct ulas_str {
 
 // any token before 256 is just the literal char value
 // primitive data types
-enum ulas_type {
-
-  ULAS_SYMBOL = 256,
-  ULAS_INT,
-  ULAS_STR
-};
+enum ulas_type { ULAS_SYMBOL = 256, ULAS_INT, ULAS_STR };
 
 // data type value
 union ulas_val {
@@ -176,8 +172,6 @@ struct ulas_ppdef {
   char *value;
   int undef;
 };
-
-#define ULAS_MACROPARAMMAX 9
 
 struct ulas_preproc {
   struct ulas_ppdef *defs;
@@ -278,6 +272,10 @@ void ulas_free(void);
 int ulas_main(struct ulas_config cfg);
 
 char *ulas_strndup(const char *src, unsigned long n);
+
+// resolve a symbol until an actual literal token (str, int) is found
+// returns NULL if the symbol cannot be resolved
+struct ulas_tok *ulas_symbolresolve(const char *name);
 
 // tokenisze according to pre-defined rules
 // returns the amount of bytes of line that were

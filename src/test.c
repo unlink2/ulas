@@ -147,8 +147,8 @@ void test_preproc(void) {
     int rc = 0;                                                                \
     struct ulas_tok tok = ulas_totok((token), strlen(token), &rc);             \
     assert((expected_rc) == rc);                                               \
-    assert(tok.type == ULAS_INT);                                          \
-    assert(tok.val.intv == (expected_val));                                \
+    assert(tok.type == ULAS_INT);                                              \
+    assert(tok.val.intv == (expected_val));                                    \
   }
 
 #define ASSERT_STR_TOTOK(expected_val, expected_rc, token)                     \
@@ -156,9 +156,9 @@ void test_preproc(void) {
     int rc = 0;                                                                \
     struct ulas_tok tok = ulas_totok((token), strlen(token), &rc);             \
     assert((expected_rc) == rc);                                               \
-    assert(tok.type == ULAS_STR);                                          \
-    assert(strcmp((expected_val), tok.val.strv) == 0);                     \
-    free(tok.val.strv);                                                    \
+    assert(tok.type == ULAS_STR);                                              \
+    assert(strcmp((expected_val), tok.val.strv) == 0);                         \
+    free(tok.val.strv);                                                        \
   }
 
 #define ASSERT_SYMBOL_TOTOK(expected_val, expected_rc, token)                  \
@@ -166,9 +166,9 @@ void test_preproc(void) {
     int rc = 0;                                                                \
     struct ulas_tok tok = ulas_totok((token), strlen(token), &rc);             \
     assert((expected_rc) == rc);                                               \
-    assert(tok.type == ULAS_SYMBOL);                                        \
-    assert(strcmp((expected_val), tok.val.strv) == 0);                     \
-    free(tok.val.strv);                                                    \
+    assert(tok.type == ULAS_SYMBOL);                                           \
+    assert(strcmp((expected_val), tok.val.strv) == 0);                         \
+    free(tok.val.strv);                                                        \
   }
 
 #define ASSERT_UNEXPECTED_TOTOK(expected_rc, token)                            \
