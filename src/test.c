@@ -242,7 +242,9 @@ void test_totok(void) {
 void test_intexpr(void) {
   TESTBEGIN("intexpr");
 
-  ASSERT_INTEXPR(1, 0, "1 == 1");
+  ASSERT_INTEXPR(-1, -1, "");
+  ASSERT_INTEXPR(1, 0, "1");
+  ASSERT_INTEXPR(1, 0, "2 == 2");
 
   TESTEND("intexpr");
 }

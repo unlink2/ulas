@@ -284,7 +284,7 @@ struct ulas_tok ulas_totok(char *buf, unsigned long n, int *rc) {
   unsigned char first = buf[0];
   buf++;
 
-  if (n == 1) {
+  if (n == 1 && !isalnum(first)) {
     // single char tokens
     tok.type = first;
   } else {
@@ -1042,8 +1042,9 @@ end:
  */
 
 int ulas_parseprim(int *i) {
-  struct ulas_tok *t = ulas_tokbufget(&ulas.tok, *i);
+  struct ulas_tok *t = ulas_tokbufget(&ulas.toks, *i);
   if (!t || (t->type != ULAS_INT && t->type != ULAS_STR)) {
+    printf("got type %d %c expected %d\n", t->type, t->type, ULAS_INT);
     ULASERR("Primary expression expected\n");
     return -1;
   }
@@ -1077,7 +1078,7 @@ int ulas_parsecmp(int *i) {
 int ulas_parseeq(int *i) {
   int expr = ulas_parsecmp(i);
   struct ulas_tok *t = NULL;
-  while ((t = ulas_tokbufget(&ulas.tok, *i)) &&
+  while ((t = ulas_tokbufget(&ulas.toks, *i)) &&
          (t->type == ULAS_EQ || t->type == ULAS_NEQ)) {
 
     *i += 1;
@@ -1091,16 +1092,33 @@ int ulas_parseexpr(void) {
   ulas_exprbufclear(&ulas.exprs);
 
   struct ulas_tokbuf *toks = &ulas.toks;
+  if (toks->len == 0) {
+    ULASERR("Expected expression\n");
+    return -1;
+  }
 
   int i = 0;
   int rc = ulas_parseeq(&i);
 
   if (i != toks->len) {
-    ULASERR("Trailing token!\n");
+    ULASERR("Trailing token at index %d!\n", i);
     rc = -1;
   }
 
   return rc;
+}
+
+int ulas_intexpreval(int *rc, int i) {
+  struct ulas_expr *e = ulas_exprbufget(&ulas.exprs, i);
+  if (!e) {
+    ULASERR("unable to evaluate expression\n");
+    *rc = -1;
+    return 0;
+  }
+  
+  int result = 0;
+
+  return result;
 }
 
 int ulas_intexpr(const char **line, unsigned long n, int *rc) {
@@ -1116,7 +1134,7 @@ int ulas_intexpr(const char **line, unsigned long n, int *rc) {
 
   // execute the tree of expressions
 
-  return -1;
+  return ulas_intexpreval(rc, 0);
 }
 
 int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
