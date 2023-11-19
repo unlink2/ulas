@@ -50,9 +50,10 @@
 void test_tok(void) {
   TESTBEGIN("tok");
 
-  assert_tok("  test  tokens   with,   line / * + - , ; $1",
-             {"test", "tokens", "with", ",", "line", "/", "*", "+", "-", ",",
-              ";", "$1", NULL});
+  assert_tok(
+      "  test  tokens   with,   line / * + - , ; $1 = == != > < >= <=",
+      {"test", "tokens", "with", ",",  "line", "/", "*", "+",  "-",  ",",
+       ";",    "$1",     "=",    "==", "!=",   ">", "<", ">=", "<=", NULL});
 
   assert_tokuntil(" this is a, test for tok , until", ',',
                   {"this is a", "test for tok ", "until", NULL});
@@ -178,13 +179,12 @@ void test_preproc(void) {
     assert((expected_rc) == rc);                                               \
   }
 
-
-#define ASSERT_TOTOK(expected_val, expected_rc, token)                  \
+#define ASSERT_TOTOK(expected_val, expected_rc, token)                         \
   {                                                                            \
     int rc = 0;                                                                \
     struct ulas_tok tok = ulas_totok((token), strlen(token), &rc);             \
     assert((expected_rc) == rc);                                               \
-    assert(tok.type == (expected_val));                                           \
+    assert(tok.type == (expected_val));                                        \
     free(tok.val.strv);                                                        \
   }
 
@@ -220,10 +220,12 @@ void test_totok(void) {
 
   ASSERT_UNEXPECTED_TOTOK(-1, "1symbol123");
 
-  // generic tokens with no value 
+  // generic tokens with no value
   ASSERT_TOTOK(ULAS_EQ, 0, "==");
+  ASSERT_TOTOK(ULAS_NEQ, 0, "!=");
   ASSERT_TOTOK('=', 0, "=");
   ASSERT_TOTOK('+', 0, "+");
+  ASSERT_TOTOK('!', 0, "!");
 
   TESTEND("totok");
 }

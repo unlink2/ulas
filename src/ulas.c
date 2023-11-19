@@ -148,11 +148,19 @@ int ulas_tok(struct ulas_str *dst, const char **out_line, unsigned long n) {
     char c = line[i];
 
     switch (c) {
-    case ',':
     case '+':
     case '-':
     case '*':
     case '/':
+    case '~':
+    case '|':
+    case '&':
+    case '%':
+    case '(':
+    case ')':
+    case '[':
+    case ']':
+    case ',':
     case '\\':
     case ULAS_TOK_COMMENT:
       if (WELD_TOKISTERM) {
@@ -172,6 +180,18 @@ int ulas_tok(struct ulas_str *dst, const char **out_line, unsigned long n) {
       dst->buf[write++] = line[i++];
       dst->buf[write++] = line[i++];
       goto tokdone;
+    case '=':
+    case '<':
+    case '!':
+    case '>':
+      if (line[i + 1] == '=') {
+        dst->buf[write] = line[i];
+        i++;
+        write++;
+      }
+      dst->buf[write] = line[i];
+      write++;
+      break;
     default:
       if (isspace(line[i])) {
         goto tokdone;
@@ -262,109 +282,105 @@ struct ulas_tok ulas_totok(char *buf, unsigned long n, int *rc) {
   unsigned char first = buf[0];
   buf++;
 
-  switch (first) {
-  case '+':
-  case '-':
-  case '*':
-  case '/':
-  case '~':
-  case '|':
-  case '&':
-  case '%':
-  case '(':
-  case ')':
-  case '[':
-  case ']':
-  case ',':
-  case ';':
+  if (n == 1) {
     // single char tokens
     tok.type = first;
-    goto end;
-  case '"':
-    // string
-    tok.type = ULAS_STR;
+  } else {
+    switch (first) {
+    case '"':
+      // string
+      tok.type = ULAS_STR;
 
-    // FIXME: this likely mallocs a few extra bytes
-    // but honestly its probably fine
-    tok.val.strv = malloc(n * sizeof(char) + 1);
-    memset(tok.val.strv, 0, n);
+      // FIXME: this likely mallocs a few extra bytes
+      // but honestly its probably fine
+      tok.val.strv = malloc(n * sizeof(char) + 1);
+      memset(tok.val.strv, 0, n);
 
-    long i = 0;
-    while (*buf && *buf != '\"') {
-      if (*buf == '\\') {
+      long i = 0;
+      while (*buf && *buf != '\"') {
+        if (*buf == '\\') {
+          buf++;
+          tok.val.strv[i] = ulas_unescape(*buf, rc);
+        } else {
+          tok.val.strv[i] = *buf;
+        }
+        i++;
         buf++;
-        tok.val.strv[i] = ulas_unescape(*buf, rc);
-      } else {
-        tok.val.strv[i] = *buf;
       }
-      i++;
-      buf++;
-    }
-    tok.val.strv[i] = '\0';
+      tok.val.strv[i] = '\0';
 
-    if (*buf != '\"') {
-      *rc = -1;
-      ULASERR("Unterminated string sequence\n");
-      goto end;
-    }
-    buf++;
-    break;
-  case '=':
-    if (*buf == '=') {
-      tok.type = ULAS_EQ;
-      buf++;
-    } else {
-      tok.type = first;
-    }
-    break;
-  case '!':
-    if (*buf == '=') {
-      tok.type = ULAS_NEQ;
-      buf++;
-    } else {
-      tok.type = first;
-    }
-    break;
-  default:
-    if (isdigit(first)) {
-      // integer
-      tok.type = ULAS_INT;
-
-      // 0b prefix is not supported in strtol... so we implement it by hand
-      if (*buf == 'b') {
-        buf++;
-        tok.val.intv = (int)strtol(buf, &buf, 2);
-      } else {
-        tok.val.intv = (int)strtol(buf - 1, &buf, 0);
-      }
-    } else if (first == '\'') {
-      tok.type = ULAS_INT;
-      if (*buf == '\\') {
-        buf++;
-        tok.val.intv = ulas_unescape(*buf, rc);
-      } else {
-        tok.val.intv = (int)*buf;
-      }
-      buf++;
-      if (*buf != '\'') {
+      if (*buf != '\"') {
         *rc = -1;
-        ULASERR("Unterminated character sequence\n");
+        ULASERR("Unterminated string sequence\n");
         goto end;
       }
       buf++;
       break;
-    } else if (ulas_isname(buf - 1, n)) {
-      // literal token
-      // we resolve it later, will need to malloc here for now
-      tok.type = ULAS_SYMBOL;
-      tok.val.strv = strndup(buf - 1, n);
-      buf += n - 1;
-    } else {
-      ULASERR("Unexpected token: %s\n", buf);
-      *rc = -1;
-      goto end;
+    case '=':
+      if (*buf == '=') {
+        tok.type = ULAS_EQ;
+        buf++;
+      }
+      break;
+    case '!':
+      if (*buf == '=') {
+        tok.type = ULAS_NEQ;
+        buf++;
+      }
+      break;
+    case '<':
+      if (*buf == '=') {
+        tok.type = ULAS_LTEQ;
+        buf++;
+      }
+      break;
+    case '>':
+      if (*buf == '=') {
+        tok.type = ULAS_GTEQ;
+        buf++;
+      }
+      break;
+    default:
+      if (isdigit(first)) {
+        // integer
+        tok.type = ULAS_INT;
+
+        // 0b prefix is not supported in strtol... so we implement it by hand
+        if (*buf == 'b') {
+          buf++;
+          tok.val.intv = (int)strtol(buf, &buf, 2);
+        } else {
+          tok.val.intv = (int)strtol(buf - 1, &buf, 0);
+        }
+      } else if (first == '\'') {
+        tok.type = ULAS_INT;
+        if (*buf == '\\') {
+          buf++;
+          tok.val.intv = ulas_unescape(*buf, rc);
+        } else {
+          tok.val.intv = (int)*buf;
+        }
+        buf++;
+        if (*buf != '\'') {
+          *rc = -1;
+          ULASERR("Unterminated character sequence\n");
+          goto end;
+        }
+        buf++;
+        break;
+      } else if (ulas_isname(buf - 1, n)) {
+        // literal token
+        // we resolve it later, will need to malloc here for now
+        tok.type = ULAS_SYMBOL;
+        tok.val.strv = strndup(buf - 1, n);
+        buf += n - 1;
+      } else {
+        ULASERR("Unexpected token: %s\n", buf);
+        *rc = -1;
+        goto end;
+      }
+      break;
     }
-    break;
   }
 
 end:
