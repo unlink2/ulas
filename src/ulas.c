@@ -1045,8 +1045,7 @@ end:
 
 int ulas_parseprim(int *i) {
   struct ulas_tok *t = ulas_tokbufget(&ulas.toks, *i);
-  if (!t || (t->type != ULAS_INT && t->type != ULAS_STR)) {
-    printf("got type %d %c expected %d\n", t->type, t->type, ULAS_INT);
+  if (!t || (t->type != ULAS_INT && t->type != ULAS_STR && t->type != ULAS_SYMBOL)) {
     ULASERR("Primary expression expected\n");
     return -1;
   }
