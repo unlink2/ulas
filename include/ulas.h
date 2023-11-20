@@ -366,9 +366,9 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
  */
 
 // convert literal to its int value
-int ulas_litint(struct ulas_tok *lit, int *rc);
+int ulas_valint(struct ulas_tok *lit, int *rc);
 // convert literal to its char value
-char *ulas_litchar(struct ulas_tok *lit, int *rc);
+char *ulas_valstr(struct ulas_tok *lit, int *rc);
 
 struct ulas_tokbuf ulas_tokbuf(void);
 

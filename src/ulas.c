@@ -895,8 +895,9 @@ fail:
  * Literals, tokens and expressions
  */
 
-int ulas_litint(struct ulas_tok *lit, int *rc) {
-  if (lit->type != ULAS_INT) {
+int ulas_valint(struct ulas_tok *lit, int *rc) {
+  if (!lit || lit->type != ULAS_INT) {
+    ULASERR("Expected int\n");
     *rc = -1;
     return 0;
   }
@@ -904,8 +905,9 @@ int ulas_litint(struct ulas_tok *lit, int *rc) {
   return lit->val.intv;
 }
 
-char *ulas_litchar(struct ulas_tok *lit, int *rc) {
-  if (lit->type != ULAS_STR) {
+char *ulas_valstr(struct ulas_tok *lit, int *rc) {
+  if (!lit || lit->type != ULAS_STR) {
+    ULASERR("Expected str\n");
     *rc = -1;
     return NULL;
   }
@@ -1049,10 +1051,10 @@ int ulas_parseprim(int *i) {
     return -1;
   }
 
-  *i += 1;
   struct ulas_expprim prim = {*i};
   union ulas_expval val = {.prim = prim};
   struct ulas_expr e = {ULAS_EXPPRIM, val, -1};
+  *i += 1;
   return ulas_exprbufpush(&ulas.exprs, e);
 }
 
@@ -1108,15 +1110,26 @@ int ulas_parseexpr(void) {
   return rc;
 }
 
-int ulas_intexpreval(int *rc, int i) {
+int ulas_intexpreval(int i, int *rc) {
   struct ulas_expr *e = ulas_exprbufget(&ulas.exprs, i);
   if (!e) {
     ULASERR("unable to evaluate expression\n");
     *rc = -1;
     return 0;
   }
-  
+
   int result = 0;
+
+  switch (e->type) {
+  case ULAS_EXPBIN:
+  case ULAS_EXPUN:
+  case ULAS_EXPGRP:
+    break;
+  case ULAS_EXPPRIM: {
+    struct ulas_tok *t = ulas_tokbufget(&ulas.toks, e->val.prim.tok);
+    return ulas_valint(t, rc);
+  }
+  }
 
   return result;
 }
@@ -1134,7 +1147,7 @@ int ulas_intexpr(const char **line, unsigned long n, int *rc) {
 
   // execute the tree of expressions
 
-  return ulas_intexpreval(rc, 0);
+  return ulas_intexpreval(0, rc);
 }
 
 int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
