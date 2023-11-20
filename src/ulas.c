@@ -35,6 +35,7 @@ void ulas_init(struct ulas_config cfg) {
 
   ulas.toks = ulas_tokbuf();
   ulas.exprs = ulas_exprbuf();
+  ulas.symout = stdout;
 }
 
 void ulas_free(void) {
@@ -96,6 +97,16 @@ cleanup:
 
   if (cfg.output_path) {
     fclose(ulasout);
+  }
+
+  if (cfg.sym_path) {
+    fclose(ulas.symout);
+    ulas.symout = NULL;
+  }
+
+  if (cfg.lst_path) {
+    fclose(ulas.lstout);
+    ulas.lstout = NULL;
   }
 
   if (cfg.argc > 0) {
@@ -1303,7 +1314,10 @@ int ulas_intexpr(const char **line, unsigned long n, int *rc) {
   return ulas_intexpreval(expr, rc);
 }
 
-int ulas_asmimisc(FILE *dst, const char *line, unsigned long n) {}
+int ulas_asmimisc(char *dst, unsigned long max, const char *line,
+                  unsigned long n) {
+  return 0;
+}
 
 // assembles an instruction, writes bytes into dst
 // returns bytes written or -1 on error
@@ -1311,12 +1325,15 @@ int ulas_asminstr(char *dst, unsigned long max, const char *line,
                   unsigned long n) {
   int rc = 0;
 
+  if ((rc = ulas_asmimisc(dst, max, line, n))) {
+  }
+
   return rc;
 }
 
 int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
   // this buffer is written both to dst and to verbose output
-  char *outbuf[ULAS_OUTBUFMAX];
+  char outbuf[ULAS_OUTBUFMAX];
   memset(outbuf, 0, ULAS_OUTBUFMAX);
   long towrite = 0;
 
@@ -1379,8 +1396,10 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
 
   fwrite(outbuf, 1, towrite, dst);
 
-  // TODO: verbose output <address> <bytes>\tline
-  fprintf(dst, "%08X\t%s", ulas.address, start);
+  if (ulas.symout) {
+    // TODO: verbose output <address> <bytes>\tline
+    fprintf(ulas.symout, "%08X\t%s", ulas.address, start);
+  }
 
 fail:
   return rc;

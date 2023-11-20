@@ -74,6 +74,8 @@ struct ulas_config {
   int argc;
 
   char *output_path;
+  char *lst_path;
+  char *sym_path;
 
   int verbose;
   int preproc_only;
@@ -149,8 +151,8 @@ struct ulas {
   // used whenever a new unique number might be needed
   int icntr;
 
-  FILE *verbout;
-  FILE *symsout;
+  FILE *lstout;
+  FILE *symout;
 };
 
 extern struct ulas ulas;

@@ -12,7 +12,7 @@
 #define ULAS_OPTS "hvVp"
 
 // args with value
-#define ULAS_OPTS_ARG "o:"
+#define ULAS_OPTS_ARG "o:l:s:"
 
 #define ULAS_HELP(a, desc) printf("\t-%s\t%s\n", (a), desc);
 
@@ -24,6 +24,8 @@ void ulas_help(void) {
   ULAS_HELP("v", "verbose output");
   ULAS_HELP("p", "Stop after preprocessor");
   ULAS_HELP("o=path", "Output file");
+  ULAS_HELP("l=path", "Listing file");
+  ULAS_HELP("s=path", "Symbols file");
 }
 
 void ulas_version(void) { printf("%s version %s\n", ULAS_NAME, ULAS_VER); }
@@ -49,6 +51,12 @@ void ulas_getopt(int argc, char **argv, struct ulas_config *cfg) {
     case 'p':
       cfg->preproc_only = 1;
       break;
+    case 's':
+      cfg->sym_path = strndup(optarg, ULAS_PATHMAX);
+      break;
+    case 'l':
+      cfg->sym_path = strndup(optarg, ULAS_PATHMAX);
+      break;
     case '?':
       break;
     default:
@@ -73,6 +81,14 @@ int main(int argc, char **argv) {
 
   if (cfg.output_path) {
     free(cfg.output_path);
+  }
+
+  if (cfg.sym_path) {
+    free(cfg.sym_path);
+  }
+
+  if (cfg.lst_path) {
+    free(cfg.lst_path);
   }
 
   return res;
