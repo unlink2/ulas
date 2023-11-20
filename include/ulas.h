@@ -224,7 +224,7 @@ struct ulas_sym {
 enum ulas_exprs { ULAS_EXPUN, ULAS_EXPBIN, ULAS_EXPPRIM, ULAS_EXPGRP };
 
 struct ulas_expun {
-  long expr;
+  long right;
   long op;
 };
 

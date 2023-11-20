@@ -193,7 +193,8 @@ int ulas_tok(struct ulas_str *dst, const char **out_line, unsigned long n) {
       }
       dst->buf[write] = line[i];
       write++;
-      break;
+      i++;
+      goto tokdone;
     default:
       if (isspace(line[i])) {
         goto tokdone;
@@ -1060,7 +1061,22 @@ int ulas_parseprim(int *i) {
 
 int ulas_parsecmp(int *i);
 
-int ulas_parseun(int *i) { return ulas_parseprim(i); }
+int ulas_parseun(int *i) {
+  struct ulas_tok *t = ulas_tokbufget(&ulas.toks, *i);
+
+  if (t && (t->type == '!' || t->type == '-')) {
+    int op = *i;
+    *i += 1;
+    int right = ulas_parseun(i);
+
+    struct ulas_expun un = {right, op};
+    union ulas_expval val = {.un = un};
+    struct ulas_expr e = {ULAS_EXPUN, val, -1};
+    return ulas_exprbufpush(&ulas.exprs, e);
+  }
+
+  return ulas_parseprim(i);
+}
 
 int ulas_parsefact(int *i) {
   int expr = ulas_parseun(i);
@@ -1070,7 +1086,7 @@ int ulas_parsefact(int *i) {
          (t->type == '*' || t->type == '/' || t->type == '%')) {
     int op = *i;
     *i += 1;
-    int right = ulas_parsecmp(i);
+    int right = ulas_parseun(i);
 
     struct ulas_expbin bin = {expr, right, op};
     union ulas_expval val = {.bin = bin};
@@ -1089,7 +1105,7 @@ int ulas_parseterm(int *i) {
          (t->type == '+' || t->type == '-')) {
     int op = *i;
     *i += 1;
-    int right = ulas_parsecmp(i);
+    int right = ulas_parsefact(i);
 
     struct ulas_expbin bin = {expr, right, op};
     union ulas_expval val = {.bin = bin};
@@ -1109,7 +1125,7 @@ int ulas_parsecmp(int *i) {
           t->type == '<')) {
     int op = *i;
     *i += 1;
-    int right = ulas_parsecmp(i);
+    int right = ulas_parseterm(i);
 
     struct ulas_expbin bin = {expr, right, op};
     union ulas_expval val = {.bin = bin};
@@ -1125,7 +1141,6 @@ int ulas_parseeq(int *i) {
   struct ulas_tok *t = NULL;
   while ((t = ulas_tokbufget(&ulas.toks, *i)) &&
          (t->type == ULAS_EQ || t->type == ULAS_NEQ)) {
-
     int op = *i;
     *i += 1;
     int right = ulas_parsecmp(i);
@@ -1216,7 +1231,23 @@ int ulas_intexpreval(int i, int *rc) {
     }
     break;
   }
-  case ULAS_EXPUN:
+  case ULAS_EXPUN: {
+    struct ulas_tok *op = ulas_tokbufget(&ulas.toks, e->val.un.op);
+    if (!op) {
+      ULASPANIC("Unary operator was NULL\n");
+    }
+    int right = ulas_intexpreval(e->val.un.right, rc);
+    switch ((int)op->type) {
+    case '!':
+      return !right;
+    case '-':
+      return -right;
+    default:
+      ULASPANIC("Unhandeled unary operation\n");
+      break;
+    }
+    break;
+  }
   case ULAS_EXPGRP:
     break;
   case ULAS_EXPPRIM: {
