@@ -35,7 +35,7 @@ void ulas_init(struct ulas_config cfg) {
 
   ulas.toks = ulas_tokbuf();
   ulas.exprs = ulas_exprbuf();
-  ulas.symout = stdout;
+  ulas.lstout = stdout;
 }
 
 void ulas_free(void) {
@@ -1396,9 +1396,9 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
 
   fwrite(outbuf, 1, towrite, dst);
 
-  if (ulas.symout) {
+  if (ulas.lstout) {
     // TODO: verbose output <address> <bytes>\tline
-    fprintf(ulas.symout, "%08X\t%s", ulas.address, start);
+    fprintf(ulas.lstout, "%08X\t%s", ulas.address, start);
   }
 
 fail:
