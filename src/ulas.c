@@ -1058,6 +1058,8 @@ int ulas_parseprim(int *i) {
   return ulas_exprbufpush(&ulas.exprs, e);
 }
 
+int ulas_parsecmp(int *i);
+
 int ulas_parseun(int *i) { return ulas_parseprim(i); }
 
 int ulas_parsefact(int *i) {
@@ -1167,7 +1169,7 @@ int ulas_intexpreval(int i, int *rc) {
     return 0;
   }
 
-  switch (e->type) {
+  switch ((int)e->type) {
   case ULAS_EXPBIN: {
     struct ulas_tok *op = ulas_tokbufget(&ulas.toks, e->val.bin.op);
     if (!op) {
@@ -1175,7 +1177,7 @@ int ulas_intexpreval(int i, int *rc) {
     }
     int left = ulas_intexpreval(e->val.bin.left, rc);
     int right = ulas_intexpreval(e->val.bin.right, rc);
-    switch (op->type) {
+    switch ((int)op->type) {
     case ULAS_EQ:
       return left == right;
     case ULAS_NEQ:
