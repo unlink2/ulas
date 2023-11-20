@@ -1355,6 +1355,17 @@ int ulas_asminstr(char *dst, unsigned long max, const char *line,
   return rc;
 }
 
+void ulas_asmlst(const char *line, char *outbuf, unsigned long n) {
+  if (ulaslstout) {
+    // TODO: verbose output <address> <bytes>\tline
+    fprintf(ulaslstout, "%08X\t%s", ulas.address, line);
+  }
+}
+
+void ulas_asmout(FILE *dst, const char *outbuf, unsigned long n) {
+  fwrite(outbuf, 1, n, dst);
+}
+
 int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
   // this buffer is written both to dst and to verbose output
   char outbuf[ULAS_OUTBUFMAX];
@@ -1418,12 +1429,8 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
     // can fix them later
   }
 
-  fwrite(outbuf, 1, towrite, dst);
-
-  if (ulaslstout) {
-    // TODO: verbose output <address> <bytes>\tline
-    fprintf(ulaslstout, "%08X\t%s", ulas.address, start);
-  }
+  ulas_asmout(dst, outbuf, towrite);
+  ulas_asmlst(start, outbuf, towrite);
 
 fail:
   return rc;
