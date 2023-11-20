@@ -1045,7 +1045,8 @@ end:
 
 int ulas_parseprim(int *i) {
   struct ulas_tok *t = ulas_tokbufget(&ulas.toks, *i);
-  if (!t || (t->type != ULAS_INT && t->type != ULAS_STR && t->type != ULAS_SYMBOL)) {
+  if (!t ||
+      (t->type != ULAS_INT && t->type != ULAS_STR && t->type != ULAS_SYMBOL)) {
     ULASERR("Primary expression expected\n");
     return -1;
   }
@@ -1061,17 +1062,58 @@ int ulas_parseun(int *i) { return ulas_parseprim(i); }
 
 int ulas_parsefact(int *i) {
   int expr = ulas_parseun(i);
+  struct ulas_tok *t = NULL;
+
+  while ((t = ulas_tokbufget(&ulas.toks, *i)) &&
+         (t->type == '*' || t->type == '/' || t->type == '%')) {
+    int op = *i;
+    *i += 1;
+    int right = ulas_parsecmp(i);
+
+    struct ulas_expbin bin = {expr, right, op};
+    union ulas_expval val = {.bin = bin};
+    struct ulas_expr e = {ULAS_EXPBIN, val, -1};
+    expr = ulas_exprbufpush(&ulas.exprs, e);
+  }
 
   return expr;
 }
 
 int ulas_parseterm(int *i) {
   int expr = ulas_parsefact(i);
+  struct ulas_tok *t = NULL;
+
+  while ((t = ulas_tokbufget(&ulas.toks, *i)) &&
+         (t->type == '+' || t->type == '-')) {
+    int op = *i;
+    *i += 1;
+    int right = ulas_parsecmp(i);
+
+    struct ulas_expbin bin = {expr, right, op};
+    union ulas_expval val = {.bin = bin};
+    struct ulas_expr e = {ULAS_EXPBIN, val, -1};
+    expr = ulas_exprbufpush(&ulas.exprs, e);
+  }
+
   return expr;
 }
 
 int ulas_parsecmp(int *i) {
   int expr = ulas_parseterm(i);
+  struct ulas_tok *t = NULL;
+
+  while ((t = ulas_tokbufget(&ulas.toks, *i)) &&
+         (t->type == ULAS_LTEQ || t->type == ULAS_GTEQ || t->type == '>' ||
+          t->type == '<')) {
+    int op = *i;
+    *i += 1;
+    int right = ulas_parsecmp(i);
+
+    struct ulas_expbin bin = {expr, right, op};
+    union ulas_expval val = {.bin = bin};
+    struct ulas_expr e = {ULAS_EXPBIN, val, -1};
+    expr = ulas_exprbufpush(&ulas.exprs, e);
+  }
 
   return expr;
 }
@@ -1135,7 +1177,37 @@ int ulas_intexpreval(int i, int *rc) {
     int right = ulas_intexpreval(e->val.bin.right, rc);
     switch (op->type) {
     case ULAS_EQ:
-      return left == right; 
+      return left == right;
+    case ULAS_NEQ:
+      return left != right;
+    case '<':
+      return left < right;
+    case '>':
+      return left > right;
+    case ULAS_LTEQ:
+      return left <= right;
+    case ULAS_GTEQ:
+      return left >= right;
+    case '+':
+      return left + right;
+    case '-':
+      return left - right;
+    case '*':
+      return left * right;
+    case '/':
+      if (right == 0) {
+        ULASERR("integer division by 0\n");
+        *rc = -1;
+        return 0;
+      }
+      return left / right;
+    case '%':
+      if (right == 0) {
+        ULASERR("integer division by 0\n");
+        *rc = -1;
+        return 0;
+      }
+      return left % right;
     default:
       ULASPANIC("Unhandeled binary operator\n");
       break;
