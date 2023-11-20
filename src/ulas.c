@@ -1345,6 +1345,16 @@ int ulas_intexpr(const char **line, unsigned long n, int *rc) {
 
 #define ULAS_ISINSTR(tok, name, n) (strncmp(tok, name, n) == 0)
 
+int ulas_istokend(struct ulas_str *tok) {
+  long len = strnlen(tok->buf, tok->maxlen);
+  // skip comments though, they are not trailing tokens!
+  if (len > 0 && tok->buf[0] != ULAS_TOK_COMMENT) {
+    return 0;
+  }
+
+  return 1;
+}
+
 // assembles an instruction, writes bytes into dst
 // returns bytes written or -1 on error
 int ulas_asminstr(char *dst, unsigned long max, const char *line,
@@ -1353,6 +1363,10 @@ int ulas_asminstr(char *dst, unsigned long max, const char *line,
   if (max < 3) {
     ULASPANIC("Instruction buffer is too small!");
     return -1;
+  }
+
+  if (ulas_istokend(&ulas.tok)) {
+    return 0;
   }
 
   if (ulas_tok(&ulas.tok, &line, n) == -1) {
@@ -1378,6 +1392,14 @@ int ulas_asminstr(char *dst, unsigned long max, const char *line,
   } else {
     ULASERR("Invalid instruction '%s'\n", ulas.tok.buf);
     return -1;
+  }
+
+  // check for trailing
+  if (ulas_tok(&ulas.tok, &line, n) > 0) {
+    if (!ulas_istokend(&ulas.tok)) {
+      ULASERR("Trailing token '%s'\n", ulas.tok.buf);
+      return -1;
+    }
   }
 
   return rc;
