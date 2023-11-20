@@ -1013,6 +1013,12 @@ int ulas_tokexpr(const char **line, unsigned long n) {
     if (tokrc == -1) {
       goto end;
     }
+
+    // empty tokens are going to be ignored 
+    if (strnlen(ulas.tok.buf, ulas.tok.maxlen) == 0) {
+      continue;
+    }
+
     // interpret the token
     struct ulas_tok tok = ulas_totok(
         ulas.tok.buf, strnlen(ulas.tok.buf, ulas.tok.maxlen), &tokrc);
@@ -1293,8 +1299,8 @@ int ulas_intexpr(const char **line, unsigned long n, int *rc) {
     return -1;
   }
 
-  // execute the tree of expressions
 
+  // execute the tree of expressions
   return ulas_intexpreval(expr, rc);
 }
 
