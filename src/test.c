@@ -245,6 +245,8 @@ void test_intexpr(void) {
   ASSERT_INTEXPR(-1, -1, "");
   ASSERT_INTEXPR(1, 0, "1");
   ASSERT_INTEXPR(1, 0, "2 == 2");
+  ASSERT_INTEXPR(0, 0, "2 == 2 == 3");
+  ASSERT_INTEXPR(1, 0, "2 == 2 == 1");
 
   TESTEND("intexpr");
 }

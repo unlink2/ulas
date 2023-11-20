@@ -1083,13 +1083,21 @@ int ulas_parseeq(int *i) {
   while ((t = ulas_tokbufget(&ulas.toks, *i)) &&
          (t->type == ULAS_EQ || t->type == ULAS_NEQ)) {
 
+    int op = *i;
     *i += 1;
+    int right = ulas_parsecmp(i);
+
+    struct ulas_expbin bin = {expr, right, op};
+    union ulas_expval val = {.bin = bin};
+    struct ulas_expr e = {ULAS_EXPBIN, val, -1};
+    expr = ulas_exprbufpush(&ulas.exprs, e);
   }
 
   return expr;
 }
 
 // parses tokens to expression tree
+// returns head expression index
 int ulas_parseexpr(void) {
   ulas_exprbufclear(&ulas.exprs);
 
@@ -1102,8 +1110,8 @@ int ulas_parseexpr(void) {
   int i = 0;
   int rc = ulas_parseeq(&i);
 
-  if (i != toks->len) {
-    ULASERR("Trailing token at index %d!\n", i);
+  if (i < toks->len) {
+    ULASERR("Trailing token at index %d\n", i);
     rc = -1;
   }
 
@@ -1118,10 +1126,23 @@ int ulas_intexpreval(int i, int *rc) {
     return 0;
   }
 
-  int result = 0;
-
   switch (e->type) {
-  case ULAS_EXPBIN:
+  case ULAS_EXPBIN: {
+    struct ulas_tok *op = ulas_tokbufget(&ulas.toks, e->val.bin.op);
+    if (!op) {
+      ULASPANIC("Binary operator was NULL\n");
+    }
+    int left = ulas_intexpreval(e->val.bin.left, rc);
+    int right = ulas_intexpreval(e->val.bin.right, rc);
+    switch (op->type) {
+    case ULAS_EQ:
+      return left == right; 
+    default:
+      ULASPANIC("Unhandeled binary operator\n");
+      break;
+    }
+    break;
+  }
   case ULAS_EXPUN:
   case ULAS_EXPGRP:
     break;
@@ -1131,7 +1152,7 @@ int ulas_intexpreval(int i, int *rc) {
   }
   }
 
-  return result;
+  return 0;
 }
 
 int ulas_intexpr(const char **line, unsigned long n, int *rc) {
@@ -1140,14 +1161,15 @@ int ulas_intexpr(const char **line, unsigned long n, int *rc) {
     return -1;
   }
 
-  if (ulas_parseexpr() == -1) {
+  int expr = -1;
+  if ((expr = ulas_parseexpr()) == -1) {
     *rc = -1;
     return -1;
   }
 
   // execute the tree of expressions
 
-  return ulas_intexpreval(0, rc);
+  return ulas_intexpreval(expr, rc);
 }
 
 int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
