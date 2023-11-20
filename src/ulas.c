@@ -1349,7 +1349,36 @@ int ulas_intexpr(const char **line, unsigned long n, int *rc) {
 // returns bytes written or -1 on error
 int ulas_asminstr(char *dst, unsigned long max, const char *line,
                   unsigned long n) {
+
+  if (max < 3) {
+    ULASPANIC("Instruction buffer is too small!");
+    return -1;
+  }
+
+  if (ulas_tok(&ulas.tok, &line, n) == -1) {
+    ULASERR("Expected label or instruction\n");
+    return -1;
+  }
+
+  // TODO: check for symbol token here... if so add it
+  // and skip to the next token
+
   int rc = 0;
+
+  if (ULAS_ISINSTR(ulas.tok.buf, "nop", ulas.tok.maxlen)) {
+    dst[0] = 0x00;
+    rc++;
+  } else if (ULAS_ISINSTR(ulas.tok.buf, "halt", ulas.tok.maxlen)) {
+    dst[0] = 0x76;
+    rc++;
+  } else if (ULAS_ISINSTR(ulas.tok.buf, "stop", ulas.tok.maxlen)) {
+    dst[0] = 0x10;
+    dst[1] = 0x00;
+    rc += 2;
+  } else {
+    ULASERR("Invalid instruction '%s'\n", ulas.tok.buf);
+    return -1;
+  }
 
   return rc;
 }
@@ -1391,6 +1420,12 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
   // read the first token and decide
   ulas_tok(&ulas.tok, &line, n);
 
+  // we ignore empty lines
+  if (ulas.tok.buf[0] == '\0') {
+    ulas_asmlst(start, outbuf, towrite);
+    return 0;
+  }
+
   if (ulas.tok.buf[0] == ULAS_TOK_ASMDIR_BEGIN) {
     const char *dirstrs[] = {
         ULAS_ASMSTR_ORG,  ULAS_ASMSTR_SET, ULAS_ASMSTR_BYTE,   ULAS_ASMSTR_STR,
@@ -1431,7 +1466,7 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
 
   } else {
     // is regular line in form of [label:] instruction ; comment
-    if ((towrite += ulas_asminstr(outbuf, ULAS_OUTBUFMAX, line, n)) == -1) {
+    if ((towrite += ulas_asminstr(outbuf, ULAS_OUTBUFMAX, start, n)) == -1) {
       ULASERR("Unable to assemble instruction\n");
       rc = -1;
       goto fail;
@@ -1446,6 +1481,7 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
 
   ulas_asmout(dst, outbuf, towrite);
   ulas_asmlst(start, outbuf, towrite);
+  ulas.address += towrite;
 
 fail:
   return rc;
