@@ -241,9 +241,7 @@ struct ulas_expprim {
 struct ulas_expgrp {
   // points to the first expression
   // in this group
-  long expr;
-  // how many expressions belong to the group
-  long len;
+  long head;
 };
 
 union ulas_expval {
@@ -256,9 +254,6 @@ union ulas_expval {
 struct ulas_expr {
   enum ulas_exprs type;
   union ulas_expval val;
-  // link to the next expression, -1 indicates
-  // there is no next expression
-  long next;
 };
 
 /**

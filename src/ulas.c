@@ -1044,19 +1044,38 @@ end:
  * we error out because of trailing tokens!
  */
 
+int ulas_parseexprat(int *i);
+
 int ulas_parseprim(int *i) {
   struct ulas_tok *t = ulas_tokbufget(&ulas.toks, *i);
-  if (!t ||
-      (t->type != ULAS_INT && t->type != ULAS_STR && t->type != ULAS_SYMBOL)) {
+  if (!t || (t->type != ULAS_INT && t->type != ULAS_STR &&
+             t->type != ULAS_SYMBOL && t->type != '(' && t->type != ')')) {
     ULASERR("Primary expression expected\n");
     return -1;
   }
 
-  struct ulas_expprim prim = {*i};
-  union ulas_expval val = {.prim = prim};
-  struct ulas_expr e = {ULAS_EXPPRIM, val, -1};
-  *i += 1;
-  return ulas_exprbufpush(&ulas.exprs, e);
+  if (t->type == '(') {
+    *i += 1;
+    int head = ulas_parseexprat(i);
+
+    struct ulas_expgrp grp = {head};
+    union ulas_expval val = {.grp = grp};
+    struct ulas_expr e = {ULAS_EXPGRP, val};
+
+    struct ulas_tok *closing = ulas_tokbufget(&ulas.toks, *i);
+    if (!closing || closing->type != ')') {
+      ULASERR("Unterminated group expression\n");
+      return -1;
+    }
+    *i += 1;
+    return ulas_exprbufpush(&ulas.exprs, e);
+  } else {
+    struct ulas_expprim prim = {*i};
+    union ulas_expval val = {.prim = prim};
+    struct ulas_expr e = {ULAS_EXPPRIM, val};
+    *i += 1;
+    return ulas_exprbufpush(&ulas.exprs, e);
+  }
 }
 
 int ulas_parsecmp(int *i);
@@ -1071,7 +1090,7 @@ int ulas_parseun(int *i) {
 
     struct ulas_expun un = {right, op};
     union ulas_expval val = {.un = un};
-    struct ulas_expr e = {ULAS_EXPUN, val, -1};
+    struct ulas_expr e = {ULAS_EXPUN, val};
     return ulas_exprbufpush(&ulas.exprs, e);
   }
 
@@ -1090,7 +1109,7 @@ int ulas_parsefact(int *i) {
 
     struct ulas_expbin bin = {expr, right, op};
     union ulas_expval val = {.bin = bin};
-    struct ulas_expr e = {ULAS_EXPBIN, val, -1};
+    struct ulas_expr e = {ULAS_EXPBIN, val};
     expr = ulas_exprbufpush(&ulas.exprs, e);
   }
 
@@ -1109,7 +1128,7 @@ int ulas_parseterm(int *i) {
 
     struct ulas_expbin bin = {expr, right, op};
     union ulas_expval val = {.bin = bin};
-    struct ulas_expr e = {ULAS_EXPBIN, val, -1};
+    struct ulas_expr e = {ULAS_EXPBIN, val};
     expr = ulas_exprbufpush(&ulas.exprs, e);
   }
 
@@ -1129,7 +1148,7 @@ int ulas_parsecmp(int *i) {
 
     struct ulas_expbin bin = {expr, right, op};
     union ulas_expval val = {.bin = bin};
-    struct ulas_expr e = {ULAS_EXPBIN, val, -1};
+    struct ulas_expr e = {ULAS_EXPBIN, val};
     expr = ulas_exprbufpush(&ulas.exprs, e);
   }
 
@@ -1147,12 +1166,14 @@ int ulas_parseeq(int *i) {
 
     struct ulas_expbin bin = {expr, right, op};
     union ulas_expval val = {.bin = bin};
-    struct ulas_expr e = {ULAS_EXPBIN, val, -1};
+    struct ulas_expr e = {ULAS_EXPBIN, val};
     expr = ulas_exprbufpush(&ulas.exprs, e);
   }
 
   return expr;
 }
+
+int ulas_parseexprat(int *i) { return ulas_parseeq(i); }
 
 // parses tokens to expression tree
 // returns head expression index
@@ -1166,7 +1187,7 @@ int ulas_parseexpr(void) {
   }
 
   int i = 0;
-  int rc = ulas_parseeq(&i);
+  int rc = ulas_parseexprat(&i);
 
   if (i < toks->len) {
     ULASERR("Trailing token at index %d\n", i);
@@ -1248,8 +1269,9 @@ int ulas_intexpreval(int i, int *rc) {
     }
     break;
   }
-  case ULAS_EXPGRP:
-    break;
+  case ULAS_EXPGRP: {
+    return ulas_intexpreval(e->val.grp.head, rc);
+  }
   case ULAS_EXPPRIM: {
     struct ulas_tok *t = ulas_tokbufget(&ulas.toks, e->val.prim.tok);
     return ulas_valint(t, rc);

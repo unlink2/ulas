@@ -268,6 +268,10 @@ void test_intexpr(void) {
   ASSERT_INTEXPR(-1, 0, "-1");
   ASSERT_INTEXPR(1, 0, "--1");
   ASSERT_INTEXPR(2, 0, "1 - -1");
+  ASSERT_INTEXPR(17, 0, "2 + 3 * 5");
+
+  ASSERT_INTEXPR(-1, -1, "((2 + 3) * 5");
+  ASSERT_INTEXPR(25, 0, "(2 + 3) * 5");
 
   TESTEND("intexpr");
 }
