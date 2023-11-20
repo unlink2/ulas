@@ -55,7 +55,7 @@ void ulas_getopt(int argc, char **argv, struct ulas_config *cfg) {
       cfg->sym_path = strndup(optarg, ULAS_PATHMAX);
       break;
     case 'l':
-      cfg->sym_path = strndup(optarg, ULAS_PATHMAX);
+      cfg->lst_path = strndup(optarg, ULAS_PATHMAX);
       break;
     case '?':
       break;

@@ -8,6 +8,8 @@
 FILE *ulasin = NULL;
 FILE *ulasout = NULL;
 FILE *ulaserr = NULL;
+FILE *ulaslstout = NULL;
+FILE *ulassymout = NULL;
 struct ulas_config ulascfg;
 struct ulas ulas;
 
@@ -22,6 +24,7 @@ void ulas_init(struct ulas_config cfg) {
   if (ulaserr == NULL) {
     ulaserr = stderr;
   }
+
   ulascfg = cfg;
 
   // init assembly context
@@ -35,7 +38,6 @@ void ulas_init(struct ulas_config cfg) {
 
   ulas.toks = ulas_tokbuf();
   ulas.exprs = ulas_exprbuf();
-  ulas.lstout = stdout;
 }
 
 void ulas_free(void) {
@@ -53,25 +55,49 @@ struct ulas_config ulas_cfg_from_env(void) {
   return cfg;
 }
 
+FILE *ulas_fopen(const char *path, const char *mode, FILE *stdfile) {
+  if (!path || strncmp(path, "-", 1) == 0) {
+    return stdfile;
+  }
+  FILE *f = fopen(path, mode);
+
+  if (!f) {
+    ULASPANIC("%s: %s\n", path, strerror(errno));
+    return NULL;
+  }
+  return f;
+}
+
+void ulas_fclose(FILE *f) {
+  if (!f || f == stdin || f == stdout || f == stderr) {
+    return;
+  }
+
+  fclose(f);
+}
+
 int ulas_main(struct ulas_config cfg) {
   int rc = 0;
+  ulas_init(cfg);
   if (cfg.output_path) {
-    ulasout = fopen(cfg.output_path, "we");
-    if (!ulasout) {
-      fprintf(ulaserr, "%s: %s\n", cfg.output_path, strerror(errno));
-      return -1;
-    }
+    ULASDBG("output: %s\n", cfg.output_path);
+    ulasout = ulas_fopen(cfg.output_path, "we", stdout);
+  }
+
+  if (cfg.sym_path) {
+    ULASDBG("symbols: %s\n", cfg.sym_path);
+    ulassymout = ulas_fopen(cfg.sym_path, "we", stdout);
+  }
+
+  if (cfg.lst_path) {
+    ULASDBG("list: %s\n", cfg.lst_path);
+    ulaslstout = ulas_fopen(cfg.lst_path, "we", stdout);
   }
 
   if (cfg.argc > 0) {
-    ulasin = fopen(cfg.argv[0], "re");
-    if (!ulasin) {
-      fprintf(ulaserr, "%s: %s\n", cfg.argv[0], strerror(errno));
-      return -1;
-    }
+    ULASDBG("input: %s\n", cfg.argv[0]);
+    ulasin = ulas_fopen(cfg.argv[0], "re", stdin);
   }
-
-  ulas_init(cfg);
 
   FILE *preprocdst = NULL;
 
@@ -92,25 +118,23 @@ int ulas_main(struct ulas_config cfg) {
 
 cleanup:
   if (!cfg.preproc_only) {
-    fclose(preprocdst);
+    ulas_fclose(preprocdst);
   }
 
   if (cfg.output_path) {
-    fclose(ulasout);
+    ulas_fclose(ulasout);
   }
 
   if (cfg.sym_path) {
-    fclose(ulas.symout);
-    ulas.symout = NULL;
+    ulas_fclose(ulassymout);
   }
 
   if (cfg.lst_path) {
-    fclose(ulas.lstout);
-    ulas.lstout = NULL;
+    ulas_fclose(ulaslstout);
   }
 
   if (cfg.argc > 0) {
-    fclose(ulasin);
+    ulas_fclose(ulasin);
   }
 
   ulas_free();
@@ -1396,9 +1420,9 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
 
   fwrite(outbuf, 1, towrite, dst);
 
-  if (ulas.lstout) {
+  if (ulaslstout) {
     // TODO: verbose output <address> <bytes>\tline
-    fprintf(ulas.lstout, "%08X\t%s", ulas.address, start);
+    fprintf(ulaslstout, "%08X\t%s", ulas.address, start);
   }
 
 fail:

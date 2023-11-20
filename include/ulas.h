@@ -46,6 +46,10 @@
 #define ULAS_TOK_PREPROC_BEGIN '#'
 
 #define ULASINFO() fprintf(ulaserr, "%s:%ld ", ulas.filename, ulas.line);
+#define ULASDBG(...)                                                           \
+  if (ulascfg.verbose) {                                                       \
+    fprintf(ulaserr, __VA_ARGS__);                                             \
+  }
 #define ULASERR(...) ULASINFO() fprintf(ulaserr, __VA_ARGS__);
 #define ULASWARN(...) ULASINFO() fprintf(ulaserr, __VA_ARGS__);
 #define ULASPANIC(...)                                                         \
@@ -61,9 +65,20 @@
     fprintf((f), "%s", (fmt));                                                 \
   }
 
+/**
+ * Output target files 
+ */
+
+// input file for source reader 
 extern FILE *ulasin;
+// source code output target 
 extern FILE *ulasout;
+// error output target
 extern FILE *ulaserr;
+// assembly listing output 
+extern FILE *ulaslstout;
+// symbol list output
+extern FILE *ulassymout;
 
 struct ulas_expr;
 struct ulas_tok;
@@ -150,9 +165,6 @@ struct ulas {
   // internal counter
   // used whenever a new unique number might be needed
   int icntr;
-
-  FILE *lstout;
-  FILE *symout;
 };
 
 extern struct ulas ulas;
