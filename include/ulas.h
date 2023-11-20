@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <string.h>
 
+// if this is used as a path use stdin or stdout instead
+#define ULAS_STDFILEPATH "-"
+
 #define ULAS_PATHMAX 4096
 #define ULAS_LINEMAX 4096
 #define ULAS_OUTBUFMAX 64
@@ -66,16 +69,16 @@
   }
 
 /**
- * Output target files 
+ * Output target files
  */
 
-// input file for source reader 
+// input file for source reader
 extern FILE *ulasin;
-// source code output target 
+// source code output target
 extern FILE *ulasout;
 // error output target
 extern FILE *ulaserr;
-// assembly listing output 
+// assembly listing output
 extern FILE *ulaslstout;
 // symbol list output
 extern FILE *ulassymout;

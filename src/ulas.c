@@ -56,7 +56,7 @@ struct ulas_config ulas_cfg_from_env(void) {
 }
 
 FILE *ulas_fopen(const char *path, const char *mode, FILE *stdfile) {
-  if (!path || strncmp(path, "-", 1) == 0) {
+  if (!path || strncmp(path, ULAS_STDFILEPATH, 1) == 0) {
     return stdfile;
   }
   FILE *f = fopen(path, mode);
