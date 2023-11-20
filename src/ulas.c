@@ -1014,7 +1014,7 @@ int ulas_tokexpr(const char **line, unsigned long n) {
       goto end;
     }
 
-    // empty tokens are going to be ignored 
+    // empty tokens are going to be ignored
     if (strnlen(ulas.tok.buf, ulas.tok.maxlen) == 0) {
       continue;
     }
@@ -1299,9 +1299,14 @@ int ulas_intexpr(const char **line, unsigned long n, int *rc) {
     return -1;
   }
 
-
   // execute the tree of expressions
   return ulas_intexpreval(expr, rc);
+}
+
+int ulas_asminstr(FILE *dst, const char *line, unsigned long n) {
+  int rc = 0;
+
+  return rc;
 }
 
 int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
@@ -1353,6 +1358,11 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
 
   } else {
     // is regular line in form of [label:] instruction ; comment
+    if (ulas_asminstr(dst, line, n) == -1) {
+      ULASERR("Unable to assemble instruction\n");
+      rc = -1;
+      goto fail;
+    }
   }
 
 fail:

@@ -276,6 +276,12 @@ void test_intexpr(void) {
   TESTEND("intexpr");
 }
 
+void test_asminstr(void) {
+  TESTBEGIN("asminstr");
+
+  TESTEND("asminstr");
+}
+
 int main(int arc, char **argv) {
   ulas_init(ulas_cfg_from_env());
 
@@ -288,6 +294,7 @@ int main(int arc, char **argv) {
   test_preproc();
   test_totok();
   test_intexpr();
+  test_asminstr();
 
   ulas_free();
 
