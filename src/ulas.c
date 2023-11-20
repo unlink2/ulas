@@ -1365,10 +1365,6 @@ int ulas_asminstr(char *dst, unsigned long max, const char *line,
     return -1;
   }
 
-  if (ulas_istokend(&ulas.tok)) {
-    return 0;
-  }
-
   if (ulas_tok(&ulas.tok, &line, n) == -1) {
     ULASERR("Expected label or instruction\n");
     return -1;
@@ -1442,8 +1438,8 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
   // read the first token and decide
   ulas_tok(&ulas.tok, &line, n);
 
-  // we ignore empty lines
-  if (ulas.tok.buf[0] == '\0') {
+  // we ignore empty lines or all comments lines
+  if (ulas_istokend(&ulas.tok)) {
     ulas_asmlst(start, outbuf, towrite);
     return 0;
   }
