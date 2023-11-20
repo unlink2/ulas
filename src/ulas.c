@@ -1303,17 +1303,25 @@ int ulas_intexpr(const char **line, unsigned long n, int *rc) {
   return ulas_intexpreval(expr, rc);
 }
 
-int ulas_asminstr(FILE *dst, const char *line, unsigned long n) {
+int ulas_asmimisc(FILE *dst, const char *line, unsigned long n) {}
+
+// assembles an instruction, writes bytes into dst
+// returns bytes written or -1 on error
+int ulas_asminstr(char *dst, unsigned long max, const char *line,
+                  unsigned long n) {
   int rc = 0;
 
   return rc;
 }
 
 int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
+  // this buffer is written both to dst and to verbose output
+  char *outbuf[ULAS_OUTBUFMAX];
+  memset(outbuf, 0, ULAS_OUTBUFMAX);
+  long towrite = 0;
+
   const char *start = line;
   int rc = 0;
-
-  fprintf(dst, "%s", line);
 
   // read the first token and decide
   ulas_tok(&ulas.tok, &line, n);
@@ -1358,12 +1366,21 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
 
   } else {
     // is regular line in form of [label:] instruction ; comment
-    if (ulas_asminstr(dst, line, n) == -1) {
+    if ((towrite += ulas_asminstr(outbuf, ULAS_OUTBUFMAX, line, n)) == -1) {
       ULASERR("Unable to assemble instruction\n");
       rc = -1;
       goto fail;
     }
+
+    // TODO: place marker when a label was unresolved
+    // write down byte location in dst as well as line number in verbout so we
+    // can fix them later
   }
+
+  fwrite(outbuf, 1, towrite, dst);
+
+  // TODO: verbose output <address> <bytes>\tline
+  fprintf(dst, "%08X\t%s", ulas.address, start);
 
 fail:
   return rc;

@@ -7,6 +7,7 @@
 
 #define ULAS_PATHMAX 4096
 #define ULAS_LINEMAX 4096
+#define ULAS_OUTBUFMAX 64
 #define ULAS_MACROPARAMMAX 9
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
@@ -147,6 +148,9 @@ struct ulas {
   // internal counter
   // used whenever a new unique number might be needed
   int icntr;
+
+  FILE *verbout;
+  FILE *symsout;
 };
 
 extern struct ulas ulas;
