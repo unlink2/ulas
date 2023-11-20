@@ -1040,7 +1040,8 @@ void ulas_exprbuffree(struct ulas_exprbuf *eb) { free(eb->buf); }
  * Assembly step
  */
 
-int ulas_tokexpr(const char **line, unsigned long n) {
+// tokenize all until a terminator token or comment is reached
+int ulas_tokall(const char **line, unsigned long n, int term) {
   ulas_tokbufclear(&ulas.toks);
 
   int tokrc = 0;
@@ -1062,7 +1063,7 @@ int ulas_tokexpr(const char **line, unsigned long n) {
     }
 
     // check for any expression terminators here
-    if (tok.type == ',') {
+    if (tok.type == term || tok.type == ULAS_TOK_COMMENT) {
       goto end;
     }
 
@@ -1072,6 +1073,10 @@ int ulas_tokexpr(const char **line, unsigned long n) {
 
 end:
   return tokrc;
+}
+
+int ulas_tokexpr(const char **line, unsigned long n) {
+  return ulas_tokall(line, n, ',');
 }
 
 /**
@@ -1338,10 +1343,7 @@ int ulas_intexpr(const char **line, unsigned long n, int *rc) {
   return ulas_intexpreval(expr, rc);
 }
 
-int ulas_asmimisc(char *dst, unsigned long max, const char *line,
-                  unsigned long n) {
-  return 0;
-}
+#define ULAS_ISINSTR(tok, name, n) (strncmp(tok, name, n) == 0)
 
 // assembles an instruction, writes bytes into dst
 // returns bytes written or -1 on error
@@ -1349,16 +1351,27 @@ int ulas_asminstr(char *dst, unsigned long max, const char *line,
                   unsigned long n) {
   int rc = 0;
 
-  if ((rc = ulas_asmimisc(dst, max, line, n))) {
-  }
-
   return rc;
 }
 
 void ulas_asmlst(const char *line, char *outbuf, unsigned long n) {
   if (ulaslstout) {
-    // TODO: verbose output <address> <bytes>\tline
-    fprintf(ulaslstout, "%08X\t%s", ulas.address, line);
+    fprintf(ulaslstout, "%08X", ulas.address);
+
+    // always pad at least n bytes
+    fputs("\t", ulaslstout);
+    const int pad = 8;
+    int outwrt = 0;
+
+    for (long i = 0; i < n; i++) {
+      outwrt += fprintf(ulaslstout, "%02x ", (int)outbuf[i]);
+    }
+
+    for (long i = outwrt; i < pad; i++) {
+      fputs(".", ulaslstout);
+    }
+
+    fprintf(ulaslstout, "\t%s", line);
   }
 }
 
@@ -1424,9 +1437,11 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
       goto fail;
     }
 
-    // TODO: place marker when a label was unresolved
-    // write down byte location in dst as well as line number in verbout so we
-    // can fix them later
+    // TODO:
+    // place marker when a label was unresolved
+    // write down byte location in dst as well as the byte offset in lstout so
+    // we can fix them later labels can only be unresolved when they are the
+    // only node in an expression!
   }
 
   ulas_asmout(dst, outbuf, towrite);
