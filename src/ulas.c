@@ -1356,12 +1356,19 @@ int ulas_intexpr(const char **line, unsigned long n, int *rc) {
   return ulas_intexpreval(expr, rc);
 }
 
+// adds an instruction that only comparse names 
 #define ULAS_STATICINSTR(name, n, ...)                                         \
   if (strncmp(ulas.tok.buf, (name), ulas.tok.maxlen) == 0) {                   \
     const unsigned char t[] = {__VA_ARGS__};                                   \
     memcpy(dst, t, n);                                                         \
     return n;                                                                  \
   }
+
+// parses ld r8, r8
+int ulas_ldr8r8(char *dst, unsigned long max, char *name, int base,
+                 enum ulas_asmregs regleft, enum ulas_asmregs regright) {
+  return 1;
+}
 
 // assembles an instruction, writes bytes into dst
 // returns bytes written or -1 on error
@@ -1401,7 +1408,7 @@ void ulas_asmlst(const char *line, char *outbuf, unsigned long n) {
     fprintf(ulaslstout, "%08X", ulas.address);
 
     // always pad at least n bytes
-    fputs("\t", ulaslstout);
+    fputs("  ", ulaslstout);
     const int pad = 8;
     int outwrt = 0;
 
@@ -1413,7 +1420,7 @@ void ulas_asmlst(const char *line, char *outbuf, unsigned long n) {
       fputs(".", ulaslstout);
     }
 
-    fprintf(ulaslstout, "\t%s", line);
+    fprintf(ulaslstout, "  (%s:%04ld) %s", ulas.filename, ulas.line, line);
   }
 }
 
