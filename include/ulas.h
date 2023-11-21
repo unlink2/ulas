@@ -298,6 +298,10 @@ enum ulas_asmdir {
   ULAS_ASMDIR_INCBIN,
 };
 
+// amount of registers
+#define ULAS_NR8 7
+#define ULAS_NR16 3
+
 enum ulas_asmregs {
   // r8
   ULAS_REG_A = 7,

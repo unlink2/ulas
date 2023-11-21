@@ -1392,13 +1392,14 @@ const char *ulas_asmregstr(enum ulas_asmregs reg) {
     return n;                                                                  \
   }
 
-#define ULAS_LDR8(name, base, regleft, regright)                               \
-  if (strncmp(ulas.tok.buf, (name), ulas.tok.maxlen) == 0) {                   \
-  }
-
 // parses ld r8, r8
 int ulas_ldr8r8(char *dst, unsigned long max, char *name, int base,
-                enum ulas_asmregs regleft, enum ulas_asmregs regright) {
+                enum ulas_asmregs regleft) {
+  const char *left = ulas_asmregstr(regleft);
+  if (strncmp(ulas.tok.buf, (name), ulas.tok.maxlen) != 0) {
+    return 0;
+  }
+
   return 1;
 }
 
@@ -1428,7 +1429,6 @@ int ulas_asminstr(char *dst, unsigned long max, const char *line,
   ULAS_STATICINSTR("ei", 1, 0xFB);
 
   // 8 bit loads
-  ULAS_LDR8("ld", 0x40, ULAS_REG_B, ULAS_REG_B);
 
   ULASERR("Invalid instruction '%s'\n", ulas.tok.buf);
   return -1;
