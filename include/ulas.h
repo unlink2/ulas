@@ -298,6 +298,22 @@ enum ulas_asmdir {
   ULAS_ASMDIR_INCBIN,
 };
 
+enum ulas_asmregs {
+  // r8
+  ULAS_REG_A = 7,
+  ULAS_REG_B = 0,
+  ULAS_REG_C = 1,
+  ULAS_REG_D = 2,
+  ULAS_REG_E = 3,
+  ULAS_REG_H = 4,
+  ULAS_REG_L = 5,
+
+  // r16
+  ULAS_REG_BC,
+  ULAS_REG_DE,
+  ULAS_REG_HL
+};
+
 extern struct ulas_config ulascfg;
 
 struct ulas_config ulas_cfg_from_env(void);

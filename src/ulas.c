@@ -1381,11 +1381,14 @@ int ulas_asminstr(char *dst, unsigned long max, const char *line,
   // TODO: check for symbol token here... if so add it
   // and skip to the next token
 
+  // misc / control
   ULAS_STATICINSTR("nop", 1, 0x00);
   ULAS_STATICINSTR("halt", 1, 0x76);
   ULAS_STATICINSTR("stop", 2, 0x10, 0x00);
   ULAS_STATICINSTR("di", 1, 0xF3);
   ULAS_STATICINSTR("ei", 1, 0xFB);
+
+  // 8 bit loads
 
   ULASERR("Invalid instruction '%s'\n", ulas.tok.buf);
   return -1;
