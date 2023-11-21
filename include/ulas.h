@@ -316,6 +316,7 @@ struct ulas_tok *ulas_symbolresolve(const char *name);
 // returns the amount of bytes of line that were
 // consumed or -1 on error
 // returns 0 when no more tokens can be read
+// writes the token to dst string buffer
 int ulas_tok(struct ulas_str *dst, const char **out_line, unsigned long n);
 
 // converts a token string to a token struct
@@ -324,6 +325,7 @@ int ulas_tok(struct ulas_str *dst, const char **out_line, unsigned long n);
 // and literal values
 struct ulas_tok ulas_totok(char *buf, unsigned long n, int *rc);
 
+// tokenize until a terminator char is reached
 int ulas_tokuntil(struct ulas_str *dst, char c, const char **out_line,
                   unsigned long n);
 

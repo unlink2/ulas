@@ -1356,7 +1356,12 @@ int ulas_intexpr(const char **line, unsigned long n, int *rc) {
   return ulas_intexpreval(expr, rc);
 }
 
-#define ULAS_ISINSTR(tok, name, n) (strncmp(tok, name, n) == 0)
+#define ULAS_STATICINSTR(name, n, ...)                                         \
+  if (strncmp(ulas.tok.buf, (name), ulas.tok.maxlen) == 0) {                   \
+    const unsigned char t[] = {__VA_ARGS__};                                   \
+    memcpy(dst, t, n);                                                         \
+    return n;                                                                  \
+  }
 
 // assembles an instruction, writes bytes into dst
 // returns bytes written or -1 on error
@@ -1376,25 +1381,17 @@ int ulas_asminstr(char *dst, unsigned long max, const char *line,
   // TODO: check for symbol token here... if so add it
   // and skip to the next token
 
-  int rc = 0;
+  ULAS_STATICINSTR("nop", 1, 0x00);
+  ULAS_STATICINSTR("halt", 1, 0x76);
+  ULAS_STATICINSTR("stop", 2, 0x10, 0x00);
+  ULAS_STATICINSTR("di", 1, 0xF3);
+  ULAS_STATICINSTR("ei", 1, 0xFB);
 
-  if (ULAS_ISINSTR(ulas.tok.buf, "nop", ulas.tok.maxlen)) {
-    dst[0] = 0x00;
-    rc++;
-  } else if (ULAS_ISINSTR(ulas.tok.buf, "halt", ulas.tok.maxlen)) {
-    dst[0] = 0x76;
-    rc++;
-  } else if (ULAS_ISINSTR(ulas.tok.buf, "stop", ulas.tok.maxlen)) {
-    dst[0] = 0x10;
-    dst[1] = 0x00;
-    rc += 2;
-  } else {
-    ULASERR("Invalid instruction '%s'\n", ulas.tok.buf);
-    return -1;
-  }
-
-  return rc;
+  ULASERR("Invalid instruction '%s'\n", ulas.tok.buf);
+  return -1;
 }
+
+#undef ULAS_STATICINSTR
 
 void ulas_asmlst(const char *line, char *outbuf, unsigned long n) {
   if (ulaslstout) {
@@ -1406,7 +1403,7 @@ void ulas_asmlst(const char *line, char *outbuf, unsigned long n) {
     int outwrt = 0;
 
     for (long i = 0; i < n; i++) {
-      outwrt += fprintf(ulaslstout, "%02x ", (int)outbuf[i]);
+      outwrt += fprintf(ulaslstout, "%02x ", outbuf[i] & 0xFF);
     }
 
     for (long i = outwrt; i < pad; i++) {
