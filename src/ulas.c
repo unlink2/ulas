@@ -1064,6 +1064,9 @@ int ulas_tokall(const char **line, unsigned long n, int term) {
 
     // check for any expression terminators here
     if (tok.type == term || tok.type == ULAS_TOK_COMMENT) {
+      // on terminator we roll back line so that the terminator token
+      // is not consumed now
+      *line -= tokrc;
       goto end;
     }
 
@@ -1360,7 +1363,7 @@ int ulas_istokend(struct ulas_str *tok) {
 int ulas_asminstr(char *dst, unsigned long max, const char *line,
                   unsigned long n) {
 
-  if (max < 3) {
+  if (max < 4) {
     ULASPANIC("Instruction buffer is too small!");
     return -1;
   }
@@ -1388,14 +1391,6 @@ int ulas_asminstr(char *dst, unsigned long max, const char *line,
   } else {
     ULASERR("Invalid instruction '%s'\n", ulas.tok.buf);
     return -1;
-  }
-
-  // check for trailing
-  if (ulas_tok(&ulas.tok, &line, n) > 0) {
-    if (!ulas_istokend(&ulas.tok)) {
-      ULASERR("Trailing token '%s'\n", ulas.tok.buf);
-      return -1;
-    }
   }
 
   return rc;
@@ -1495,6 +1490,15 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
     // write down byte location in dst as well as the byte offset in lstout so
     // we can fix them later labels can only be unresolved when they are the
     // only node in an expression!
+  }
+
+  // check for trailing
+  // but only if its not a comment 
+  if (ulas_tok(&ulas.tok, &line, n) > 0) {
+    if (!ulas_istokend(&ulas.tok)) {
+      ULASERR("Trailing token '%s'\n", ulas.tok.buf);
+      return -1;
+    }
   }
 
   ulas_asmout(dst, outbuf, towrite);
