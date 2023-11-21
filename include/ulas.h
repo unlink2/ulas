@@ -309,7 +309,7 @@ enum ulas_asmregs {
   ULAS_REG_L = 5,
 
   // r16
-  ULAS_REG_BC,
+  ULAS_REG_BC = 255,
   ULAS_REG_DE,
   ULAS_REG_HL
 };

@@ -1356,7 +1356,35 @@ int ulas_intexpr(const char **line, unsigned long n, int *rc) {
   return ulas_intexpreval(expr, rc);
 }
 
-// adds an instruction that only comparse names 
+const char *ulas_asmregstr(enum ulas_asmregs reg) {
+  switch (reg) {
+  case ULAS_REG_A:
+    return "a";
+  case ULAS_REG_B:
+    return "b";
+  case ULAS_REG_C:
+    return "c";
+  case ULAS_REG_D:
+    return "d";
+  case ULAS_REG_E:
+    return "e";
+  case ULAS_REG_H:
+    return "h";
+  case ULAS_REG_L:
+    return "l";
+  case ULAS_REG_HL:
+    return "hl";
+  case ULAS_REG_DE:
+    return "de";
+  case ULAS_REG_BC:
+    return "bc";
+  }
+
+  ULASERR("Invalid register\n");
+  return "rinval";
+}
+
+// adds an instruction that only comparse names
 #define ULAS_STATICINSTR(name, n, ...)                                         \
   if (strncmp(ulas.tok.buf, (name), ulas.tok.maxlen) == 0) {                   \
     const unsigned char t[] = {__VA_ARGS__};                                   \
@@ -1364,9 +1392,13 @@ int ulas_intexpr(const char **line, unsigned long n, int *rc) {
     return n;                                                                  \
   }
 
+#define ULAS_LDR8(name, base, regleft, regright)                               \
+  if (strncmp(ulas.tok.buf, (name), ulas.tok.maxlen) == 0) {                   \
+  }
+
 // parses ld r8, r8
 int ulas_ldr8r8(char *dst, unsigned long max, char *name, int base,
-                 enum ulas_asmregs regleft, enum ulas_asmregs regright) {
+                enum ulas_asmregs regleft, enum ulas_asmregs regright) {
   return 1;
 }
 
@@ -1396,6 +1428,7 @@ int ulas_asminstr(char *dst, unsigned long max, const char *line,
   ULAS_STATICINSTR("ei", 1, 0xFB);
 
   // 8 bit loads
+  ULAS_LDR8("ld", 0x40, ULAS_REG_B, ULAS_REG_B);
 
   ULASERR("Invalid instruction '%s'\n", ulas.tok.buf);
   return -1;
