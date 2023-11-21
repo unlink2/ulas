@@ -1040,7 +1040,6 @@ void ulas_exprbuffree(struct ulas_exprbuf *eb) { free(eb->buf); }
  * Assembly step
  */
 
-
 int ulas_istokend(struct ulas_str *tok) {
   long len = strnlen(tok->buf, tok->maxlen);
   // skip comments though, they are not trailing tokens!
@@ -1359,7 +1358,6 @@ int ulas_intexpr(const char **line, unsigned long n, int *rc) {
 
 #define ULAS_ISINSTR(tok, name, n) (strncmp(tok, name, n) == 0)
 
-
 // assembles an instruction, writes bytes into dst
 // returns bytes written or -1 on error
 int ulas_asminstr(char *dst, unsigned long max, const char *line,
@@ -1495,7 +1493,7 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
   }
 
   // check for trailing
-  // but only if its not a comment 
+  // but only if its not a comment
   if (ulas_tok(&ulas.tok, &line, n) > 0) {
     if (!ulas_istokend(&ulas.tok)) {
       ULASERR("Trailing token '%s'\n", ulas.tok.buf);

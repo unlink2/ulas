@@ -319,6 +319,9 @@ struct ulas_tok *ulas_symbolresolve(const char *name);
 int ulas_tok(struct ulas_str *dst, const char **out_line, unsigned long n);
 
 // converts a token string to a token struct
+// this is only useful if we do not require the token literal
+// but rather can be used to store a slimmer list of token types
+// and literal values
 struct ulas_tok ulas_totok(char *buf, unsigned long n, int *rc);
 
 int ulas_tokuntil(struct ulas_str *dst, char c, const char **out_line,
