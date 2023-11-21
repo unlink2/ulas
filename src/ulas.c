@@ -1040,6 +1040,17 @@ void ulas_exprbuffree(struct ulas_exprbuf *eb) { free(eb->buf); }
  * Assembly step
  */
 
+
+int ulas_istokend(struct ulas_str *tok) {
+  long len = strnlen(tok->buf, tok->maxlen);
+  // skip comments though, they are not trailing tokens!
+  if (len > 0 && tok->buf[0] != ULAS_TOK_COMMENT) {
+    return 0;
+  }
+
+  return 1;
+}
+
 // tokenize all until a terminator token or comment is reached
 int ulas_tokall(const char **line, unsigned long n, int term) {
   ulas_tokbufclear(&ulas.toks);
@@ -1063,7 +1074,7 @@ int ulas_tokall(const char **line, unsigned long n, int term) {
     }
 
     // check for any expression terminators here
-    if (tok.type == term || tok.type == ULAS_TOK_COMMENT) {
+    if (tok.type == term || ulas_istokend(&ulas.tok)) {
       // on terminator we roll back line so that the terminator token
       // is not consumed now
       *line -= tokrc;
@@ -1348,15 +1359,6 @@ int ulas_intexpr(const char **line, unsigned long n, int *rc) {
 
 #define ULAS_ISINSTR(tok, name, n) (strncmp(tok, name, n) == 0)
 
-int ulas_istokend(struct ulas_str *tok) {
-  long len = strnlen(tok->buf, tok->maxlen);
-  // skip comments though, they are not trailing tokens!
-  if (len > 0 && tok->buf[0] != ULAS_TOK_COMMENT) {
-    return 0;
-  }
-
-  return 1;
-}
 
 // assembles an instruction, writes bytes into dst
 // returns bytes written or -1 on error
