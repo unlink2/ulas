@@ -1395,6 +1395,10 @@ enum ulas_asmregs ulas_asmstrreg(const char *s, unsigned long n) {
   return -1;
 }
 
+int ulas_asmregisr8(enum ulas_asmregs reg) {
+  return reg != ULAS_REG_BC && reg != ULAS_REG_DE && reg != ULAS_REG_HL;
+}
+
 // adds an instruction that only comparse names
 #define ULAS_STATICINSTR(name, n, ...)                                         \
   if (strncmp(ulas.tok.buf, (name), ulas.tok.maxlen) == 0) {                   \
@@ -1425,6 +1429,35 @@ int ulas_ld(char *dst, unsigned long max, const char **line, unsigned long n) {
   if (strncmp(ulas.tok.buf, "[", ulas.tok.maxlen) == 0) {
     // ld [r16], a
   } else if ((reg = ulas_asmstrreg(ulas.tok.buf, ulas.tok.maxlen)) != -1) {
+    int base_instr = -1;
+    if (!ulas_asmregisr8(reg)) {
+      // TODO: reg16
+    } else {
+      // reg8
+      base_instr = instrs_r8lut[reg];
+    }
+
+    // need one , here
+    if (ulas_tok(&ulas.tok, line, n) == -1 ||
+        strncmp(ulas.tok.buf, ",", ulas.tok.maxlen) != 0) {
+      return -1;
+    }
+
+    // the second param has to be either an expression or a r8
+    if (ulas_tok(&ulas.tok, line, n) == -1) {
+      return -1;
+    }
+    if ((reg = ulas_asmstrreg(ulas.tok.buf, ulas.tok.maxlen)) == -1) {
+      // TODO: not a reg, expression!
+    } else if (!ulas_asmregisr8(reg)) {
+      // r16 is not allowed
+      ULASERR("Expected r8\n");
+      return -1;
+    } else {
+      // r8
+      dst[0] = base_instr + reg;
+      return 1;
+    }
   }
 
   // if nothing matches... we have an error at this point
@@ -1463,7 +1496,7 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
     return towrt;
   }
 
-  ulas_trimend('\n', start, n);
+  ulas_trimend('\n', (char *)start, n);
   ULASERR("Invalid instruction '%s'\n", start);
   return -1;
 }
