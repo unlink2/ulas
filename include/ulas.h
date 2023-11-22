@@ -304,7 +304,6 @@ enum ulas_asmdir {
 
 enum ulas_asmregs {
   // r8
-  ULAS_REG_A = 7,
   ULAS_REG_B = 0,
   ULAS_REG_C = 1,
   ULAS_REG_D = 2,
@@ -312,10 +311,13 @@ enum ulas_asmregs {
   ULAS_REG_H = 4,
   ULAS_REG_L = 5,
 
+  ULAS_REG_BC = 6,
+  // a has to be 7 because of instruction layours
+  ULAS_REG_A = 7,
+
   // r16
-  ULAS_REG_BC = 255,
-  ULAS_REG_DE,
-  ULAS_REG_HL
+  ULAS_REG_DE = 8,
+  ULAS_REG_HL = 9
 };
 
 extern struct ulas_config ulascfg;

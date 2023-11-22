@@ -1381,7 +1381,18 @@ const char *ulas_asmregstr(enum ulas_asmregs reg) {
   }
 
   ULASERR("Invalid register\n");
-  return "rinval";
+  return NULL;
+}
+
+enum ulas_asmregs ulas_asmstrreg(const char *s, unsigned long n) {
+  for (int i = 0; i < 10; i++) {
+    const char *rs = ulas_asmregstr(i);
+    if (rs && strncmp(rs, s, n) == 0) {
+      return i;
+    }
+  }
+
+  return -1;
 }
 
 // adds an instruction that only comparse names
@@ -1398,7 +1409,23 @@ int ulas_ld(char *dst, unsigned long max, const char **line, unsigned long n) {
     return 0;
   }
 
+  enum ulas_asmregs reg = -1;
+  // lookup tables for first r8 base instruction
+  char instrs_r8lut[] = {0x40, 0x48, 0x50, 0x58, 0x60, 0x68, -1, 0x78};
+
+  // first token: can either be
+  //  - r8
+  //  - r16
+  //  - [
+  if (ulas_tok(&ulas.tok, line, n) == -1) {
+    return -1;
+  }
+
   // decide which load instruction we have here
+  if (strncmp(ulas.tok.buf, "[", ulas.tok.maxlen) == 0) {
+    // ld [r16], a
+  } else if ((reg = ulas_asmstrreg(ulas.tok.buf, ulas.tok.maxlen)) != -1) {
+  }
 
   // if nothing matches... we have an error at this point
   return -1;
@@ -1408,7 +1435,7 @@ int ulas_ld(char *dst, unsigned long max, const char **line, unsigned long n) {
 // returns bytes written or -1 on error
 int ulas_asminstr(char *dst, unsigned long max, const char **line,
                   unsigned long n) {
-  char *start = *line;
+  const char *start = *line;
   if (max < 4) {
     ULASPANIC("Instruction buffer is too small!");
     return -1;
