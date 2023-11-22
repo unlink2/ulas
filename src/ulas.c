@@ -1399,6 +1399,11 @@ int ulas_asmregisr8(enum ulas_asmregs reg) {
   return reg != ULAS_REG_BC && reg != ULAS_REG_DE && reg != ULAS_REG_HL;
 }
 
+// all instructions
+const struct ulas_instr ULASINSTRS[] = {
+    {"nop", {0}, {0x00, 0}},
+    {"ld", {ULAS_REG_B, ',', ULAS_REG_B, 0}, {0x40, 0}}};
+
 // adds an instruction that only comparse names
 #define ULAS_STATICINSTR(name, n, ...)                                         \
   if (strncmp(ulas.tok.buf, (name), ulas.tok.maxlen) == 0) {                   \

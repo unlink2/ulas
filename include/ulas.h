@@ -304,20 +304,38 @@ enum ulas_asmdir {
 
 enum ulas_asmregs {
   // r8
-  ULAS_REG_B = 0,
-  ULAS_REG_C = 1,
-  ULAS_REG_D = 2,
-  ULAS_REG_E = 3,
-  ULAS_REG_H = 4,
-  ULAS_REG_L = 5,
-
-  ULAS_REG_BC = 6,
-  // a has to be 7 because of instruction layours
+  ULAS_REG_B = 1,
+  ULAS_REG_C = 2,
+  ULAS_REG_D = 3,
+  ULAS_REG_E = 4,
+  ULAS_REG_H = 5,
+  ULAS_REG_L = 6,
   ULAS_REG_A = 7,
 
   // r16
-  ULAS_REG_DE = 8,
-  ULAS_REG_HL = 9
+  ULAS_REG_BC = 8,
+  ULAS_REG_DE = 9,
+  ULAS_REG_HL = 10
+};
+
+// special asm tokens for instr enum
+enum ulas_asmspetok { ULAS_E8 = -1, ULAS_E16 = -2 };
+
+#define ULAS_INSTRTOKMAX 16
+#define ULAS_INSTRDATMAX 16
+
+// entry for lut instruction parser
+// in the form of: name token token token token
+// tokens can either be literal chars, or any of the special tokens like an
+// asmreg or e8, e16
+// if toks value is 0 the list ends
+// if data value is 0 the list ends
+// if toks is E8 or E16 an expression is evaluated
+// id data is E8 or E16 the previous expression is inserted
+struct ulas_instr {
+  char *name;
+  short tokens[ULAS_INSTRTOKMAX];
+  short data[ULAS_INSTRDATMAX];
 };
 
 extern struct ulas_config ulascfg;
