@@ -319,7 +319,7 @@ enum ulas_asmregs {
 };
 
 // special asm tokens for instr enum
-enum ulas_asmspetok { ULAS_E8 = -1, ULAS_E16 = -2 };
+enum ulas_asmspetok { ULAS_E8 = -1, ULAS_E16 = -2, ULAS_DATZERO = 0xFF00 };
 
 #define ULAS_INSTRTOKMAX 16
 #define ULAS_INSTRDATMAX 16

@@ -1380,7 +1380,6 @@ const char *ulas_asmregstr(enum ulas_asmregs reg) {
     return "bc";
   }
 
-  ULASERR("Invalid register\n");
   return NULL;
 }
 
@@ -1402,7 +1401,11 @@ int ulas_asmregisr8(enum ulas_asmregs reg) {
 // all instructions
 // when name is NULL list ended
 const struct ulas_instr ULASINSTRS[] = {
-    {"nop", {0}, {0x00, 0}},
+    {"nop", {0}, {(short)ULAS_DATZERO, 0}},
+    {"halt", {0}, {0x76, 0}},
+    {"stop", {0}, {0x10, (short)ULAS_DATZERO, 0x00}},
+    {"di", {0}, {0xF4, 0x00}},
+    {"ei", {0}, {0xFB, 0x00}},
     {"ld", {ULAS_REG_B, ',', ULAS_REG_B, 0}, {0x40, 0}},
     {NULL}};
 
@@ -1439,14 +1442,14 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
     memset(&exprres, 0, sizeof(int) * ULAS_INSTRDATMAX);
 
     // then check for each single token...
-    short *tok = instrs->tokens;
+    const short *tok = instrs->tokens;
     int i = 0;
     while (tok[i]) {
       if (ulas_tok(&ulas.tok, line, n) == -1) {
         goto skip;
       }
 
-      char *regstr = NULL;
+      const char *regstr = NULL;
       if ((regstr = ulas_asmregstr(tok[i]))) {
         if (strncmp(regstr, ulas.tok.buf, ulas.tok.maxlen) != 0) {
           goto skip;
@@ -1463,9 +1466,15 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
     }
 
     // we are good to go!
-    char *dat = instrs->data;
+    const short *dat = instrs->data;
     while (dat[written]) {
       dst[written] = dat[written];
+      written++;
+    }
+
+    // this is nop, special case it is indeed 0!
+    if (written == 0) {
+      dst[written] = 0;
       written++;
     }
 
