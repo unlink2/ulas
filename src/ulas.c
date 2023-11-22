@@ -1455,6 +1455,11 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
           goto skip;
         }
       } else if (tok[i] == ULAS_E8 || tok[i] == ULAS_E16) {
+        int rc = 0;
+        exprres[i] = ulas_intexpr(line, n, &rc);
+        if (rc == -1) {
+          return -1;
+        }
       } else {
         char c[2] = {tok[i], '\0'};
         if (strncmp(ulas.tok.buf, c, ulas.tok.maxlen) != 0) {
