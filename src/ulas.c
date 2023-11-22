@@ -1400,74 +1400,11 @@ int ulas_asmregisr8(enum ulas_asmregs reg) {
 }
 
 // all instructions
+// when name is NULL list ended
 const struct ulas_instr ULASINSTRS[] = {
     {"nop", {0}, {0x00, 0}},
-    {"ld", {ULAS_REG_B, ',', ULAS_REG_B, 0}, {0x40, 0}}};
-
-// adds an instruction that only comparse names
-#define ULAS_STATICINSTR(name, n, ...)                                         \
-  if (strncmp(ulas.tok.buf, (name), ulas.tok.maxlen) == 0) {                   \
-    const unsigned char t[] = {__VA_ARGS__};                                   \
-    memcpy(dst, t, n);                                                         \
-    return n;                                                                  \
-  }
-
-// parses <instruction> r8, r8
-int ulas_ld(char *dst, unsigned long max, const char **line, unsigned long n) {
-  if (strncmp(ulas.tok.buf, "ld", ulas.tok.maxlen) != 0) {
-    return 0;
-  }
-
-  enum ulas_asmregs reg = -1;
-  // lookup tables for first r8 base instruction
-  char instrs_r8lut[] = {0x40, 0x48, 0x50, 0x58, 0x60, 0x68, -1, 0x78};
-
-  // first token: can either be
-  //  - r8
-  //  - r16
-  //  - [
-  if (ulas_tok(&ulas.tok, line, n) == -1) {
-    return -1;
-  }
-
-  // decide which load instruction we have here
-  if (strncmp(ulas.tok.buf, "[", ulas.tok.maxlen) == 0) {
-    // ld [r16], a
-  } else if ((reg = ulas_asmstrreg(ulas.tok.buf, ulas.tok.maxlen)) != -1) {
-    int base_instr = -1;
-    if (!ulas_asmregisr8(reg)) {
-      // TODO: reg16
-    } else {
-      // reg8
-      base_instr = instrs_r8lut[reg];
-    }
-
-    // need one , here
-    if (ulas_tok(&ulas.tok, line, n) == -1 ||
-        strncmp(ulas.tok.buf, ",", ulas.tok.maxlen) != 0) {
-      return -1;
-    }
-
-    // the second param has to be either an expression or a r8
-    if (ulas_tok(&ulas.tok, line, n) == -1) {
-      return -1;
-    }
-    if ((reg = ulas_asmstrreg(ulas.tok.buf, ulas.tok.maxlen)) == -1) {
-      // TODO: not a reg, expression!
-    } else if (!ulas_asmregisr8(reg)) {
-      // r16 is not allowed
-      ULASERR("Expected r8\n");
-      return -1;
-    } else {
-      // r8
-      dst[0] = base_instr + reg;
-      return 1;
-    }
-  }
-
-  // if nothing matches... we have an error at this point
-  return -1;
-}
+    {"ld", {ULAS_REG_B, ',', ULAS_REG_B, 0}, {0x40, 0}},
+    {NULL}};
 
 // assembles an instruction, writes bytes into dst
 // returns bytes written or -1 on error
@@ -1479,31 +1416,70 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
     return -1;
   }
 
-  if (ulas_tok(&ulas.tok, line, n) == -1) {
-    ULASERR("Expected label or instruction\n");
-    return -1;
-  }
-
   // TODO: check for symbol token here... if so add it
   // and skip to the next token
 
-  int towrt = 0;
+  const struct ulas_instr *instrs = ULASINSTRS;
 
-  // misc / control
-  ULAS_STATICINSTR("nop", 1, 0x00);
-  ULAS_STATICINSTR("halt", 1, 0x76);
-  ULAS_STATICINSTR("stop", 2, 0x10, 0x00);
-  ULAS_STATICINSTR("di", 1, 0xF3);
-  ULAS_STATICINSTR("ei", 1, 0xFB);
+  int written = 0;
+  while (instrs->name && written == 0) {
+    *line = start;
+    if (ulas_tok(&ulas.tok, line, n) == -1) {
+      ULASERR("Expected label or instruction\n");
+      return -1;
+    }
 
-  // 8 bit loads
-  if ((towrt = ulas_ld(dst, max, line, n)) > 0) {
-    return towrt;
+    // check for instruction name first
+    if (strncmp(ulas.tok.buf, instrs->name, ulas.tok.maxlen) != 0) {
+      goto skip;
+    }
+
+    // expression results in order they appear
+    int exprres[ULAS_INSTRDATMAX];
+    memset(&exprres, 0, sizeof(int) * ULAS_INSTRDATMAX);
+
+    // then check for each single token...
+    short *tok = instrs->tokens;
+    int i = 0;
+    while (tok[i]) {
+      if (ulas_tok(&ulas.tok, line, n) == -1) {
+        goto skip;
+      }
+
+      char *regstr = NULL;
+      if ((regstr = ulas_asmregstr(tok[i]))) {
+        if (strncmp(regstr, ulas.tok.buf, ulas.tok.maxlen) != 0) {
+          goto skip;
+        }
+      } else if (tok[i] == ULAS_E8 || tok[i] == ULAS_E16) {
+      } else {
+        char c[2] = {tok[i], '\0'};
+        if (strncmp(ulas.tok.buf, c, ulas.tok.maxlen) != 0) {
+          goto skip;
+        }
+      }
+
+      i++;
+    }
+
+    // we are good to go!
+    char *dat = instrs->data;
+    while (dat[written]) {
+      dst[written] = dat[written];
+      written++;
+    }
+
+  skip:
+    instrs++;
   }
 
-  ulas_trimend('\n', (char *)start, n);
-  ULASERR("Invalid instruction '%s'\n", start);
-  return -1;
+  if (!written) {
+    ulas_trimend('\n', (char *)start, n);
+    ULASERR("Invalid instruction: %s\n", start);
+    return -1;
+  }
+
+  return written;
 }
 
 #undef ULAS_STATICINSTR
