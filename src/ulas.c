@@ -1463,6 +1463,7 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
     return towrt;
   }
 
+  ulas_trimend('\n', start, n);
   ULASERR("Invalid instruction '%s'\n", start);
   return -1;
 }
