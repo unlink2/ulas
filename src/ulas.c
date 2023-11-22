@@ -1392,34 +1392,37 @@ const char *ulas_asmregstr(enum ulas_asmregs reg) {
     return n;                                                                  \
   }
 
-// parses ld r8, r8
-int ulas_ldr8r8(char *dst, unsigned long max, char *name, int base,
-                enum ulas_asmregs regleft) {
-  const char *left = ulas_asmregstr(regleft);
-  if (strncmp(ulas.tok.buf, (name), ulas.tok.maxlen) != 0) {
+// parses <instruction> r8, r8
+int ulas_ld(char *dst, unsigned long max, const char **line, unsigned long n) {
+  if (strncmp(ulas.tok.buf, "ld", ulas.tok.maxlen) != 0) {
     return 0;
   }
 
-  return 1;
+  // decide which load instruction we have here
+
+  // if nothing matches... we have an error at this point
+  return -1;
 }
 
 // assembles an instruction, writes bytes into dst
 // returns bytes written or -1 on error
-int ulas_asminstr(char *dst, unsigned long max, const char *line,
+int ulas_asminstr(char *dst, unsigned long max, const char **line,
                   unsigned long n) {
-
+  char *start = *line;
   if (max < 4) {
     ULASPANIC("Instruction buffer is too small!");
     return -1;
   }
 
-  if (ulas_tok(&ulas.tok, &line, n) == -1) {
+  if (ulas_tok(&ulas.tok, line, n) == -1) {
     ULASERR("Expected label or instruction\n");
     return -1;
   }
 
   // TODO: check for symbol token here... if so add it
   // and skip to the next token
+
+  int towrt = 0;
 
   // misc / control
   ULAS_STATICINSTR("nop", 1, 0x00);
@@ -1429,8 +1432,11 @@ int ulas_asminstr(char *dst, unsigned long max, const char *line,
   ULAS_STATICINSTR("ei", 1, 0xFB);
 
   // 8 bit loads
+  if ((towrt = ulas_ld(dst, max, line, n)) > 0) {
+    return towrt;
+  }
 
-  ULASERR("Invalid instruction '%s'\n", ulas.tok.buf);
+  ULASERR("Invalid instruction '%s'\n", start);
   return -1;
 }
 
@@ -1518,8 +1524,10 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
     }
 
   } else {
+    // start over for the next step...
+    line = start;
     // is regular line in form of [label:] instruction ; comment
-    if ((towrite += ulas_asminstr(outbuf, ULAS_OUTBUFMAX, start, n)) == -1) {
+    if ((towrite += ulas_asminstr(outbuf, ULAS_OUTBUFMAX, &line, n)) == -1) {
       ULASERR("Unable to assemble instruction\n");
       rc = -1;
       goto fail;
