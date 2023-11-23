@@ -1407,6 +1407,7 @@ const struct ulas_instr ULASINSTRS[] = {
     {"di", {0}, {0xF4, 0x00}},
     {"ei", {0}, {0xFB, 0x00}},
     {"ld", {ULAS_REG_B, ',', ULAS_REG_B, 0}, {0x40, 0}},
+    {"ld", {ULAS_REG_B, ',', ULAS_E8, 0}, {0x06, ULAS_E8, 0}},
     {NULL}};
 
 // assembles an instruction, writes bytes into dst
@@ -1439,28 +1440,35 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
 
     // expression results in order they appear
     int exprres[ULAS_INSTRDATMAX];
+    int expridx = 0;
     memset(&exprres, 0, sizeof(int) * ULAS_INSTRDATMAX);
 
     // then check for each single token...
     const short *tok = instrs->tokens;
     int i = 0;
     while (tok[i]) {
-      if (ulas_tok(&ulas.tok, line, n) == -1) {
-        goto skip;
-      }
-
+      assert(i < ULAS_INSTRTOKMAX);
       const char *regstr = NULL;
       if ((regstr = ulas_asmregstr(tok[i]))) {
+        if (ulas_tok(&ulas.tok, line, n) == -1) {
+          goto skip;
+        }
+
         if (strncmp(regstr, ulas.tok.buf, ulas.tok.maxlen) != 0) {
           goto skip;
         }
       } else if (tok[i] == ULAS_E8 || tok[i] == ULAS_E16) {
+        assert(expridx < ULAS_INSTRDATMAX);
         int rc = 0;
-        exprres[i] = ulas_intexpr(line, n, &rc);
+        exprres[expridx++] = ulas_intexpr(line, n, &rc);
         if (rc == -1) {
           return -1;
         }
       } else {
+        if (ulas_tok(&ulas.tok, line, n) == -1) {
+          goto skip;
+        }
+
         char c[2] = {tok[i], '\0'};
         if (strncmp(ulas.tok.buf, c, ulas.tok.maxlen) != 0) {
           goto skip;
@@ -1471,10 +1479,22 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
     }
 
     // we are good to go!
+    int datread = 0;
+    expridx = 0;
     const short *dat = instrs->data;
-    while (dat[written]) {
-      dst[written] = dat[written];
+    while (dat[datread]) {
+      assert(datread < ULAS_INSTRDATMAX);
+      assert(expridx < ULAS_INSTRDATMAX);
+
+      if (dat[datread] == ULAS_E8) {
+        dst[written] = (char)exprres[expridx++];
+      } else if (dat[datread] == ULAS_E16) {
+        // TODO: write 16 bit values
+      } else {
+        dst[written] = dat[datread];
+      }
       written++;
+      datread++;
     }
 
     // this is nop, special case it is indeed 0!
