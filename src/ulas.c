@@ -1088,7 +1088,6 @@ end:
   return tokrc;
 }
 
-
 /**
  * Parse expressions from tokens
  * return tree-like structure
@@ -1405,11 +1404,18 @@ int ulas_asmregisr8(enum ulas_asmregs reg) {
   return reg != ULAS_REG_BC && reg != ULAS_REG_DE && reg != ULAS_REG_HL;
 }
 
+/**
+ * Instruction table
+ */
+
 // define <name> r8, r8
 #define ULAS_INSTR_R8R8(name, base_op, reg_left, reg_right)                    \
   {                                                                            \
     (name), {(reg_left), ',', (reg_right), 0}, { base_op, 0 }                  \
   }
+
+#define ULAS_INSTR_R16R16(name, op, reg_left, reg_right)                       \
+  ULAS_INSTR_R8R8(name, op, reg_left, reg_right)
 
 #define ULAS_INSTR_R8R8D(name, base_op, reg_left)                              \
   ULAS_INSTR_R8R8(name, base_op, reg_left, ULAS_REG_B),                        \
@@ -1471,11 +1477,20 @@ const struct ulas_instr ULASINSTRS[] = {
     ULAS_INSTR_R8_EXPR8("ld", 0x06, ULAS_REG_B),
     ULAS_INSTR_R8_EXPR8("ld", 0x16, ULAS_REG_D),
     ULAS_INSTR_R8_EXPR8("ld", 0x26, ULAS_REG_H),
+
+    // ld [r16], a
     {"ld", {'[', ULAS_REG_HL, ']', ',', ULAS_E8, 0}, {0x36, ULAS_E8, 0x00}},
     {"ld", {'[', ULAS_REG_BC, ']', ',', ULAS_REG_A, 0}, {0x02, 0}},
     {"ld", {'[', ULAS_REG_DE, ']', ',', ULAS_REG_A, 0}, {0x12, 0}},
     {"ld", {'[', ULAS_REG_HL, '+', ']', ',', ULAS_REG_A, 0}, {0x22, 0}},
     {"ld", {'[', ULAS_REG_HL, '-', ']', ',', ULAS_REG_A, 0}, {0x32, 0}},
+
+    // ld a, [r16]
+    {"ld", {ULAS_REG_A, ',', '[', ULAS_REG_BC, ']', 0}, {0x0A, 0}},
+    {"ld", {ULAS_REG_A, ',', '[', ULAS_REG_DE, ']', 0}, {0x1A, 0}},
+    {"ld", {ULAS_REG_A, ',', '[', ULAS_REG_HL, '+', ']', 0}, {0x2A, 0}},
+    {"ld", {ULAS_REG_A, ',', '[', ULAS_REG_HL, '-', ']', 0}, {0x3A, 0}},
+
     {"ld", {'[', ULAS_E16, ']', ',', ULAS_REG_SP, 0}, {0x08, ULAS_E16, 0}},
 
     // ld r16, e16
@@ -1487,6 +1502,9 @@ const struct ulas_instr ULASINSTRS[] = {
     // jr
     ULAS_INSTR_R8_EXPR8("jr", 0x20, ULAS_REG_NOT_ZERO),
     ULAS_INSTR_R8_EXPR8("jr", 0x30, ULAS_REG_NOT_CARRY),
+    {"jr", {ULAS_E8, 0}, {0x18, ULAS_E8, 0x00}},
+    ULAS_INSTR_R8_EXPR8("jr", 0x28, ULAS_REG_ZERO),
+    ULAS_INSTR_R8_EXPR8("jr", 0x38, ULAS_REG_CARRY),
 
     // inc/dec
     ULAS_INSTR_REG("inc", 0x03, ULAS_REG_BC),
@@ -1504,6 +1522,11 @@ const struct ulas_instr ULASINSTRS[] = {
     ULAS_INSTR_REG("dec", 0x25, ULAS_REG_H),
     {"dec", {'[', ULAS_REG_HL, ']', 0}, {0x35, 0x00}},
 
+    ULAS_INSTR_REG("dec", 0x0B, ULAS_REG_BC),
+    ULAS_INSTR_REG("dec", 0x1B, ULAS_REG_DE),
+    ULAS_INSTR_REG("dec", 0x2B, ULAS_REG_HL),
+    ULAS_INSTR_REG("dec", 0x3B, ULAS_REG_SP),
+
     // alu r8, r8
     ULAS_INSTR_ALUR8D("add", 0x80),
     ULAS_INSTR_ALUR8D("adc", 0x88),
@@ -1513,6 +1536,12 @@ const struct ulas_instr ULASINSTRS[] = {
     ULAS_INSTR_ALUR8D("xor", 0xA8),
     ULAS_INSTR_ALUR8D("or", 0xB0),
     ULAS_INSTR_ALUR8D("cp", 0xB8),
+
+    // alu r16, r16
+    ULAS_INSTR_R16R16("add", 0x09, ULAS_REG_HL, ULAS_REG_BC),
+    ULAS_INSTR_R16R16("add", 0x19, ULAS_REG_HL, ULAS_REG_DE),
+    ULAS_INSTR_R16R16("add", 0x29, ULAS_REG_HL, ULAS_REG_HL),
+    ULAS_INSTR_R16R16("add", 0x39, ULAS_REG_HL, ULAS_REG_SP),
 
     {NULL}};
 
