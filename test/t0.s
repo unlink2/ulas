@@ -30,3 +30,14 @@
   dec a
 
   ld c, 1+2
+
+  ret nz
+
+  ldh [1], a
+  ldh a, [2]
+
+  ldh [c], a
+  ldh a, [c]
+
+  ld [1], a
+  ld a, [2]

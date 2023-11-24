@@ -1461,7 +1461,7 @@ const struct ulas_instr ULASINSTRS[] = {
     // misc
     {"daa", {0}, {0x27, 0x00}},
     {"scf", {0}, {0x37, 0x00}},
-    
+
     {"cpl", {0}, {0x2F, 0x00}},
     {"ccf", {0}, {0x3F, 0x00}},
 
@@ -1495,6 +1495,15 @@ const struct ulas_instr ULASINSTRS[] = {
 
     {"ld", {'[', ULAS_E16, ']', ',', ULAS_REG_SP, 0}, {0x08, ULAS_E16, 0}},
 
+    {"ld", {'[', ULAS_E16, ']', ',', ULAS_REG_A, 0}, {0xEA, ULAS_E16, 0}},
+    {"ld", {ULAS_REG_A, ',', '[', ULAS_E16, ']', 0}, {0xFA, ULAS_E16, 0}},
+
+    {"ldh", {'[', ULAS_REG_C, ']', ',', ULAS_REG_A, 0}, {0xE2, 0}},
+    {"ldh", {ULAS_REG_A, ',', '[', ULAS_REG_C, ']', 0}, {0xF2, 0}},
+
+    {"ldh", {'[', ULAS_E8, ']', ',', ULAS_REG_A, 0}, {0xE0, ULAS_E8, 0}},
+    {"ldh", {ULAS_REG_A, ',', '[', ULAS_E8, ']', 0}, {0xF0, ULAS_E8, 0}},
+
     // ld r8, e8
     ULAS_INSTR_R8_EXPR8("ld", 0x06, ULAS_REG_B),
     ULAS_INSTR_R8_EXPR8("ld", 0x16, ULAS_REG_D),
@@ -1517,6 +1526,10 @@ const struct ulas_instr ULASINSTRS[] = {
     {"jr", {ULAS_E8, 0}, {0x18, ULAS_E8, 0x00}},
     ULAS_INSTR_R8_EXPR8("jr", 0x28, ULAS_REG_ZERO),
     ULAS_INSTR_R8_EXPR8("jr", 0x38, ULAS_REG_CARRY),
+
+    // ret
+    ULAS_INSTR_REG("ret", 0xC0, ULAS_REG_NOT_ZERO),
+    ULAS_INSTR_REG("ret", 0xD0, ULAS_REG_NOT_CARRY),
 
     // inc/dec
     ULAS_INSTR_REG("inc", 0x03, ULAS_REG_BC),
