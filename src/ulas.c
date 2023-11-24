@@ -1398,6 +1398,25 @@ int ulas_asmregisr8(enum ulas_asmregs reg) {
   return reg != ULAS_REG_BC && reg != ULAS_REG_DE && reg != ULAS_REG_HL;
 }
 
+// define <name> r8, r8
+#define ULAS_INSTR_R8R8(name, base_op, reg_left, reg_right)                    \
+  {                                                                            \
+    (name), {(reg_left), ',', (reg_right), 0}, { base_op, 0 }                  \
+  }
+
+#define ULAS_INSTR_R8R8D(name, base_op, reg_left)                              \
+  ULAS_INSTR_R8R8(name, base_op, reg_left, ULAS_REG_B),                        \
+      ULAS_INSTR_R8R8(name, base_op + 1, reg_left, ULAS_REG_C),                \
+      ULAS_INSTR_R8R8(name, base_op + 2, reg_left, ULAS_REG_D),                \
+      ULAS_INSTR_R8R8(name, base_op + 3, reg_left, ULAS_REG_E),                \
+      ULAS_INSTR_R8R8(name, base_op + 4, reg_left, ULAS_REG_H),                \
+      ULAS_INSTR_R8R8(name, base_op + 5, reg_left, ULAS_REG_L),                \
+      ULAS_INSTR_R8R8(name, base_op + 7, reg_left, ULAS_REG_A)
+
+// <name> a, r8
+#define ULAS_INSTR_ALUR8D(name, base_op)                                       \
+  ULAS_INSTR_R8R8D(name, base_op, ULAS_REG_A)
+
 // all instructions
 // when name is NULL list ended
 const struct ulas_instr ULASINSTRS[] = {
@@ -1406,7 +1425,26 @@ const struct ulas_instr ULASINSTRS[] = {
     {"stop", {0}, {0x10, (short)ULAS_DATZERO, 0x00}},
     {"di", {0}, {0xF4, 0x00}},
     {"ei", {0}, {0xFB, 0x00}},
-    {"ld", {ULAS_REG_B, ',', ULAS_REG_B, 0}, {0x40, 0}},
+
+    // ld r8, r8
+    ULAS_INSTR_R8R8D("ld", 0x40, ULAS_REG_B),
+    ULAS_INSTR_R8R8D("ld", 0x48, ULAS_REG_C),
+    ULAS_INSTR_R8R8D("ld", 0x50, ULAS_REG_D),
+    ULAS_INSTR_R8R8D("ld", 0x58, ULAS_REG_E),
+    ULAS_INSTR_R8R8D("ld", 0x60, ULAS_REG_H),
+    ULAS_INSTR_R8R8D("ld", 0x68, ULAS_REG_L),
+    ULAS_INSTR_R8R8D("ld", 0x78, ULAS_REG_A),
+
+    // alu r8, r8
+    ULAS_INSTR_ALUR8D("add", 0x80),
+    ULAS_INSTR_ALUR8D("adc", 0x88),
+    ULAS_INSTR_ALUR8D("sub", 0x90),
+    ULAS_INSTR_ALUR8D("sbc", 0x98),
+
+    // keep expression-based instructions towards the end
+    // to avoid evaluating them if not needed
+    // this is done because expressions will abort immediatly
+    // if they are found to be invalid
     {"ld", {ULAS_REG_B, ',', ULAS_E8, 0}, {0x06, ULAS_E8, 0}},
     {NULL}};
 
@@ -1497,12 +1535,6 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
       datread++;
     }
 
-    // this is nop, special case it is indeed 0!
-    if (written == 0) {
-      dst[written] = 0;
-      written++;
-    }
-
   skip:
     instrs++;
   }
@@ -1515,8 +1547,6 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
 
   return written;
 }
-
-#undef ULAS_STATICINSTR
 
 void ulas_asmlst(const char *line, char *outbuf, unsigned long n) {
   if (ulaslstout) {
