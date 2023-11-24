@@ -41,3 +41,8 @@
 
   ld [1], a
   ld a, [2]
+
+  pop bc
+  jp nz, 2
+
+  jp 3

@@ -316,6 +316,7 @@ enum ulas_asmregs {
   ULAS_REG_BC = 8,
   ULAS_REG_DE = 9,
   ULAS_REG_HL = 10,
+  ULAS_REG_AF = 16,
 
   // flags
   ULAS_REG_NOT_ZERO = 11,

@@ -1384,6 +1384,8 @@ const char *ulas_asmregstr(enum ulas_asmregs reg) {
     return "c";
   case ULAS_REG_SP:
     return "sp";
+  case ULAS_REG_AF:
+    return "af";
   }
 
   return NULL;
@@ -1531,6 +1533,11 @@ const struct ulas_instr ULASINSTRS[] = {
     ULAS_INSTR_REG("ret", 0xC0, ULAS_REG_NOT_ZERO),
     ULAS_INSTR_REG("ret", 0xD0, ULAS_REG_NOT_CARRY),
 
+    // jp
+    ULAS_INSTR_R16E16("jp", 0xC2, ULAS_REG_NOT_ZERO),
+    ULAS_INSTR_R16E16("jp", 0xD2, ULAS_REG_NOT_CARRY),
+    {"jp", {ULAS_E16, 0}, {0xC3, ULAS_E16, 0x00}},
+
     // inc/dec
     ULAS_INSTR_REG("inc", 0x03, ULAS_REG_BC),
     ULAS_INSTR_REG("inc", 0x13, ULAS_REG_DE),
@@ -1577,6 +1584,12 @@ const struct ulas_instr ULASINSTRS[] = {
     ULAS_INSTR_R16R16("add", 0x19, ULAS_REG_HL, ULAS_REG_DE),
     ULAS_INSTR_R16R16("add", 0x29, ULAS_REG_HL, ULAS_REG_HL),
     ULAS_INSTR_R16R16("add", 0x39, ULAS_REG_HL, ULAS_REG_SP),
+
+    // pop
+    ULAS_INSTR_REG("pop", 0xC1, ULAS_REG_BC),
+    ULAS_INSTR_REG("pop", 0xD1, ULAS_REG_DE),
+    ULAS_INSTR_REG("pop", 0xE1, ULAS_REG_HL),
+    ULAS_INSTR_REG("pop", 0xF1, ULAS_REG_AF),
 
     {NULL}};
 
