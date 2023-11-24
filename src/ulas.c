@@ -1538,6 +1538,10 @@ const struct ulas_instr ULASINSTRS[] = {
     ULAS_INSTR_R16E16("jp", 0xD2, ULAS_REG_NOT_CARRY),
     {"jp", {ULAS_E16, 0}, {0xC3, ULAS_E16, 0x00}},
 
+    // call
+    ULAS_INSTR_R16E16("call", 0xC4, ULAS_REG_NOT_ZERO),
+    ULAS_INSTR_R16E16("call", 0xD4, ULAS_REG_NOT_CARRY),
+
     // inc/dec
     ULAS_INSTR_REG("inc", 0x03, ULAS_REG_BC),
     ULAS_INSTR_REG("inc", 0x13, ULAS_REG_DE),
@@ -1590,6 +1594,12 @@ const struct ulas_instr ULASINSTRS[] = {
     ULAS_INSTR_REG("pop", 0xD1, ULAS_REG_DE),
     ULAS_INSTR_REG("pop", 0xE1, ULAS_REG_HL),
     ULAS_INSTR_REG("pop", 0xF1, ULAS_REG_AF),
+
+    // push
+    ULAS_INSTR_REG("push", 0xC5, ULAS_REG_BC),
+    ULAS_INSTR_REG("push", 0xD5, ULAS_REG_DE),
+    ULAS_INSTR_REG("push", 0xE5, ULAS_REG_HL),
+    ULAS_INSTR_REG("push", 0xF5, ULAS_REG_AF),
 
     {NULL}};
 

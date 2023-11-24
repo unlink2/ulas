@@ -46,3 +46,7 @@
   jp nz, 2
 
   jp 3
+
+  call nc, 2
+
+  push af
