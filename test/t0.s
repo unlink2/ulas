@@ -27,3 +27,6 @@
   ld a, [hl+]
 
   dec bc
+  dec a
+
+  ld c, 1+2

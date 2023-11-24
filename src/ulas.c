@@ -1527,6 +1527,16 @@ const struct ulas_instr ULASINSTRS[] = {
     ULAS_INSTR_REG("dec", 0x2B, ULAS_REG_HL),
     ULAS_INSTR_REG("dec", 0x3B, ULAS_REG_SP),
 
+    ULAS_INSTR_REG("inc", 0x0C, ULAS_REG_C),
+    ULAS_INSTR_REG("inc", 0x1C, ULAS_REG_E),
+    ULAS_INSTR_REG("inc", 0x2C, ULAS_REG_L),
+    ULAS_INSTR_REG("inc", 0x3C, ULAS_REG_A),
+
+    ULAS_INSTR_REG("dec", 0x0D, ULAS_REG_C),
+    ULAS_INSTR_REG("dec", 0x1D, ULAS_REG_E),
+    ULAS_INSTR_REG("dec", 0x2D, ULAS_REG_L),
+    ULAS_INSTR_REG("dec", 0x3D, ULAS_REG_A),
+
     // alu r8, r8
     ULAS_INSTR_ALUR8D("add", 0x80),
     ULAS_INSTR_ALUR8D("adc", 0x88),
