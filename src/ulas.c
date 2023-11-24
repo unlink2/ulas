@@ -1051,7 +1051,7 @@ int ulas_istokend(struct ulas_str *tok) {
 }
 
 // tokenize all until a terminator token or comment is reached
-int ulas_tokall(const char **line, unsigned long n, int term) {
+int ulas_tokexpr(const char **line, unsigned long n) {
   ulas_tokbufclear(&ulas.toks);
 
   int tokrc = 0;
@@ -1073,7 +1073,7 @@ int ulas_tokall(const char **line, unsigned long n, int term) {
     }
 
     // check for any expression terminators here
-    if (tok.type == term || ulas_istokend(&ulas.tok)) {
+    if (tok.type == ',' || tok.type == ']' || ulas_istokend(&ulas.tok)) {
       // on terminator we roll back line so that the terminator token
       // is not consumed now
       *line -= tokrc;
@@ -1088,9 +1088,6 @@ end:
   return tokrc;
 }
 
-int ulas_tokexpr(const char **line, unsigned long n) {
-  return ulas_tokall(line, n, ',');
-}
 
 /**
  * Parse expressions from tokens
@@ -1378,6 +1375,16 @@ const char *ulas_asmregstr(enum ulas_asmregs reg) {
     return "de";
   case ULAS_REG_BC:
     return "bc";
+  case ULAS_REG_NOT_ZERO:
+    return "nz";
+  case ULAS_REG_ZERO:
+    return "z";
+  case ULAS_REG_NOT_CARRY:
+    return "nc";
+  case ULAS_REG_CARRY:
+    return "c";
+  case ULAS_REG_SP:
+    return "sp";
   }
 
   return NULL;
@@ -1411,20 +1418,47 @@ int ulas_asmregisr8(enum ulas_asmregs reg) {
       ULAS_INSTR_R8R8(name, base_op + 3, reg_left, ULAS_REG_E),                \
       ULAS_INSTR_R8R8(name, base_op + 4, reg_left, ULAS_REG_H),                \
       ULAS_INSTR_R8R8(name, base_op + 5, reg_left, ULAS_REG_L),                \
+      {(name), {(reg_left), ',', '[', ULAS_REG_HL, ']', 0}, {base_op + 6, 0}}, \
       ULAS_INSTR_R8R8(name, base_op + 7, reg_left, ULAS_REG_A)
 
 // <name> a, r8
 #define ULAS_INSTR_ALUR8D(name, base_op)                                       \
   ULAS_INSTR_R8R8D(name, base_op, ULAS_REG_A)
 
+#define ULAS_INSTR_R8_EXPR8(name, op, reg_left)                                \
+  {                                                                            \
+    (name), {(reg_left), ',', ULAS_E8, 0}, { (op), ULAS_E8, 0 }                \
+  }
+
+// <name> r16, e16
+#define ULAS_INSTR_R16E16(name, op, reg_left)                                  \
+  {                                                                            \
+    (name), {(reg_left), ',', ULAS_E16, 0}, { (op), ULAS_E16, 0 }              \
+  }
+
+// <name> reg
+#define ULAS_INSTR_REG(name, op, reg)                                          \
+  {                                                                            \
+    (name), {(reg), 0}, { (op), 0x00 }                                         \
+  }
+
 // all instructions
 // when name is NULL list ended
 const struct ulas_instr ULASINSTRS[] = {
+    // control instructions
     {"nop", {0}, {(short)ULAS_DATZERO, 0}},
     {"halt", {0}, {0x76, 0}},
     {"stop", {0}, {0x10, (short)ULAS_DATZERO, 0x00}},
     {"di", {0}, {0xF4, 0x00}},
     {"ei", {0}, {0xFB, 0x00}},
+
+    // misc
+    {"daa", {0}, {0x27, 0x00}},
+    {"scf", {0}, {0x37, 0x00}},
+
+    // shift / bits
+    {"rlca", {0}, {0x07, 0x00}},
+    {"rls", {0}, {0x17, 0x00}},
 
     // ld r8, r8
     ULAS_INSTR_R8R8D("ld", 0x40, ULAS_REG_B),
@@ -1434,18 +1468,52 @@ const struct ulas_instr ULASINSTRS[] = {
     ULAS_INSTR_R8R8D("ld", 0x60, ULAS_REG_H),
     ULAS_INSTR_R8R8D("ld", 0x68, ULAS_REG_L),
     ULAS_INSTR_R8R8D("ld", 0x78, ULAS_REG_A),
+    ULAS_INSTR_R8_EXPR8("ld", 0x06, ULAS_REG_B),
+    ULAS_INSTR_R8_EXPR8("ld", 0x16, ULAS_REG_D),
+    ULAS_INSTR_R8_EXPR8("ld", 0x26, ULAS_REG_H),
+    {"ld", {'[', ULAS_REG_HL, ']', ',', ULAS_E8, 0}, {0x36, ULAS_E8, 0x00}},
+    {"ld", {'[', ULAS_REG_BC, ']', ',', ULAS_REG_A, 0}, {0x02, 0}},
+    {"ld", {'[', ULAS_REG_DE, ']', ',', ULAS_REG_A, 0}, {0x12, 0}},
+    {"ld", {'[', ULAS_REG_HL, '+', ']', ',', ULAS_REG_A, 0}, {0x22, 0}},
+    {"ld", {'[', ULAS_REG_HL, '-', ']', ',', ULAS_REG_A, 0}, {0x32, 0}},
+    {"ld", {'[', ULAS_E16, ']', ',', ULAS_REG_SP, 0}, {0x08, ULAS_E16, 0}},
+
+    // ld r16, e16
+    ULAS_INSTR_R16E16("ld", 0x01, ULAS_REG_BC),
+    ULAS_INSTR_R16E16("ld", 0x11, ULAS_REG_DE),
+    ULAS_INSTR_R16E16("ld", 0x21, ULAS_REG_HL),
+    ULAS_INSTR_R16E16("ld", 0x31, ULAS_REG_SP),
+
+    // jr
+    ULAS_INSTR_R8_EXPR8("jr", 0x20, ULAS_REG_NOT_ZERO),
+    ULAS_INSTR_R8_EXPR8("jr", 0x30, ULAS_REG_NOT_CARRY),
+
+    // inc/dec
+    ULAS_INSTR_REG("inc", 0x03, ULAS_REG_BC),
+    ULAS_INSTR_REG("inc", 0x13, ULAS_REG_DE),
+    ULAS_INSTR_REG("inc", 0x23, ULAS_REG_HL),
+    ULAS_INSTR_REG("inc", 0x33, ULAS_REG_SP),
+
+    ULAS_INSTR_REG("inc", 0x04, ULAS_REG_B),
+    ULAS_INSTR_REG("inc", 0x14, ULAS_REG_D),
+    ULAS_INSTR_REG("inc", 0x24, ULAS_REG_H),
+    {"inc", {'[', ULAS_REG_HL, ']', 0}, {0x34, 0x00}},
+
+    ULAS_INSTR_REG("dec", 0x05, ULAS_REG_B),
+    ULAS_INSTR_REG("dec", 0x15, ULAS_REG_D),
+    ULAS_INSTR_REG("dec", 0x25, ULAS_REG_H),
+    {"dec", {'[', ULAS_REG_HL, ']', 0}, {0x35, 0x00}},
 
     // alu r8, r8
     ULAS_INSTR_ALUR8D("add", 0x80),
     ULAS_INSTR_ALUR8D("adc", 0x88),
     ULAS_INSTR_ALUR8D("sub", 0x90),
     ULAS_INSTR_ALUR8D("sbc", 0x98),
+    ULAS_INSTR_ALUR8D("and", 0xA0),
+    ULAS_INSTR_ALUR8D("xor", 0xA8),
+    ULAS_INSTR_ALUR8D("or", 0xB0),
+    ULAS_INSTR_ALUR8D("cp", 0xB8),
 
-    // keep expression-based instructions towards the end
-    // to avoid evaluating them if not needed
-    // this is done because expressions will abort immediatly
-    // if they are found to be invalid
-    {"ld", {ULAS_REG_B, ',', ULAS_E8, 0}, {0x06, ULAS_E8, 0}},
     {NULL}};
 
 // assembles an instruction, writes bytes into dst
@@ -1527,7 +1595,10 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
       if (dat[datread] == ULAS_E8) {
         dst[written] = (char)exprres[expridx++];
       } else if (dat[datread] == ULAS_E16) {
-        // TODO: write 16 bit values
+        // write 16-bit le values
+        short val = exprres[expridx++];
+        dst[written++] = val & 0xFF;
+        dst[written] = val >> 8;
       } else {
         dst[written] = dat[datread];
       }
@@ -1554,7 +1625,7 @@ void ulas_asmlst(const char *line, char *outbuf, unsigned long n) {
 
     // always pad at least n bytes
     fputs("  ", ulaslstout);
-    const int pad = 8;
+    const int pad = 10;
     int outwrt = 0;
 
     for (long i = 0; i < n; i++) {

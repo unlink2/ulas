@@ -315,7 +315,16 @@ enum ulas_asmregs {
   // r16
   ULAS_REG_BC = 8,
   ULAS_REG_DE = 9,
-  ULAS_REG_HL = 10
+  ULAS_REG_HL = 10,
+
+  // flags
+  ULAS_REG_NOT_ZERO = 11,
+  ULAS_REG_ZERO = 12,
+  ULAS_REG_NOT_CARRY = 13,
+  ULAS_REG_CARRY = 14,
+
+  // misc
+  ULAS_REG_SP = 15
 };
 
 // special asm tokens for instr enum
