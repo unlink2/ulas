@@ -53,3 +53,12 @@
 
   add a, 1+2
   rst 0x00
+  
+  add sp, 2 + 2
+  ld hl, sp+2
+
+  ret 
+  reti
+
+  jp z, 2
+  call 5

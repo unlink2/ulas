@@ -1516,6 +1516,10 @@ const struct ulas_instr ULASINSTRS[] = {
     {"ld", {'[', ULAS_E16, ']', ',', ULAS_REG_A, 0}, {0xEA, ULAS_E16, 0}},
     {"ld", {ULAS_REG_A, ',', '[', ULAS_E16, ']', 0}, {0xFA, ULAS_E16, 0}},
 
+    {"ld",
+     {ULAS_REG_HL, ',', ULAS_REG_SP, '+', ULAS_E8, 0},
+     {0xF8, ULAS_E8, 0}},
+
     {"ldh", {'[', ULAS_REG_C, ']', ',', ULAS_REG_A, 0}, {0xE2, 0}},
     {"ldh", {ULAS_REG_A, ',', '[', ULAS_REG_C, ']', 0}, {0xF2, 0}},
 
@@ -1550,17 +1554,24 @@ const struct ulas_instr ULASINSTRS[] = {
     ULAS_INSTR_REG("ret", 0xD0, ULAS_REG_NOT_CARRY),
     ULAS_INSTR_REG("ret", 0xC9, ULAS_REG_ZERO),
     ULAS_INSTR_REG("ret", 0xD9, ULAS_REG_CARRY),
+    {"ret", {0}, {0xC9, 0x00}},
+    {"reti", {0}, {0xD9, 0x00}},
 
     // jp
     ULAS_INSTR_R16E16("jp", 0xC2, ULAS_REG_NOT_ZERO),
     ULAS_INSTR_R16E16("jp", 0xD2, ULAS_REG_NOT_CARRY),
+    ULAS_INSTR_R16E16("jp", 0xCA, ULAS_REG_ZERO),
+    ULAS_INSTR_R16E16("jp", 0xDA, ULAS_REG_CARRY),
     {"jp", {ULAS_E16, 0}, {0xC3, ULAS_E16, 0x00}},
 
     // call
     ULAS_INSTR_R16E16("call", 0xC4, ULAS_REG_NOT_ZERO),
     ULAS_INSTR_R16E16("call", 0xD4, ULAS_REG_NOT_CARRY),
+    ULAS_INSTR_R16E16("call", 0xCC, ULAS_REG_ZERO),
+    ULAS_INSTR_R16E16("call", 0xDC, ULAS_REG_CARRY),
+    {"call", {ULAS_E16, 0}, {0xCD, ULAS_E16, 0x00}},
 
-    // rst 
+    // rst
     ULAS_INSTR_REG("rst", 0xC7, ULAS_VEC00),
     ULAS_INSTR_REG("rst", 0xD7, ULAS_VEC10),
     ULAS_INSTR_REG("rst", 0xE7, ULAS_VEC20),
@@ -1615,6 +1626,13 @@ const struct ulas_instr ULASINSTRS[] = {
     ULAS_INSTR_R8_EXPR8("sub", 0xD6, ULAS_REG_A),
     ULAS_INSTR_R8_EXPR8("and", 0xE6, ULAS_REG_A),
     ULAS_INSTR_R8_EXPR8("or", 0xF6, ULAS_REG_A),
+
+    ULAS_INSTR_R8_EXPR8("adc", 0xCE, ULAS_REG_A),
+    ULAS_INSTR_R8_EXPR8("suc", 0xDE, ULAS_REG_A),
+    ULAS_INSTR_R8_EXPR8("xor", 0xEE, ULAS_REG_A),
+    ULAS_INSTR_R8_EXPR8("cp", 0xFE, ULAS_REG_A),
+
+    ULAS_INSTR_R8_EXPR8("add", 0xE8, ULAS_REG_SP),
 
     // alu r16, r16
     ULAS_INSTR_R16R16("add", 0x09, ULAS_REG_HL, ULAS_REG_BC),
