@@ -325,7 +325,15 @@ enum ulas_asmregs {
   ULAS_REG_CARRY = 14,
 
   // misc
-  ULAS_REG_SP = 15
+  ULAS_REG_SP = 15,
+  ULAS_VEC00 = 17,
+  ULAS_VEC08 = 18,
+  ULAS_VEC10 = 19,
+  ULAS_VEC18 = 20,
+  ULAS_VEC20 = 21,
+  ULAS_VEC28 = 22,
+  ULAS_VEC30 = 23,
+  ULAS_VEC38 = 24
 };
 
 // special asm tokens for instr enum

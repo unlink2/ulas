@@ -1386,6 +1386,22 @@ const char *ulas_asmregstr(enum ulas_asmregs reg) {
     return "sp";
   case ULAS_REG_AF:
     return "af";
+  case ULAS_VEC00:
+    return "0x00";
+  case ULAS_VEC08:
+    return "0x08";
+  case ULAS_VEC10:
+    return "0x10";
+  case ULAS_VEC18:
+    return "0x18";
+  case ULAS_VEC20:
+    return "0x20";
+  case ULAS_VEC28:
+    return "0x28";
+  case ULAS_VEC30:
+    return "0x30";
+  case ULAS_VEC38:
+    return "0x38";
   }
 
   return NULL;
@@ -1532,6 +1548,8 @@ const struct ulas_instr ULASINSTRS[] = {
     // ret
     ULAS_INSTR_REG("ret", 0xC0, ULAS_REG_NOT_ZERO),
     ULAS_INSTR_REG("ret", 0xD0, ULAS_REG_NOT_CARRY),
+    ULAS_INSTR_REG("ret", 0xC9, ULAS_REG_ZERO),
+    ULAS_INSTR_REG("ret", 0xD9, ULAS_REG_CARRY),
 
     // jp
     ULAS_INSTR_R16E16("jp", 0xC2, ULAS_REG_NOT_ZERO),
@@ -1541,6 +1559,16 @@ const struct ulas_instr ULASINSTRS[] = {
     // call
     ULAS_INSTR_R16E16("call", 0xC4, ULAS_REG_NOT_ZERO),
     ULAS_INSTR_R16E16("call", 0xD4, ULAS_REG_NOT_CARRY),
+
+    // rst 
+    ULAS_INSTR_REG("rst", 0xC7, ULAS_VEC00),
+    ULAS_INSTR_REG("rst", 0xD7, ULAS_VEC10),
+    ULAS_INSTR_REG("rst", 0xE7, ULAS_VEC20),
+    ULAS_INSTR_REG("rst", 0xF7, ULAS_VEC30),
+    ULAS_INSTR_REG("rst", 0xCF, ULAS_VEC08),
+    ULAS_INSTR_REG("rst", 0xDF, ULAS_VEC18),
+    ULAS_INSTR_REG("rst", 0xEF, ULAS_VEC28),
+    ULAS_INSTR_REG("rst", 0xFF, ULAS_VEC38),
 
     // inc/dec
     ULAS_INSTR_REG("inc", 0x03, ULAS_REG_BC),
@@ -1582,6 +1610,11 @@ const struct ulas_instr ULASINSTRS[] = {
     ULAS_INSTR_ALUR8D("xor", 0xA8),
     ULAS_INSTR_ALUR8D("or", 0xB0),
     ULAS_INSTR_ALUR8D("cp", 0xB8),
+
+    ULAS_INSTR_R8_EXPR8("add", 0xC6, ULAS_REG_A),
+    ULAS_INSTR_R8_EXPR8("sub", 0xD6, ULAS_REG_A),
+    ULAS_INSTR_R8_EXPR8("and", 0xE6, ULAS_REG_A),
+    ULAS_INSTR_R8_EXPR8("or", 0xF6, ULAS_REG_A),
 
     // alu r16, r16
     ULAS_INSTR_R16R16("add", 0x09, ULAS_REG_HL, ULAS_REG_BC),

@@ -50,3 +50,6 @@
   call nc, 2
 
   push af
+
+  add a, 1+2
+  rst 0x00
