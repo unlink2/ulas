@@ -283,6 +283,13 @@ void test_asminstr(void) {
   TESTEND("asminstr");
 }
 
+// tests the entire stack
+void test_full(void) {
+  TESTBEGIN("testfull");
+
+  TESTEND("testend");
+}
+
 int main(int arc, char **argv) {
   ulas_init(ulas_cfg_from_env());
 
@@ -296,6 +303,7 @@ int main(int arc, char **argv) {
   test_totok();
   test_intexpr();
   test_asminstr();
+  test_full();
 
   ulas_free();
 

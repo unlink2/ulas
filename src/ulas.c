@@ -1713,7 +1713,7 @@ const struct ulas_instr ULASINSTRS[] = {
     ULAS_INSTR_PREBITR8D("res", 0xA8, '5'),
     ULAS_INSTR_PREBITR8D("res", 0xB0, '6'),
     ULAS_INSTR_PREBITR8D("res", 0xB8, '7'),
-    
+
     ULAS_INSTR_PREBITR8D("set", 0xC0, '0'),
     ULAS_INSTR_PREBITR8D("set", 0xC8, '1'),
     ULAS_INSTR_PREBITR8D("set", 0xD0, '2'),
