@@ -62,3 +62,9 @@
 
   jp z, 2
   call 5
+
+  rlc c
+  rlc [hl]
+
+  bit 0, d
+  bit 0, [hl]

@@ -1466,6 +1466,40 @@ int ulas_asmregisr8(enum ulas_asmregs reg) {
     (name), {(reg), 0}, { (op), 0x00 }                                         \
   }
 
+// prefixed <name> reg
+#define ULAS_INSTR_PRER8(name, base_op, reg_right)                             \
+  {                                                                            \
+    (name), {(reg_right), 0}, { 0xCB, base_op, 0 }                             \
+  }
+
+#define ULAS_INSTR_PRER8D(name, base_op)                                       \
+  ULAS_INSTR_PRER8(name, base_op, ULAS_REG_B),                                 \
+      ULAS_INSTR_PRER8(name, base_op + 1, ULAS_REG_C),                         \
+      ULAS_INSTR_PRER8(name, base_op + 2, ULAS_REG_D),                         \
+      ULAS_INSTR_PRER8(name, base_op + 3, ULAS_REG_E),                         \
+      ULAS_INSTR_PRER8(name, base_op + 4, ULAS_REG_H),                         \
+      ULAS_INSTR_PRER8(name, base_op + 5, ULAS_REG_L),                         \
+      {(name), {'[', ULAS_REG_HL, ']', 0}, {0xCB, base_op + 6, 0}},            \
+      ULAS_INSTR_PRER8(name, base_op + 7, ULAS_REG_A)
+
+// prefixed <name> <bit>, reg
+#define ULAS_INSTR_PREBITR8(name, base_op, bit, reg_right)                     \
+  {                                                                            \
+    (name), {(bit), (reg_right), 0}, { 0xCB, base_op, 0 }                      \
+  }
+
+#define ULAS_INSTR_PREBITR8D(name, base_op, bit)                               \
+  ULAS_INSTR_PREBITR8(name, base_op, bit, ULAS_REG_B),                         \
+      ULAS_INSTR_PREBITR8(name, base_op + 1, bit, ULAS_REG_C),                 \
+      ULAS_INSTR_PREBITR8(name, base_op + 2, bit, ULAS_REG_D),                 \
+      ULAS_INSTR_PREBITR8(name, base_op + 3, bit, ULAS_REG_E),                 \
+      ULAS_INSTR_PREBITR8(name, base_op + 4, bit, ULAS_REG_H),                 \
+      ULAS_INSTR_PREBITR8(name, base_op + 5, bit, ULAS_REG_L),                 \
+      {(name),                                                                 \
+       {(bit), ',', '[', ULAS_REG_HL, ']', 0},                                 \
+       {0xCB, base_op + 6, 0}},                                                \
+      ULAS_INSTR_PREBITR8(name, base_op + 7, bit, ULAS_REG_A)
+
 // all instructions
 // when name is NULL list ended
 const struct ulas_instr ULASINSTRS[] = {
@@ -1651,6 +1685,17 @@ const struct ulas_instr ULASINSTRS[] = {
     ULAS_INSTR_REG("push", 0xD5, ULAS_REG_DE),
     ULAS_INSTR_REG("push", 0xE5, ULAS_REG_HL),
     ULAS_INSTR_REG("push", 0xF5, ULAS_REG_AF),
+
+    // prefixed
+    ULAS_INSTR_PRER8D("rlc", 0x00),
+    ULAS_INSTR_PRER8D("rrc", 0x08),
+    ULAS_INSTR_PRER8D("rl", 0x10),
+    ULAS_INSTR_PRER8D("rr", 0x18),
+    ULAS_INSTR_PRER8D("sla", 0x10),
+    ULAS_INSTR_PRER8D("sra", 0x18),
+    ULAS_INSTR_PRER8D("swap", 0x30),
+    ULAS_INSTR_PRER8D("srl", 0x38),
+    ULAS_INSTR_PREBITR8D("bit", 0x40, '0'),
 
     {NULL}};
 
