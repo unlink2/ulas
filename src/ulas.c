@@ -1485,7 +1485,7 @@ int ulas_asmregisr8(enum ulas_asmregs reg) {
 // prefixed <name> <bit>, reg
 #define ULAS_INSTR_PREBITR8(name, base_op, bit, reg_right)                     \
   {                                                                            \
-    (name), {(bit), ',', (reg_right), 0}, { 0xCB, base_op, 0 }                      \
+    (name), {(bit), ',', (reg_right), 0}, { 0xCB, base_op, 0 }                 \
   }
 
 #define ULAS_INSTR_PREBITR8D(name, base_op, bit)                               \
@@ -1695,7 +1695,33 @@ const struct ulas_instr ULASINSTRS[] = {
     ULAS_INSTR_PRER8D("sra", 0x18),
     ULAS_INSTR_PRER8D("swap", 0x30),
     ULAS_INSTR_PRER8D("srl", 0x38),
+
     ULAS_INSTR_PREBITR8D("bit", 0x40, '0'),
+    ULAS_INSTR_PREBITR8D("bit", 0x48, '1'),
+    ULAS_INSTR_PREBITR8D("bit", 0x50, '2'),
+    ULAS_INSTR_PREBITR8D("bit", 0x58, '3'),
+    ULAS_INSTR_PREBITR8D("bit", 0x60, '4'),
+    ULAS_INSTR_PREBITR8D("bit", 0x68, '5'),
+    ULAS_INSTR_PREBITR8D("bit", 0x70, '6'),
+    ULAS_INSTR_PREBITR8D("bit", 0x78, '7'),
+
+    ULAS_INSTR_PREBITR8D("res", 0x80, '0'),
+    ULAS_INSTR_PREBITR8D("res", 0x88, '1'),
+    ULAS_INSTR_PREBITR8D("res", 0x90, '2'),
+    ULAS_INSTR_PREBITR8D("res", 0x98, '3'),
+    ULAS_INSTR_PREBITR8D("res", 0xA0, '4'),
+    ULAS_INSTR_PREBITR8D("res", 0xA8, '5'),
+    ULAS_INSTR_PREBITR8D("res", 0xB0, '6'),
+    ULAS_INSTR_PREBITR8D("res", 0xB8, '7'),
+    
+    ULAS_INSTR_PREBITR8D("set", 0xC0, '0'),
+    ULAS_INSTR_PREBITR8D("set", 0xC8, '1'),
+    ULAS_INSTR_PREBITR8D("set", 0xD0, '2'),
+    ULAS_INSTR_PREBITR8D("set", 0xD8, '3'),
+    ULAS_INSTR_PREBITR8D("set", 0xE0, '4'),
+    ULAS_INSTR_PREBITR8D("set", 0xE8, '5'),
+    ULAS_INSTR_PREBITR8D("set", 0xF0, '6'),
+    ULAS_INSTR_PREBITR8D("set", 0xF8, '7'),
 
     {NULL}};
 
