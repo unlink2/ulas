@@ -303,19 +303,23 @@ void test_asminstr(void) {
 
 #define ULAS_FULLEN 0xFFFF
 
-#define ASSERT_FULL(expect_len, expect_rc, in_path, ...)                       \
+#define ASSERT_FULL(expect_rc, in_path, expect_path)                           \
   {                                                                            \
+    printf("[source: %s; expect: %s]\n", in_path, expect_path);                \
     ulaslstout = stdout;                                                       \
     struct ulas_config cfg = ulas_cfg_from_env();                              \
     char dstbuf[ULAS_FULLEN];                                                  \
-    char expect[] = {__VA_ARGS__};                                             \
+    char expect[ULAS_FULLEN];                                                  \
+    FILE *expectf = fopen(expect_path, "re");                                  \
+    int expect_len = fread(expect, 1, ULAS_FULLEN, expectf);                   \
+    fclose(expectf);                                                           \
     memset(dstbuf, 0, ULAS_FULLEN);                                            \
     ulasout = fmemopen(dstbuf, ULAS_FULLEN, "we");                             \
     ulasin = fopen(in_path, "re");                                             \
     assert(ulas_main(cfg) == expect_rc);                                       \
     fclose(ulasout);                                                           \
     for (int i = 0; i < expect_len; i++) {                                     \
-      assert(dstbuf[i] == expect[i]);                                          \
+      assert(expect[i] == dstbuf[i]);                                          \
     }                                                                          \
     for (int i = expect_len; i < ULAS_FULLEN; i++) {                           \
       assert(dstbuf[i] == 0);                                                  \
@@ -328,7 +332,7 @@ void test_asminstr(void) {
 void test_full(void) {
   TESTBEGIN("testfull");
 
-  ASSERT_FULL(2, 0, "tests/t0.s", 0, 0x76);
+  ASSERT_FULL(0, "tests/t0.s", "tests/t0.bin");
 
   TESTEND("testfull");
 }

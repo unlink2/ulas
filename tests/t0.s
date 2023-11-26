@@ -1,5 +1,9 @@
 ; this is a sample assembly file 
-; that can be read by tests
+; that can be read by tests.
+; the expected result will just be a regular run of the program
+; that will be verified for correctness manually once
+; generate expected result with:
+; make buildtests
 .org 0x100 ; comment
   nop
   ; full line is a comments

@@ -72,3 +72,8 @@ lint:
 .PHONY: runtest
 runtest:
 	./$(BDIR)/$(TEST_BNAME)
+
+.PHONY: buildtests
+buildtests:
+	./$(BDIR)/$(BNAME) tests/t0.s -l - -o tests/t0.bin
+
