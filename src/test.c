@@ -277,8 +277,26 @@ void test_intexpr(void) {
   TESTEND("intexpr");
 }
 
+#define ASSERT_ASMINSTR(expect_len, line, ...)                                 \
+  {                                                                            \
+    const char *l = line;                                                      \
+    int n = strlen(l);                                                         \
+    char dst[64];                                                              \
+    unsigned char expect_dst[] = {__VA_ARGS__};                                \
+    int res = ulas_asminstr(dst, 64, &l, n);                                   \
+    assert(res == expect_len);                                                 \
+    for (int i = 0; i < res; i++) {                                            \
+      assert(expect_dst[i] == (unsigned char)dst[i]);                          \
+    }                                                                          \
+  }
+
 void test_asminstr(void) {
   TESTBEGIN("asminstr");
+
+  ASSERT_ASMINSTR(1, "nop", 0x00);
+  ASSERT_ASMINSTR(1, "halt", 0x76);
+  ASSERT_ASMINSTR(1, "ld b, c", 0x41);
+  ASSERT_ASMINSTR(2, "ldh a, [1 + 2]", 0xF0, 0x03);
 
   TESTEND("asminstr");
 }

@@ -469,6 +469,11 @@ void ulas_exprbuffree(struct ulas_exprbuf *eb);
  * Assembly step
  */
 
+// assembles an instruction, writes bytes into dst
+// returns bytes written or -1 on error
+int ulas_asminstr(char *dst, unsigned long max, const char **line,
+                  unsigned long n);
+
 // returns 0 if no more data can be read
 //         > 0 if data was read
 //         -1 on error
