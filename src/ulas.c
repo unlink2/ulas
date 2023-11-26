@@ -1725,8 +1725,6 @@ const struct ulas_instr ULASINSTRS[] = {
 
     {NULL}};
 
-// assembles an instruction, writes bytes into dst
-// returns bytes written or -1 on error
 int ulas_asminstr(char *dst, unsigned long max, const char **line,
                   unsigned long n) {
   const char *start = *line;
