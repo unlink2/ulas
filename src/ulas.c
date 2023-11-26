@@ -1485,7 +1485,7 @@ int ulas_asmregisr8(enum ulas_asmregs reg) {
 // prefixed <name> <bit>, reg
 #define ULAS_INSTR_PREBITR8(name, base_op, bit, reg_right)                     \
   {                                                                            \
-    (name), {(bit), (reg_right), 0}, { 0xCB, base_op, 0 }                      \
+    (name), {(bit), ',', (reg_right), 0}, { 0xCB, base_op, 0 }                      \
   }
 
 #define ULAS_INSTR_PREBITR8D(name, base_op, bit)                               \
