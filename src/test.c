@@ -287,7 +287,7 @@ void test_asminstr(void) {
 void test_full(void) {
   TESTBEGIN("testfull");
 
-  TESTEND("testend");
+  TESTEND("testfull");
 }
 
 int main(int arc, char **argv) {
