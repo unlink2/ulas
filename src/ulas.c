@@ -38,12 +38,14 @@ void ulas_init(struct ulas_config cfg) {
 
   ulas.toks = ulas_tokbuf();
   ulas.exprs = ulas_exprbuf();
+  ulas.syms = ulas_symbuf();
 }
 
 void ulas_free(void) {
   ulas_strfree(&ulas.tok);
   ulas_tokbuffree(&ulas.toks);
   ulas_exprbuffree(&ulas.exprs);
+  ulas_symbuffree(&ulas.syms);
 }
 
 int ulas_icntr(void) { return ulas.icntr++; }
@@ -995,12 +997,16 @@ int ulas_tokbufpush(struct ulas_tokbuf *tb, struct ulas_tok tok) {
   return tb->len++;
 }
 
+void ulas_tokfree(struct ulas_tok *t) {
+  if (t->type == ULAS_SYMBOL || t->type == ULAS_STR) {
+    free(t->val.strv);
+  }
+}
+
 void ulas_tokbufclear(struct ulas_tokbuf *tb) {
   for (long i = 0; i < tb->len; i++) {
     struct ulas_tok *t = &tb->buf[i];
-    if (t->type == ULAS_SYMBOL || t->type == ULAS_STR) {
-      free(t->val.strv);
-    }
+    ulas_tokfree(t);
   }
   tb->len = 0;
 }
@@ -1045,6 +1051,48 @@ int ulas_exprbufpush(struct ulas_exprbuf *eb, struct ulas_expr expr) {
 void ulas_exprbufclear(struct ulas_exprbuf *eb) { eb->len = 0; }
 
 void ulas_exprbuffree(struct ulas_exprbuf *eb) { free(eb->buf); }
+
+struct ulas_symbuf ulas_symbuf(void) {
+  struct ulas_symbuf sb;
+  memset(&sb, 0, sizeof(sb));
+
+  sb.maxlen = 10;
+  sb.buf = malloc(sizeof(struct ulas_sym) * sb.maxlen);
+
+  return sb;
+}
+
+int ulas_symbufpush(struct ulas_symbuf *sb, struct ulas_sym sym) {
+  if (sb->len >= sb->maxlen) {
+    sb->maxlen *= 2;
+    void *newbuf = realloc(sb->buf, sb->maxlen * sizeof(struct ulas_sym));
+    if (!newbuf) {
+      ULASPANIC("%s\n", strerror(errno));
+    }
+    sb->buf = newbuf;
+  }
+
+  sb->buf[sb->len] = sym;
+  return sb->len++;
+}
+
+struct ulas_sym *ulas_symbufget(struct ulas_symbuf *sb, int i) {
+  if (i >= sb->len) {
+    return NULL;
+  }
+
+  return &sb->buf[i];
+}
+
+void ulas_symbufclear(struct ulas_symbuf *sb) {
+  for (long i = 0; i < sb->len; i++) {
+    struct ulas_sym *s = &sb->buf[i];
+    ulas_tokfree(&s->tok);
+  }
+  sb->len = 0;
+}
+
+void ulas_symbuffree(struct ulas_symbuf *sb) { free(sb->buf); }
 
 /**
  * Assembly step

@@ -149,6 +149,27 @@ struct ulas_exprbuf {
 };
 
 /**
+ * Symbols
+ */
+
+enum ulas_syms { ULAS_SYM_FORWARD, ULAS_SYM_DECL };
+
+enum ulas_symres { ULAS_EGLOBALUNRESOLVE = 1, ULAS_ELOCALUNRESOLVE = 2 };
+
+struct ulas_sym {
+  char *name;
+  struct ulas_tok tok;
+  enum ulas_syms type;
+};
+
+// holds all currently defned symbols
+struct ulas_symbuf {
+  struct ulas_sym *buf;
+  unsigned long len;
+  unsigned long maxlen;
+};
+
+/**
  * Assembly context
  */
 
@@ -162,6 +183,7 @@ struct ulas {
   // current token stream
   struct ulas_tokbuf toks;
   struct ulas_exprbuf exprs;
+  struct ulas_symbuf syms;
 
   unsigned int address;
 
@@ -221,20 +243,6 @@ struct ulas_preproc {
   struct ulas_str macroparam[ULAS_MACROPARAMMAX];
   // macro expansion buffer
   struct ulas_str macrobuf;
-};
-
-/**
- * Symbols
- */
-
-enum ulas_syms { ULAS_SYM_FORWARD, ULAS_SYM_DECL };
-
-enum ulas_symres { ULAS_EGLOBALUNRESOLVE = 1, ULAS_ELOCALUNRESOLVE = 2 };
-
-struct ulas_sym {
-  char *name;
-  struct ulas_tok tok;
-  enum ulas_syms type;
 };
 
 /**
@@ -461,6 +469,9 @@ char *ulas_valstr(struct ulas_tok *lit, enum ulas_symres flags, int *rc);
 
 struct ulas_tokbuf ulas_tokbuf(void);
 
+// TODO: maybe we could macro all those buf functions into a single more
+// "geneirc" thing...
+
 // pushes new token, returns newly added index
 int ulas_tokbufpush(struct ulas_tokbuf *tb, struct ulas_tok tok);
 struct ulas_tok *ulas_tokbufget(struct ulas_tokbuf *tb, int i);
@@ -474,6 +485,12 @@ int ulas_exprbufpush(struct ulas_exprbuf *eb, struct ulas_expr expr);
 struct ulas_expr *ulas_exprbufget(struct ulas_exprbuf *eb, int i);
 void ulas_exprbufclear(struct ulas_exprbuf *eb);
 void ulas_exprbuffree(struct ulas_exprbuf *eb);
+
+struct ulas_symbuf ulas_symbuf(void);
+int ulas_symbufpush(struct ulas_symbuf *sb, struct ulas_sym sym);
+struct ulas_sym *ulas_symbufget(struct ulas_symbuf *sb, int i);
+void ulas_symbufclear(struct ulas_symbuf *sb);
+void ulas_symbuffree(struct ulas_symbuf *sb);
 
 /**
  * Assembly step
