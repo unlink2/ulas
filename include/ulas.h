@@ -368,7 +368,9 @@ char *ulas_strndup(const char *src, unsigned long n);
 
 // resolve a symbol until an actual literal token (str, int) is found
 // returns NULL if the symbol cannot be resolved
-struct ulas_tok *ulas_symbolresolve(const char *name);
+// and sets rc to -1 if eunresolve is 1
+// if eunresolve is 0 rc will be set to 1 if the symbol is not resolved
+struct ulas_tok *ulas_symbolresolve(const char *name, int eunresolve, int *rc);
 
 // tokenisze according to pre-defined rules
 // returns the amount of bytes of line that were
@@ -445,9 +447,10 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
  */
 
 // convert literal to its int value
-int ulas_valint(struct ulas_tok *lit, int *rc);
+// retunrs -1 on error, 0 on success and 1 if there is an unresolved symbol
+int ulas_valint(struct ulas_tok *lit, int eunresolve, int *rc);
 // convert literal to its char value
-char *ulas_valstr(struct ulas_tok *lit, int *rc);
+char *ulas_valstr(struct ulas_tok *lit, int eunresolve, int *rc);
 
 struct ulas_tokbuf ulas_tokbuf(void);
 

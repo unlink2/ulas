@@ -161,7 +161,7 @@ int ulas_isname(const char *tok, unsigned long n) {
   return 1;
 }
 
-struct ulas_tok *ulas_symbolresolve(const char *name) {
+struct ulas_tok *ulas_symbolresolve(const char *name, int eunresolve, int *rc) {
   // TODO: implement
   return NULL;
 }
@@ -931,7 +931,12 @@ fail:
  * Literals, tokens and expressions
  */
 
-int ulas_valint(struct ulas_tok *lit, int *rc) {
+int ulas_valint(struct ulas_tok *lit, int eunresolve, int *rc) {
+  if (lit->type == ULAS_SYMBOL) {
+    struct ulas_tok *stok = ulas_symbolresolve(lit->val.strv, eunresolve, rc);
+    return ulas_valint(stok, eunresolve, rc);
+  }
+
   if (!lit || lit->type != ULAS_INT) {
     ULASERR("Expected int\n");
     *rc = -1;
@@ -941,7 +946,7 @@ int ulas_valint(struct ulas_tok *lit, int *rc) {
   return lit->val.intv;
 }
 
-char *ulas_valstr(struct ulas_tok *lit, int *rc) {
+char *ulas_valstr(struct ulas_tok *lit, int eunresolve, int *rc) {
   if (!lit || lit->type != ULAS_STR) {
     ULASERR("Expected str\n");
     *rc = -1;
@@ -1329,7 +1334,7 @@ int ulas_intexpreval(int i, int *rc) {
   }
   case ULAS_EXPPRIM: {
     struct ulas_tok *t = ulas_tokbufget(&ulas.toks, e->val.prim.tok);
-    return ulas_valint(t, rc);
+    return ulas_valint(t, 0, rc);
   }
   }
 
