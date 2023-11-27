@@ -994,7 +994,7 @@ int ulas_tokbufpush(struct ulas_tokbuf *tb, struct ulas_tok tok) {
   }
 
   tb->buf[tb->len] = tok;
-  return tb->len++;
+  return (int)tb->len++;
 }
 
 void ulas_tokfree(struct ulas_tok *t) {
@@ -1045,7 +1045,7 @@ int ulas_exprbufpush(struct ulas_exprbuf *eb, struct ulas_expr expr) {
   }
 
   eb->buf[eb->len] = expr;
-  return eb->len++;
+  return (int)eb->len++;
 }
 
 void ulas_exprbufclear(struct ulas_exprbuf *eb) { eb->len = 0; }
@@ -1073,7 +1073,7 @@ int ulas_symbufpush(struct ulas_symbuf *sb, struct ulas_sym sym) {
   }
 
   sb->buf[sb->len] = sym;
-  return sb->len++;
+  return (int)sb->len++;
 }
 
 struct ulas_sym *ulas_symbufget(struct ulas_symbuf *sb, int i) {
@@ -1099,7 +1099,7 @@ void ulas_symbuffree(struct ulas_symbuf *sb) { free(sb->buf); }
  */
 
 int ulas_istokend(struct ulas_str *tok) {
-  long len = strnlen(tok->buf, tok->maxlen);
+  long len = (int)strnlen(tok->buf, tok->maxlen);
   // skip comments though, they are not trailing tokens!
   if (len > 0 && tok->buf[0] != ULAS_TOK_COMMENT) {
     return 0;
@@ -1320,12 +1320,12 @@ int ulas_intexpreval(int i, int *rc) {
 
   switch ((int)e->type) {
   case ULAS_EXPBIN: {
-    struct ulas_tok *op = ulas_tokbufget(&ulas.toks, e->val.bin.op);
+    struct ulas_tok *op = ulas_tokbufget(&ulas.toks, (int)e->val.bin.op);
     if (!op) {
       ULASPANIC("Binary operator was NULL\n");
     }
-    int left = ulas_intexpreval(e->val.bin.left, rc);
-    int right = ulas_intexpreval(e->val.bin.right, rc);
+    int left = ulas_intexpreval((int)e->val.bin.left, rc);
+    int right = ulas_intexpreval((int)e->val.bin.right, rc);
     switch ((int)op->type) {
     case ULAS_EQ:
       return left == right;
@@ -1366,11 +1366,11 @@ int ulas_intexpreval(int i, int *rc) {
     break;
   }
   case ULAS_EXPUN: {
-    struct ulas_tok *op = ulas_tokbufget(&ulas.toks, e->val.un.op);
+    struct ulas_tok *op = ulas_tokbufget(&ulas.toks, (int)e->val.un.op);
     if (!op) {
       ULASPANIC("Unary operator was NULL\n");
     }
-    int right = ulas_intexpreval(e->val.un.right, rc);
+    int right = ulas_intexpreval((int)e->val.un.right, rc);
     switch ((int)op->type) {
     case '!':
       return !right;
@@ -1383,10 +1383,10 @@ int ulas_intexpreval(int i, int *rc) {
     break;
   }
   case ULAS_EXPGRP: {
-    return ulas_intexpreval(e->val.grp.head, rc);
+    return ulas_intexpreval((int)e->val.grp.head, rc);
   }
   case ULAS_EXPPRIM: {
-    struct ulas_tok *t = ulas_tokbufget(&ulas.toks, e->val.prim.tok);
+    struct ulas_tok *t = ulas_tokbufget(&ulas.toks, (int)e->val.prim.tok);
     return ulas_valint(t, 0, rc);
   }
   }
@@ -1400,8 +1400,8 @@ int ulas_intexpr(const char **line, unsigned long n, int *rc) {
     return -1;
   }
 
-  int expr = -1;
-  if ((expr = ulas_parseexpr()) == -1) {
+  int expr = ulas_parseexpr();
+  if (expr == -1) {
     *rc = -1;
     return -1;
   }
@@ -1495,13 +1495,15 @@ int ulas_asmregisr8(enum ulas_asmregs reg) {
 
 #define ULAS_INSTR_R8R8D(name, base_op, reg_left)                              \
   ULAS_INSTR_R8R8(name, base_op, reg_left, ULAS_REG_B),                        \
-      ULAS_INSTR_R8R8(name, base_op + 1, reg_left, ULAS_REG_C),                \
-      ULAS_INSTR_R8R8(name, base_op + 2, reg_left, ULAS_REG_D),                \
-      ULAS_INSTR_R8R8(name, base_op + 3, reg_left, ULAS_REG_E),                \
-      ULAS_INSTR_R8R8(name, base_op + 4, reg_left, ULAS_REG_H),                \
-      ULAS_INSTR_R8R8(name, base_op + 5, reg_left, ULAS_REG_L),                \
-      {(name), {(reg_left), ',', '[', ULAS_REG_HL, ']', 0}, {base_op + 6, 0}}, \
-      ULAS_INSTR_R8R8(name, base_op + 7, reg_left, ULAS_REG_A)
+      ULAS_INSTR_R8R8(name, (base_op) + 1, reg_left, ULAS_REG_C),              \
+      ULAS_INSTR_R8R8(name, (base_op) + 2, reg_left, ULAS_REG_D),              \
+      ULAS_INSTR_R8R8(name, (base_op) + 3, reg_left, ULAS_REG_E),              \
+      ULAS_INSTR_R8R8(name, (base_op) + 4, reg_left, ULAS_REG_H),              \
+      ULAS_INSTR_R8R8(name, (base_op) + 5, reg_left, ULAS_REG_L),              \
+      {(name),                                                                 \
+       {(reg_left), ',', '[', ULAS_REG_HL, ']', 0},                            \
+       {(base_op) + 6, 0}},                                                    \
+      ULAS_INSTR_R8R8(name, (base_op) + 7, reg_left, ULAS_REG_A)
 
 // <name> a, r8
 #define ULAS_INSTR_ALUR8D(name, base_op)                                       \
@@ -1531,14 +1533,14 @@ int ulas_asmregisr8(enum ulas_asmregs reg) {
   }
 
 #define ULAS_INSTR_PRER8D(name, base_op)                                       \
-  ULAS_INSTR_PRER8(name, base_op, ULAS_REG_B),                                 \
-      ULAS_INSTR_PRER8(name, base_op + 1, ULAS_REG_C),                         \
-      ULAS_INSTR_PRER8(name, base_op + 2, ULAS_REG_D),                         \
-      ULAS_INSTR_PRER8(name, base_op + 3, ULAS_REG_E),                         \
-      ULAS_INSTR_PRER8(name, base_op + 4, ULAS_REG_H),                         \
-      ULAS_INSTR_PRER8(name, base_op + 5, ULAS_REG_L),                         \
-      {(name), {'[', ULAS_REG_HL, ']', 0}, {0xCB, base_op + 6, 0}},            \
-      ULAS_INSTR_PRER8(name, base_op + 7, ULAS_REG_A)
+  ULAS_INSTR_PRER8(name, (base_op), ULAS_REG_B),                               \
+      ULAS_INSTR_PRER8(name, (base_op) + 1, ULAS_REG_C),                       \
+      ULAS_INSTR_PRER8(name, (base_op) + 2, ULAS_REG_D),                       \
+      ULAS_INSTR_PRER8(name, (base_op) + 3, ULAS_REG_E),                       \
+      ULAS_INSTR_PRER8(name, (base_op) + 4, ULAS_REG_H),                       \
+      ULAS_INSTR_PRER8(name, (base_op) + 5, ULAS_REG_L),                       \
+      {(name), {'[', ULAS_REG_HL, ']', 0}, {0xCB, (base_op) + 6, 0}},          \
+      ULAS_INSTR_PRER8(name, (base_op) + 7, ULAS_REG_A)
 
 // prefixed <name> <bit>, reg
 #define ULAS_INSTR_PREBITR8(name, base_op, bit, reg_right)                     \
@@ -1548,15 +1550,15 @@ int ulas_asmregisr8(enum ulas_asmregs reg) {
 
 #define ULAS_INSTR_PREBITR8D(name, base_op, bit)                               \
   ULAS_INSTR_PREBITR8(name, base_op, bit, ULAS_REG_B),                         \
-      ULAS_INSTR_PREBITR8(name, base_op + 1, bit, ULAS_REG_C),                 \
-      ULAS_INSTR_PREBITR8(name, base_op + 2, bit, ULAS_REG_D),                 \
-      ULAS_INSTR_PREBITR8(name, base_op + 3, bit, ULAS_REG_E),                 \
-      ULAS_INSTR_PREBITR8(name, base_op + 4, bit, ULAS_REG_H),                 \
-      ULAS_INSTR_PREBITR8(name, base_op + 5, bit, ULAS_REG_L),                 \
+      ULAS_INSTR_PREBITR8(name, (base_op) + 1, bit, ULAS_REG_C),               \
+      ULAS_INSTR_PREBITR8(name, (base_op) + 2, bit, ULAS_REG_D),               \
+      ULAS_INSTR_PREBITR8(name, (base_op) + 3, bit, ULAS_REG_E),               \
+      ULAS_INSTR_PREBITR8(name, (base_op) + 4, bit, ULAS_REG_H),               \
+      ULAS_INSTR_PREBITR8(name, (base_op) + 5, bit, ULAS_REG_L),               \
       {(name),                                                                 \
        {(bit), ',', '[', ULAS_REG_HL, ']', 0},                                 \
-       {0xCB, base_op + 6, 0}},                                                \
-      ULAS_INSTR_PREBITR8(name, base_op + 7, bit, ULAS_REG_A)
+       {0xCB, (base_op) + 6, 0}},                                              \
+      ULAS_INSTR_PREBITR8(name, (base_op) + 7, bit, ULAS_REG_A)
 
 // all instructions
 // when name is NULL list ended
@@ -1819,8 +1821,8 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
     int i = 0;
     while (tok[i]) {
       assert(i < ULAS_INSTRTOKMAX);
-      const char *regstr = NULL;
-      if ((regstr = ulas_asmregstr(tok[i]))) {
+      const char *regstr = ulas_asmregstr(tok[i]);
+      if (regstr) {
         if (ulas_tok(&ulas.tok, line, n) == -1) {
           goto skip;
         }
@@ -1840,7 +1842,7 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
           goto skip;
         }
 
-        char c[2] = {tok[i], '\0'};
+        char c[2] = {(char)tok[i], '\0'};
         if (strncmp(ulas.tok.buf, c, ulas.tok.maxlen) != 0) {
           goto skip;
         }
@@ -1861,11 +1863,11 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
         dst[written] = (char)exprres[expridx++];
       } else if (dat[datread] == ULAS_E16) {
         // write 16-bit le values
-        short val = exprres[expridx++];
-        dst[written++] = val & 0xFF;
-        dst[written] = val >> 8;
+        short val = (short)exprres[expridx++];
+        dst[written++] = (char)(val & 0xFF);
+        dst[written] = (char)(val >> 8);
       } else {
-        dst[written] = dat[datread];
+        dst[written] = (char)dat[datread];
       }
       written++;
       datread++;
@@ -1884,7 +1886,7 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
   return written;
 }
 
-void ulas_asmlst(const char *line, char *outbuf, unsigned long n) {
+void ulas_asmlst(const char *line, const char *outbuf, unsigned long n) {
   if (ulaslstout) {
     fprintf(ulaslstout, "%08X", ulas.address);
 
@@ -1969,11 +1971,13 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
     // start over for the next step...
     line = start;
     // is regular line in form of [label:] instruction ; comment
-    if ((towrite += ulas_asminstr(outbuf, ULAS_OUTBUFMAX, &line, n)) == -1) {
+    int nextwrite = ulas_asminstr(outbuf, ULAS_OUTBUFMAX, &line, n);
+    if (nextwrite == -1) {
       ULASERR("Unable to assemble instruction\n");
       rc = -1;
       goto fail;
     }
+    towrite += nextwrite;
 
     // TODO:
     // place marker when a label was unresolved

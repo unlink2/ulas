@@ -316,7 +316,7 @@ void test_asminstr(void) {
     memset(dstbuf, 0, ULAS_FULLEN);                                            \
     ulasout = fmemopen(dstbuf, ULAS_FULLEN, "we");                             \
     ulasin = fopen(in_path, "re");                                             \
-    assert(ulas_main(cfg) == expect_rc);                                       \
+    assert(ulas_main(cfg) == (expect_rc));                                     \
     fclose(ulasout);                                                           \
     for (int i = 0; i < expect_len; i++) {                                     \
       assert(expect[i] == dstbuf[i]);                                          \

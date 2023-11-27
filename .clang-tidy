@@ -23,7 +23,8 @@ Checks: "*,
   -misc-no-recursion,
   -concurrency-mt-unsafe,
   -clang-analyzer-unix.Malloc,
-  -modernize-macro-to-enum
+  -modernize-macro-to-enum,
+  -hicpp-signed-bitwise
 "
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
