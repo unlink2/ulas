@@ -936,7 +936,7 @@ int ulas_valint(struct ulas_tok *lit, enum ulas_symres flags, int *rc) {
   if (lit->type == ULAS_SYMBOL) {
     struct ulas_tok *stok = ulas_symbolresolve(lit->val.strv, flags, rc);
     // bail if symbol is not resolvable
-    if (*rc == 1) {
+    if (*rc > 0) {
       return 0;
     }
     return ulas_valint(stok, flags, rc);
