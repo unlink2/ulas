@@ -161,7 +161,8 @@ int ulas_isname(const char *tok, unsigned long n) {
   return 1;
 }
 
-struct ulas_tok *ulas_symbolresolve(const char *name, int eunresolve, int *rc) {
+struct ulas_tok *ulas_symbolresolve(const char *name, enum ulas_symres flags,
+                                    int *rc) {
   // TODO: implement
   return NULL;
 }
@@ -931,10 +932,14 @@ fail:
  * Literals, tokens and expressions
  */
 
-int ulas_valint(struct ulas_tok *lit, int eunresolve, int *rc) {
+int ulas_valint(struct ulas_tok *lit, enum ulas_symres flags, int *rc) {
   if (lit->type == ULAS_SYMBOL) {
-    struct ulas_tok *stok = ulas_symbolresolve(lit->val.strv, eunresolve, rc);
-    return ulas_valint(stok, eunresolve, rc);
+    struct ulas_tok *stok = ulas_symbolresolve(lit->val.strv, flags, rc);
+    // bail if symbol is not resolvable
+    if (*rc == 1) {
+      return 0;
+    }
+    return ulas_valint(stok, flags, rc);
   }
 
   if (!lit || lit->type != ULAS_INT) {
@@ -946,7 +951,7 @@ int ulas_valint(struct ulas_tok *lit, int eunresolve, int *rc) {
   return lit->val.intv;
 }
 
-char *ulas_valstr(struct ulas_tok *lit, int eunresolve, int *rc) {
+char *ulas_valstr(struct ulas_tok *lit, enum ulas_symres flags, int *rc) {
   if (!lit || lit->type != ULAS_STR) {
     ULASERR("Expected str\n");
     *rc = -1;
