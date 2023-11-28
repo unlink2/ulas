@@ -152,7 +152,7 @@ struct ulas_exprbuf {
  * Symbols
  */
 
-enum ulas_syms { ULAS_SYM_FORWARD, ULAS_SYM_DECL };
+enum ulas_syms { ULAS_SYM_LABEL, ULAS_SYM_DEF };
 
 struct ulas_sym {
   char *name;

@@ -41,9 +41,7 @@ void ulas_init(struct ulas_config cfg) {
   ulas.syms = ulas_symbuf();
 }
 
-void ulas_nextpass(void) {
-  ulas.scope = 0;
-}
+void ulas_nextpass(void) { ulas.scope = 0; }
 
 void ulas_free(void) {
   ulas_strfree(&ulas.tok);
@@ -1963,6 +1961,10 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
       ulas.address = ulas_intexpr(&line, strnlen(start, n), &rc);
       break;
     case ULAS_ASMDIR_SET:
+      // only do this in the final pass
+      if (ulas.pass == ULAS_PASS_FINAL) {
+      }
+      break;
     case ULAS_ASMDIR_BYTE:
     case ULAS_ASMDIR_STR:
     case ULAS_ASMDIR_FILL:
