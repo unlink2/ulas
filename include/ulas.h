@@ -154,8 +154,6 @@ struct ulas_exprbuf {
 
 enum ulas_syms { ULAS_SYM_FORWARD, ULAS_SYM_DECL };
 
-enum ulas_symres { ULAS_EGLOBALUNRESOLVE = 1, ULAS_ELOCALUNRESOLVE = 2 };
-
 struct ulas_sym {
   char *name;
   struct ulas_tok tok;
@@ -173,9 +171,17 @@ struct ulas_symbuf {
  * Assembly context
  */
 
+enum ulas_pass {
+  ULAS_PASS_FINAL = 0,
+  ULAS_PASS_RESOLVE = 1,
+};
+
 struct ulas {
   char *filename;
   unsigned long line;
+
+  // count how many passes we have completed so far
+  int pass;
 
   // holds the current token
   struct ulas_str tok;
@@ -384,8 +390,7 @@ char *ulas_strndup(const char *src, unsigned long n);
 // returns -1 if any flagged symbol was not found
 // if flagged symbols remain unresolved (e.g. global or locals) rc is set to the
 // respective flag value
-struct ulas_tok *ulas_symbolresolve(const char *name, enum ulas_symres flags,
-                                    int *rc);
+struct ulas_tok *ulas_symbolresolve(const char *name, int *rc);
 
 // tokenisze according to pre-defined rules
 // returns the amount of bytes of line that were
@@ -463,9 +468,9 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
 
 // convert literal to its int value
 // retunrs -1 on error, 0 on success and 1 if there is an unresolved symbol
-int ulas_valint(struct ulas_tok *lit, enum ulas_symres flags, int *rc);
+int ulas_valint(struct ulas_tok *lit, int *rc);
 // convert literal to its char value
-char *ulas_valstr(struct ulas_tok *lit, enum ulas_symres flags, int *rc);
+char *ulas_valstr(struct ulas_tok *lit, int *rc);
 
 struct ulas_tokbuf ulas_tokbuf(void);
 

@@ -163,8 +163,7 @@ int ulas_isname(const char *tok, unsigned long n) {
   return 1;
 }
 
-struct ulas_tok *ulas_symbolresolve(const char *name, enum ulas_symres flags,
-                                    int *rc) {
+struct ulas_tok *ulas_symbolresolve(const char *name, int *rc) {
   // TODO: implement
   return NULL;
 }
@@ -934,14 +933,14 @@ fail:
  * Literals, tokens and expressions
  */
 
-int ulas_valint(struct ulas_tok *lit, enum ulas_symres flags, int *rc) {
+int ulas_valint(struct ulas_tok *lit, int *rc) {
   if (lit->type == ULAS_SYMBOL) {
-    struct ulas_tok *stok = ulas_symbolresolve(lit->val.strv, flags, rc);
+    struct ulas_tok *stok = ulas_symbolresolve(lit->val.strv, rc);
     // bail if symbol is not resolvable
     if (*rc > 0) {
       return 0;
     }
-    return ulas_valint(stok, flags, rc);
+    return ulas_valint(stok, rc);
   }
 
   if (!lit || lit->type != ULAS_INT) {
@@ -953,7 +952,7 @@ int ulas_valint(struct ulas_tok *lit, enum ulas_symres flags, int *rc) {
   return lit->val.intv;
 }
 
-char *ulas_valstr(struct ulas_tok *lit, enum ulas_symres flags, int *rc) {
+char *ulas_valstr(struct ulas_tok *lit, int *rc) {
   if (!lit || lit->type != ULAS_STR) {
     ULASERR("Expected str\n");
     *rc = -1;
@@ -1387,7 +1386,7 @@ int ulas_intexpreval(int i, int *rc) {
   }
   case ULAS_EXPPRIM: {
     struct ulas_tok *t = ulas_tokbufget(&ulas.toks, (int)e->val.prim.tok);
-    return ulas_valint(t, 0, rc);
+    return ulas_valint(t, rc);
   }
   }
 
@@ -1978,12 +1977,6 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
       goto fail;
     }
     towrite += nextwrite;
-
-    // TODO:
-    // place marker when a label was unresolved
-    // write down byte location in dst as well as the byte offset in lstout so
-    // we can fix them later labels can only be unresolved when they are the
-    // only node in an expression!
   }
 
   // check for trailing
@@ -1995,8 +1988,11 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
     }
   }
 
-  ulas_asmout(dst, outbuf, towrite);
-  ulas_asmlst(start, outbuf, towrite);
+  // only write to dst on final pass
+  if (ulas.pass == ULAS_PASS_FINAL) {
+    ulas_asmout(dst, outbuf, towrite);
+    ulas_asmlst(start, outbuf, towrite);
+  }
   ulas.address += towrite;
 
 fail:
