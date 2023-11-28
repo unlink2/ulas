@@ -208,6 +208,10 @@ extern struct ulas ulas;
 
 int ulas_icntr(void);
 
+// init the next pass
+// by resetting some values
+void ulas_nextpass(void);
+
 /**
  * Preproc
  */

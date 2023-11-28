@@ -41,6 +41,10 @@ void ulas_init(struct ulas_config cfg) {
   ulas.syms = ulas_symbuf();
 }
 
+void ulas_nextpass(void) {
+  ulas.scope = 0;
+}
+
 void ulas_free(void) {
   ulas_strfree(&ulas.tok);
   ulas_tokbuffree(&ulas.toks);
@@ -905,6 +909,8 @@ int ulas_preproc(FILE *dst, FILE *src) {
 
   // init
   struct ulas_preproc pp = ulas_preprocinit();
+
+  ulas_nextpass();
 
   long prevseek = 0;
   // preproc
