@@ -158,6 +158,8 @@ struct ulas_sym {
   char *name;
   struct ulas_tok tok;
   enum ulas_syms type;
+  // this label's scope index
+  int scope;
 };
 
 // holds all currently defned symbols
@@ -192,6 +194,10 @@ struct ulas {
   struct ulas_symbuf syms;
 
   unsigned int address;
+
+  // current scope index
+  // each global-label increments the scope
+  int scope;
 
   // internal counter
   // used whenever a new unique number might be needed
