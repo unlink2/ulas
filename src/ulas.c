@@ -34,14 +34,22 @@ void ulas_init(struct ulas_config cfg) {
 
   if (cfg.argc) {
     ulas.filename = cfg.argv[0];
+    ulas.initial_filename = cfg.argv[0];
   }
 
+  ulas.pass = ULAS_PASS_FINAL;
   ulas.toks = ulas_tokbuf();
   ulas.exprs = ulas_exprbuf();
   ulas.syms = ulas_symbuf();
 }
 
-void ulas_nextpass(void) { ulas.scope = 0; }
+void ulas_nextpass(void) {
+  ulas.scope = 0;
+  ulas.line = 0;
+  ulas.icntr = 0;
+  ulas.address = 0;
+  ulas.filename = ulas.initial_filename;
+}
 
 void ulas_free(void) {
   ulas_strfree(&ulas.tok);
@@ -111,9 +119,20 @@ int ulas_main(struct ulas_config cfg) {
     preprocdst = tmpfile();
   }
 
-  if (ulas_preproc(preprocdst, ulasin) == -1) {
-    rc = -1;
-    goto cleanup;
+  ulas.pass = ULAS_PASS_RESOLVE;
+  while (ulas.pass > 0) {
+    ulas_nextpass();
+
+    if (ulascfg.verbose) {
+      fprintf(ulaserr, "[Pass %d]\n", ulas.pass);
+    }
+
+    if (ulas_preproc(preprocdst, ulasin) == -1) {
+      rc = -1;
+      goto cleanup;
+    }
+
+    ulas.pass -= 1;
   }
 
   if (cfg.preproc_only) {
@@ -908,9 +927,7 @@ int ulas_preproc(FILE *dst, FILE *src) {
   // init
   struct ulas_preproc pp = ulas_preprocinit();
 
-  ulas_nextpass();
-
-  long prevseek = 0;
+  long prevseek = ftell(asmsrc);
   // preproc
   while ((rc = ulas_preprocnext(&pp, dst, src, buf, ULAS_LINEMAX)) > 0) {
     if (ulascfg.preproc_only) {
@@ -1890,7 +1907,8 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
 }
 
 void ulas_asmlst(const char *line, const char *outbuf, unsigned long n) {
-  if (ulaslstout) {
+  // only write to dst on final pass
+  if (ulaslstout && ulas.pass == ULAS_PASS_FINAL) {
     fprintf(ulaslstout, "%08X", ulas.address);
 
     // always pad at least n bytes
@@ -1911,7 +1929,10 @@ void ulas_asmlst(const char *line, const char *outbuf, unsigned long n) {
 }
 
 void ulas_asmout(FILE *dst, const char *outbuf, unsigned long n) {
-  fwrite(outbuf, 1, n, dst);
+  // only write to dst on final pass
+  if (ulas.pass == ULAS_PASS_FINAL) {
+    fwrite(outbuf, 1, n, dst);
+  }
 }
 
 int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
@@ -1996,11 +2017,9 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
     }
   }
 
-  // only write to dst on final pass
-  if (ulas.pass == ULAS_PASS_FINAL) {
-    ulas_asmout(dst, outbuf, towrite);
-    ulas_asmlst(start, outbuf, towrite);
-  }
+  ulas_asmout(dst, outbuf, towrite);
+  ulas_asmlst(start, outbuf, towrite);
+
   ulas.address += towrite;
 
 fail:

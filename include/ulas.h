@@ -152,7 +152,7 @@ struct ulas_exprbuf {
  * Symbols
  */
 
-enum ulas_syms { ULAS_SYM_LABEL, ULAS_SYM_DEF };
+enum ulas_syms { ULAS_SYM_LABEL, ULAS_SYM_SET };
 
 struct ulas_sym {
   char *name;
@@ -174,12 +174,14 @@ struct ulas_symbuf {
  */
 
 enum ulas_pass {
-  ULAS_PASS_FINAL = 0,
-  ULAS_PASS_RESOLVE = 1,
+  ULAS_PASS_END = 0,
+  ULAS_PASS_FINAL = 1,
+  ULAS_PASS_RESOLVE = 2,
 };
 
 struct ulas {
   char *filename;
+  char *initial_filename;
   unsigned long line;
 
   // count how many passes we have completed so far

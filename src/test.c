@@ -79,6 +79,7 @@ void test_strbuf(void) {
 
 #define assert_preproc(expect_dst, expect_ret, input)                          \
   {                                                                            \
+    ulas.pass = ULAS_PASS_RESOLVE;                                             \
     char dstbuf[ULAS_LINEMAX];                                                 \
     memset(dstbuf, 0, ULAS_LINEMAX);                                           \
     FILE *src = fmemopen((input), strlen((input)), "re");                      \
@@ -308,6 +309,7 @@ void test_asminstr(void) {
     printf("[source: %s; expect: %s]\n", in_path, expect_path);                \
     ulaslstout = stdout;                                                       \
     struct ulas_config cfg = ulas_cfg_from_env();                              \
+    cfg.verbose = 1;                                                           \
     char dstbuf[ULAS_FULLEN];                                                  \
     char expect[ULAS_FULLEN];                                                  \
     FILE *expectf = fopen(expect_path, "re");                                  \
