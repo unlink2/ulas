@@ -120,10 +120,6 @@ int ulas_main(struct ulas_config cfg) {
     preprocdst = tmpfile();
   }
 
-  if (ulascfg.verbose) {
-    fprintf(ulaserr, "[Pass %d]\n", ulas.pass);
-  }
-
   if (ulas_preproc(preprocdst, ulasin) == -1) {
     rc = -1;
     goto cleanup;
