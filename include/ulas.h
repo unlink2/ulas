@@ -173,6 +173,14 @@ struct ulas_symbuf {
  * Assembly context
  */
 
+/**
+ * The assembler can go over the code twice to resolve all future labels as well
+ * as past labels This causes the entire process to start over for now meaning
+ * that the 2 passes will behave as if they run their own assembly process with
+ * slightly different settings. Pass settings ULAS_SYM_FINAL: Final pass, enable
+ * code output and evaluate all expressions and directives ULAS_SYM_RESOLVE:
+ * Disable code output and the .set directive. Resolve labels
+ */
 enum ulas_pass {
   ULAS_PASS_FINAL = 0,
   ULAS_PASS_RESOLVE = 1,
