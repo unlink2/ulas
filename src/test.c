@@ -79,6 +79,7 @@ void test_strbuf(void) {
 
 #define assert_preproc(expect_dst, expect_ret, input)                          \
   {                                                                            \
+    ulas_preprocclear(&ulas.pp);                                               \
     ulas.pass = ULAS_PASS_RESOLVE;                                             \
     char dstbuf[ULAS_LINEMAX];                                                 \
     memset(dstbuf, 0, ULAS_LINEMAX);                                           \

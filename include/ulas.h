@@ -186,7 +186,21 @@ enum ulas_pass {
   ULAS_PASS_RESOLVE = 1,
 };
 
+struct ulas_preproc {
+  struct ulas_ppdef *defs;
+  unsigned long defslen;
+
+  struct ulas_str tok;
+  struct ulas_str line;
+
+  // macro parameter buffers
+  struct ulas_str macroparam[ULAS_MACROPARAMMAX];
+  // macro expansion buffer
+  struct ulas_str macrobuf;
+};
+
 struct ulas {
+  struct ulas_preproc pp;
   char *filename;
   char *initial_filename;
   unsigned long line;
@@ -255,19 +269,6 @@ struct ulas_ppdef {
   char *name;
   char *value;
   int undef;
-};
-
-struct ulas_preproc {
-  struct ulas_ppdef *defs;
-  unsigned long defslen;
-
-  struct ulas_str tok;
-  struct ulas_str line;
-
-  // macro parameter buffers
-  struct ulas_str macroparam[ULAS_MACROPARAMMAX];
-  // macro expansion buffer
-  struct ulas_str macrobuf;
 };
 
 /**
@@ -448,6 +449,7 @@ void ulas_strfree(struct ulas_str *s);
  */
 
 struct ulas_preproc ulas_preprocinit(void);
+void ulas_preprocclear(struct ulas_preproc *pp);
 void ulas_preprocfree(struct ulas_preproc *pp);
 
 /**

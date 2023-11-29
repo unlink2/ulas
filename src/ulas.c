@@ -41,6 +41,7 @@ void ulas_init(struct ulas_config cfg) {
   ulas.toks = ulas_tokbuf();
   ulas.exprs = ulas_exprbuf();
   ulas.syms = ulas_symbuf();
+  ulas.pp = ulas_preprocinit();
 }
 
 void ulas_nextpass(void) {
@@ -56,6 +57,7 @@ void ulas_free(void) {
   ulas_tokbuffree(&ulas.toks);
   ulas_exprbuffree(&ulas.exprs);
   ulas_symbuffree(&ulas.syms);
+  ulas_preprocfree(&ulas.pp);
 }
 
 int ulas_icntr(void) { return ulas.icntr++; }
@@ -902,10 +904,7 @@ struct ulas_preproc ulas_preprocinit(void) {
   return pp;
 }
 
-void ulas_preprocfree(struct ulas_preproc *pp) {
-  ulas_strfree(&pp->line);
-  ulas_strfree(&pp->tok);
-
+void ulas_preprocclear(struct ulas_preproc *pp) {
   for (unsigned long i = 0; i < pp->defslen; i++) {
     if (pp->defs[i].name) {
       free(pp->defs[i].name);
@@ -914,6 +913,15 @@ void ulas_preprocfree(struct ulas_preproc *pp) {
       free(pp->defs[i].value);
     }
   }
+
+  pp->defslen = 0;
+}
+
+void ulas_preprocfree(struct ulas_preproc *pp) {
+  ulas_strfree(&pp->line);
+  ulas_strfree(&pp->tok);
+
+  ulas_preprocclear(pp);
 
   for (unsigned long i = 0; i < ULAS_MACROPARAMMAX; i++) {
     ulas_strfree(&pp->macroparam[i]);
@@ -932,11 +940,10 @@ int ulas_preproc(FILE *dst, FILE *src) {
   int rc = 0;
 
   // init
-  struct ulas_preproc pp = ulas_preprocinit();
 
   long prevseek = ftell(asmsrc);
   // preproc
-  while ((rc = ulas_preprocnext(&pp, dst, src, buf, ULAS_LINEMAX)) > 0) {
+  while ((rc = ulas_preprocnext(&ulas.pp, dst, src, buf, ULAS_LINEMAX)) > 0) {
     if (ulascfg.preproc_only) {
       continue;
     }
@@ -951,9 +958,6 @@ int ulas_preproc(FILE *dst, FILE *src) {
   }
 
 fail:
-  // cleanup
-  ulas_preprocfree(&pp);
-
   return rc;
 }
 
