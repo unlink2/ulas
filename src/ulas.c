@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <sys/time.h>
 
 FILE *ulasin = NULL;
 FILE *ulasout = NULL;
@@ -90,7 +91,14 @@ void ulas_fclose(FILE *f) {
   fclose(f);
 }
 
+long long ulas_timeusec(void) {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return 1000000 * tv.tv_sec + tv.tv_usec;
+}
+
 int ulas_main(struct ulas_config cfg) {
+  long long total_startusec = ulas_timeusec();
   int rc = 0;
   ulas_init(cfg);
   if (cfg.output_path) {
@@ -170,6 +178,12 @@ cleanup:
   }
 
   ulas_free();
+
+  long long total_endusec = ulas_timeusec();
+  if (ulascfg.verbose) {
+    fprintf(ulaserr, "[Completed in %lld microseconds]\n",
+            total_endusec - total_startusec);
+  }
 
   return rc;
 }
