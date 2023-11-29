@@ -174,9 +174,8 @@ struct ulas_symbuf {
  */
 
 enum ulas_pass {
-  ULAS_PASS_END = 0,
-  ULAS_PASS_FINAL = 1,
-  ULAS_PASS_RESOLVE = 2,
+  ULAS_PASS_FINAL = 0,
+  ULAS_PASS_RESOLVE = 1,
 };
 
 struct ulas {
