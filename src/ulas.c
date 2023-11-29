@@ -123,6 +123,8 @@ int ulas_main(struct ulas_config cfg) {
       fprintf(ulaserr, "[Pass %d]\n", ulas.pass);
     }
 
+    ulas_nextpass();
+
     // FIXME: it would be nice if we could do the 2 pass by clearing the
     // tmpfile instead of making an entierly new one
     if (cfg.preproc_only) {
