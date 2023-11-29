@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <unistd.h>
 
 FILE *ulasin = NULL;
 FILE *ulasout = NULL;
@@ -119,20 +120,13 @@ int ulas_main(struct ulas_config cfg) {
     preprocdst = tmpfile();
   }
 
-  ulas.pass = ULAS_PASS_RESOLVE;
-  while (ulas.pass > 0) {
-    ulas_nextpass();
+  if (ulascfg.verbose) {
+    fprintf(ulaserr, "[Pass %d]\n", ulas.pass);
+  }
 
-    if (ulascfg.verbose) {
-      fprintf(ulaserr, "[Pass %d]\n", ulas.pass);
-    }
-
-    if (ulas_preproc(preprocdst, ulasin) == -1) {
-      rc = -1;
-      goto cleanup;
-    }
-
-    ulas.pass -= 1;
+  if (ulas_preproc(preprocdst, ulasin) == -1) {
+    rc = -1;
+    goto cleanup;
   }
 
   if (cfg.preproc_only) {
