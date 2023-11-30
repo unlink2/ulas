@@ -211,19 +211,32 @@ int ulas_islabelname(const char *tok, unsigned long n) {
   return tok[n - 1] == ':' && ulas_isname(tok, n - 1);
 }
 
-struct ulas_tok *ulas_symbolresolve(const char *name, int *rc) {
+struct ulas_sym *ulas_symbolresolve(const char *name, int *rc) {
   for (int i = 0; i < ulas.syms.len; i++) {
     struct ulas_sym *sym = &ulas.syms.buf[i];
     // when scope is the same as the current one, or scope 0 (global)
     if ((sym->scope & ulas.scope) == 0 && strcmp(name, sym->name) == 0) {
-      return &sym->tok;
+      return sym;
     }
   }
+  *rc = -1;
   return NULL;
 }
 
 int ulas_symboldef(const char *name, int scope, struct ulas_tok token) {
-  return 0;
+  int rc = 0;
+  int resolve_rc = 0;
+  struct ulas_sym *exisitng = ulas_symbolresolve(name, &resolve_rc);
+  // define new
+  if (!exisitng) {
+  } else if (exisitng->lastdefin != ulas.pass) {
+    // redefine if not defined this pass
+  } else {
+    // exists.. cannot have duplicates!
+    rc = -1;
+    ULASERR("Redefenition of symbol '%s'\n", name);
+  }
+  return rc;
 }
 
 #define WELD_TOKISTERM write
@@ -995,12 +1008,16 @@ fail:
 
 int ulas_valint(struct ulas_tok *lit, int *rc) {
   if (lit->type == ULAS_SYMBOL) {
-    struct ulas_tok *stok = ulas_symbolresolve(lit->val.strv, rc);
+    struct ulas_sym *stok = ulas_symbolresolve(lit->val.strv, rc);
     // bail if symbol is not resolvable
     if (*rc > 0) {
       return 0;
     }
-    return ulas_valint(stok, rc);
+    if (!stok || *rc == -1) {
+      *rc = -1;
+      return 0;
+    }
+    return ulas_valint(&stok->tok, rc);
   }
 
   if (!lit || lit->type != ULAS_INT) {

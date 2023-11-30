@@ -410,7 +410,7 @@ char *ulas_strndup(const char *src, unsigned long n);
 // returns -1 if any flagged symbol was not found
 // if flagged symbols remain unresolved (e.g. global or locals) rc is set to the
 // respective flag value
-struct ulas_tok *ulas_symbolresolve(const char *name, int *rc);
+struct ulas_sym *ulas_symbolresolve(const char *name, int *rc);
 
 // define a new symbol
 // scope 0 indicates global scope
