@@ -207,6 +207,10 @@ int ulas_isname(const char *tok, unsigned long n) {
   return 1;
 }
 
+int ulas_islabelname(const char *tok, unsigned long n) {
+  return tok[n - 1] == ':' && ulas_isname(tok, n - 1);
+}
+
 struct ulas_tok *ulas_symbolresolve(const char *name, int *rc) {
   for (int i = 0; i < ulas.syms.len; i++) {
     struct ulas_sym *sym = &ulas.syms.buf[i];
@@ -1846,6 +1850,22 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
 
   // TODO: check for symbol token here... if so add it
   // and skip to the next token
+  if (ulas_tok(&ulas.tok, line, n) == -1) {
+    ULASERR("Expected label or instruction\n");
+    return -1;
+  }
+
+  // is it a label?
+  if (ulas_islabelname(ulas.tok.buf, strlen(ulas.tok.buf))) {
+    start = *line;
+    // TODO: register label here
+
+    // is next token empty?
+    if (ulas_tok(&ulas.tok, line, n) == 0 ||
+        strnlen(ulas.tok.buf, ulas.tok.maxlen) == 0) {
+      return 0;
+    }
+  }
 
   const struct ulas_instr *instrs = ULASINSTRS;
 
@@ -1853,7 +1873,7 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
   while (instrs->name && written == 0) {
     *line = start;
     if (ulas_tok(&ulas.tok, line, n) == -1) {
-      ULASERR("Expected label or instruction\n");
+      ULASERR("Expected instruction\n");
       return -1;
     }
 
