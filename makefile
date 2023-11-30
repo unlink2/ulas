@@ -27,7 +27,7 @@ OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 all: bin test
 
-$(ODIR)/%.o: src/%.c
+$(ODIR)/%.o: src/%.c include/*.h
 	mkdir -p $(@D)
 	$(CC) -c -o $@ $< $(CFLAGS) $(LDFLAGS)
 
