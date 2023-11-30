@@ -149,17 +149,30 @@ struct ulas_exprbuf {
 };
 
 /**
+ * The assembler can go over the code twice to resolve all future labels as well
+ * as past labels This causes the entire process to start over for now meaning
+ * that the 2 passes will behave as if they run their own assembly process with
+ * slightly different settings. Pass settings ULAS_SYM_FINAL: Final pass, enable
+ * code output and evaluate all expressions and directives ULAS_SYM_RESOLVE:
+ * Disable code output and the .set directive. Resolve labels
+ */
+enum ulas_pass {
+  ULAS_PASS_FINAL = 0,
+  ULAS_PASS_RESOLVE = 1,
+};
+
+/**
  * Symbols
  */
-
-enum ulas_syms { ULAS_SYM_LABEL, ULAS_SYM_SET };
 
 struct ulas_sym {
   char *name;
   struct ulas_tok tok;
-  enum ulas_syms type;
   // this label's scope index
   int scope;
+  // last pass this was defined in...
+  // a symbol may only be defined once per pass/scope
+  enum ulas_pass lastdefin;
 };
 
 // holds all currently defned symbols
@@ -172,19 +185,6 @@ struct ulas_symbuf {
 /**
  * Assembly context
  */
-
-/**
- * The assembler can go over the code twice to resolve all future labels as well
- * as past labels This causes the entire process to start over for now meaning
- * that the 2 passes will behave as if they run their own assembly process with
- * slightly different settings. Pass settings ULAS_SYM_FINAL: Final pass, enable
- * code output and evaluate all expressions and directives ULAS_SYM_RESOLVE:
- * Disable code output and the .set directive. Resolve labels
- */
-enum ulas_pass {
-  ULAS_PASS_FINAL = 0,
-  ULAS_PASS_RESOLVE = 1,
-};
 
 struct ulas_preproc {
   struct ulas_ppdef *defs;
@@ -411,6 +411,11 @@ char *ulas_strndup(const char *src, unsigned long n);
 // if flagged symbols remain unresolved (e.g. global or locals) rc is set to the
 // respective flag value
 struct ulas_tok *ulas_symbolresolve(const char *name, int *rc);
+
+// define a new symbol
+// scope 0 indicates global scope
+// if the symbol already exists -1 is returned
+int ulas_symboldef(const char *name, int scope, struct ulas_tok token);
 
 // tokenisze according to pre-defined rules
 // returns the amount of bytes of line that were

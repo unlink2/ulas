@@ -222,6 +222,10 @@ struct ulas_tok *ulas_symbolresolve(const char *name, int *rc) {
   return NULL;
 }
 
+int ulas_symboldef(const char *name, int scope, struct ulas_tok token) {
+  return 0;
+}
+
 #define WELD_TOKISTERM write
 #define WELD_TOKCOND (i < n && write < n && line[i])
 
