@@ -208,7 +208,13 @@ int ulas_isname(const char *tok, unsigned long n) {
 }
 
 struct ulas_tok *ulas_symbolresolve(const char *name, int *rc) {
-  // TODO: implement
+  for (int i = 0; i < ulas.syms.len; i++) {
+    struct ulas_sym *sym = &ulas.syms.buf[i];
+    // when scope is the same as the current one, or scope 0 (global)
+    if ((sym->scope & ulas.scope) == 0 && strcmp(name, sym->name) == 0) {
+      return &sym->tok;
+    }
+  }
   return NULL;
 }
 
