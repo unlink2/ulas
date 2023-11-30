@@ -1848,25 +1848,6 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
     return -1;
   }
 
-  // TODO: check for symbol token here... if so add it
-  // and skip to the next token
-  if (ulas_tok(&ulas.tok, line, n) == -1) {
-    ULASERR("Expected label or instruction\n");
-    return -1;
-  }
-
-  // is it a label?
-  if (ulas_islabelname(ulas.tok.buf, strlen(ulas.tok.buf))) {
-    start = *line;
-    // TODO: register label here
-
-    // is next token empty?
-    if (ulas_tok(&ulas.tok, line, n) == 0 ||
-        strnlen(ulas.tok.buf, ulas.tok.maxlen) == 0) {
-      return 0;
-    }
-  }
-
   const struct ulas_instr *instrs = ULASINSTRS;
 
   int written = 0;
@@ -2047,9 +2028,22 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
     }
 
   } else {
-    // start over for the next step...
-    line = start;
     // is regular line in form of [label:] instruction ; comment
+    // is it a label?
+    if (ulas_islabelname(ulas.tok.buf, strlen(ulas.tok.buf))) {
+      const char *prev = line;
+      // is next token empty?
+      if (ulas_tok(&ulas.tok, &line, n) == 0 ||
+          strnlen(ulas.tok.buf, ulas.tok.maxlen) == 0) {
+        ulas_asmlst(start, outbuf, towrite);
+        return 0;
+      }
+      line = prev;
+    } else {
+      // start over for the next step...
+      line = start;
+    }
+
     int nextwrite = ulas_asminstr(outbuf, ULAS_OUTBUFMAX, &line, n);
     if (nextwrite == -1) {
       ULASERR("Unable to assemble instruction\n");

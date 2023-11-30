@@ -69,6 +69,6 @@
 
   rlc c
   rlc [hl]
-
+label:
   bit 0, d
   bit 0, [hl]
