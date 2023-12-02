@@ -1187,7 +1187,10 @@ void ulas_symbufclear(struct ulas_symbuf *sb) {
   sb->len = 0;
 }
 
-void ulas_symbuffree(struct ulas_symbuf *sb) { free(sb->buf); }
+void ulas_symbuffree(struct ulas_symbuf *sb) {
+  ulas_symbufclear(sb);
+  free(sb->buf);
+}
 
 /**
  * Assembly step
@@ -2072,13 +2075,16 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
     // is it a label?
     if (ulas_islabelname(ulas.tok.buf, strlen(ulas.tok.buf))) {
       const char *prev = line;
+      struct ulas_tok label_tok = {ULAS_INT, {ulas.address}};
+      ulas_symbolset(ulas.tok.buf, -1, label_tok, 1);
+
       // is next token empty?
       if (ulas_tok(&ulas.tok, &line, n) == 0 ||
           strnlen(ulas.tok.buf, ulas.tok.maxlen) == 0) {
         ulas_asmlst(start, outbuf, towrite);
         return 0;
       }
-      // ulas_symbolset(ulas.tok.buf, -1,
+
       line = prev;
     } else {
       // start over for the next step...
