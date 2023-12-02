@@ -73,4 +73,4 @@ l1:
   bit 0, d
   bit 0, [hl]
 
-  ; ld bc, l1 + 1
+  ld bc, l1 + 1

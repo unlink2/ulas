@@ -246,6 +246,8 @@ int ulas_symbolset(const char *name, int scope, struct ulas_tok tok,
 
     // def new symbol
     struct ulas_sym new_sym = {strdup(name), tok, scope, ulas.pass, constant};
+    // last char of name has to be : so we trim it away 
+    new_sym.name[strlen(new_sym.name) - 1] = '\0';
     ulas_symbufpush(&ulas.syms, new_sym);
   } else if (exisitng->lastdefin != ulas.pass) {
     // redefine if not defined this pass
@@ -1027,11 +1029,8 @@ fail:
 int ulas_valint(struct ulas_tok *lit, int *rc) {
   if (lit->type == ULAS_SYMBOL) {
     struct ulas_sym *stok = ulas_symbolresolve(lit->val.strv, rc);
-    // bail if symbol is not resolvable
-    if (*rc > 0) {
-      return 0;
-    }
     if (!stok || *rc == -1) {
+      ULASERR("Unabel to resolve '%s'\n", lit->val.strv);
       *rc = -1;
       return 0;
     }
