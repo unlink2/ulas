@@ -173,6 +173,7 @@ struct ulas_sym {
   // last pass this was defined in...
   // a symbol may only be defined once per pass/scope
   enum ulas_pass lastdefin;
+  int constant;
 };
 
 // holds all currently defned symbols
@@ -415,7 +416,7 @@ struct ulas_sym *ulas_symbolresolve(const char *name, int *rc);
 // define a new symbol
 // scope 0 indicates global scope
 // if the symbol already exists -1 is returned
-int ulas_symboldef(const char *name, int scope, struct ulas_tok token);
+int ulas_symbolset(const char *name, int scope, struct ulas_tok token);
 
 // tokenisze according to pre-defined rules
 // returns the amount of bytes of line that were
