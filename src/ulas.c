@@ -227,9 +227,26 @@ int ulas_symbolset(const char *name, int scope, struct ulas_tok tok,
                    int constant) {
   int rc = 0;
   int resolve_rc = 0;
+
+  // auto-determine scope
+  if (scope == -1) {
+    if (name[0] == ULAS_TOK_SCOPED_SYMBOL_BEGIN) {
+      scope = ulas.scope;
+    } else {
+      scope = 0;
+    }
+  }
+
   struct ulas_sym *exisitng = ulas_symbolresolve(name, &resolve_rc);
-  // define new
   if (!exisitng) {
+    // inc scope when symbol is global
+    if (name[0] != ULAS_TOK_SCOPED_SYMBOL_BEGIN) {
+      ulas.scope++;
+    }
+
+    // def new symbol
+    struct ulas_sym new_sym = {strdup(name), tok, scope, ulas.pass, constant};
+    ulas_symbufpush(&ulas.syms, new_sym);
   } else if (exisitng->lastdefin != ulas.pass) {
     // redefine if not defined this pass
   } else {
