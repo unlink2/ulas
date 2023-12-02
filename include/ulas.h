@@ -414,9 +414,11 @@ char *ulas_strndup(const char *src, unsigned long n);
 struct ulas_sym *ulas_symbolresolve(const char *name, int *rc);
 
 // define a new symbol
-// scope 0 indicates global scope
+// scope 0 indicates global scope. a scope of -1 instructs
+// the function to auto-detect the scope
+// if a label starts with @ the current scope is used, otherwise 0 is used
 // if the symbol already exists -1 is returned
-int ulas_symbolset(const char *name, int scope, struct ulas_tok token);
+int ulas_symbolset(int scope, struct ulas_sym symbol);
 
 // tokenisze according to pre-defined rules
 // returns the amount of bytes of line that were

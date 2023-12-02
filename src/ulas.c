@@ -223,9 +223,10 @@ struct ulas_sym *ulas_symbolresolve(const char *name, int *rc) {
   return NULL;
 }
 
-int ulas_symbolset(const char *name, int scope, struct ulas_tok token) {
+int ulas_symbolset(int scope, struct ulas_sym symbol) {
   int rc = 0;
   int resolve_rc = 0;
+  const char *name = symbol.name;
   struct ulas_sym *exisitng = ulas_symbolresolve(name, &resolve_rc);
   // define new
   if (!exisitng) {
@@ -2059,7 +2060,7 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
         ulas_asmlst(start, outbuf, towrite);
         return 0;
       }
-      // ulas_symbolset(ulas.tok.buf, ulas.scope, 
+      // ulas_symbolset(ulas.tok.buf, -1,
       line = prev;
     } else {
       // start over for the next step...
