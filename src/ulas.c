@@ -223,10 +223,10 @@ struct ulas_sym *ulas_symbolresolve(const char *name, int *rc) {
   return NULL;
 }
 
-int ulas_symbolset(int scope, struct ulas_sym symbol) {
+int ulas_symbolset(const char *name, int scope, struct ulas_tok tok,
+                   int constant) {
   int rc = 0;
   int resolve_rc = 0;
-  const char *name = symbol.name;
   struct ulas_sym *exisitng = ulas_symbolresolve(name, &resolve_rc);
   // define new
   if (!exisitng) {
@@ -1164,6 +1164,7 @@ struct ulas_sym *ulas_symbufget(struct ulas_symbuf *sb, int i) {
 void ulas_symbufclear(struct ulas_symbuf *sb) {
   for (long i = 0; i < sb->len; i++) {
     struct ulas_sym *s = &sb->buf[i];
+    free(s->name);
     ulas_tokfree(&s->tok);
   }
   sb->len = 0;
