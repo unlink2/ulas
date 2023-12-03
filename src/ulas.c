@@ -226,7 +226,7 @@ struct ulas_sym *ulas_symbolresolve(const char *name, int scope, int *rc) {
 
 int ulas_symbolset(const char *cname, int scope, struct ulas_tok tok,
                    int constant) {
-  // remove : from name 
+  // remove : from name
   char name[ULAS_SYMNAMEMAX];
   long len = strlen(cname);
   assert(len < ULAS_SYMNAMEMAX);
@@ -247,8 +247,8 @@ int ulas_symbolset(const char *cname, int scope, struct ulas_tok tok,
     }
   }
 
-  struct ulas_sym *exisitng = ulas_symbolresolve(name, scope, &resolve_rc);
-  if (!exisitng) {
+  struct ulas_sym *existing = ulas_symbolresolve(name, scope, &resolve_rc);
+  if (!existing) {
     // inc scope when symbol is global
     if (name[0] != ULAS_TOK_SCOPED_SYMBOL_BEGIN) {
       ulas.scope++;
@@ -257,8 +257,12 @@ int ulas_symbolset(const char *cname, int scope, struct ulas_tok tok,
     // def new symbol
     struct ulas_sym new_sym = {strdup(name), tok, scope, ulas.pass, constant};
     ulas_symbufpush(&ulas.syms, new_sym);
-  } else if (exisitng->lastdefin != ulas.pass) {
+  } else if (existing->lastdefin != ulas.pass || !existing->constant) {
     // redefine if not defined this pass
+    existing->lastdefin = ulas.pass;
+    ulas_tokfree(&existing->tok);
+    existing->tok = tok;
+    existing->constant = constant;
   } else {
     // exists.. cannot have duplicates!
     rc = -1;

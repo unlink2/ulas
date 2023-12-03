@@ -514,6 +514,7 @@ int ulas_tokbufpush(struct ulas_tokbuf *tb, struct ulas_tok tok);
 struct ulas_tok *ulas_tokbufget(struct ulas_tokbuf *tb, int i);
 void ulas_tokbufclear(struct ulas_tokbuf *tb);
 void ulas_tokbuffree(struct ulas_tokbuf *tb);
+void ulas_tokfree(struct ulas_tok *t);
 
 struct ulas_exprbuf ulas_exprbuf(void);
 

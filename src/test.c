@@ -317,7 +317,7 @@ void test_symscope(void) {
   ASSERT_SYMSCOPE(0, "@t1:", -1, 1);
   ASSERT_SYMSCOPE(-1, "@t1:", -1, 1);
 
-  // manual scoping 
+  // manual scoping
   ASSERT_SYMSCOPE(0, "t2:", 5, 1);
   ASSERT_SYMSCOPE(-1, "t2:", 5, 1);
   ASSERT_SYMSCOPE(0, "t2:", 6, 1);
