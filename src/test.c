@@ -323,6 +323,11 @@ void test_symscope(void) {
   ASSERT_SYMSCOPE(0, "t2:", 6, 1);
   ASSERT_SYMSCOPE(-1, "t2:", 6, 1);
 
+  // set  
+  ASSERT_SYMSCOPE(0, "t3:", -1, 0);
+  ASSERT_SYMSCOPE(0, "t3:", -1, 0);
+
+
   TESTEND("symscope");
 }
 
