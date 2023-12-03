@@ -303,6 +303,21 @@ void test_asminstr(void) {
   TESTEND("asminstr");
 }
 
+#define ASSERT_SYMSCOPE(expect_ret, name, scope, constant)                     \
+  {                                                                            \
+    struct ulas_tok tok = {ULAS_INT, {0}};                                     \
+    assert(ulas_symbolset((name), (scope), tok, constant) == (expect_ret));    \
+  }
+
+void test_symscope(void) {
+  TESTBEGIN("symscope");
+
+  ASSERT_SYMSCOPE(0, "t1", -1, 1);
+  ASSERT_SYMSCOPE(-1, "t1", -1, 1);
+
+  TESTEND("symscope");
+}
+
 #define ULAS_FULLEN 0xFFFF
 
 #define ASSERT_FULL(expect_rc, in_path, expect_path)                           \
@@ -353,6 +368,7 @@ int main(int arc, char **argv) {
   test_totok();
   test_intexpr();
   test_asminstr();
+  test_symscope();
 
   ulas_free();
 

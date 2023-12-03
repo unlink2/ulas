@@ -216,6 +216,7 @@ struct ulas_sym *ulas_symbolresolve(const char *name, int *rc) {
     struct ulas_sym *sym = &ulas.syms.buf[i];
     // when scope is the same as the current one, or scope 0 (global)
     if ((sym->scope & ulas.scope) == 0 && strcmp(name, sym->name) == 0) {
+      puts("scope");
       return sym;
     }
   }
@@ -246,7 +247,7 @@ int ulas_symbolset(const char *name, int scope, struct ulas_tok tok,
 
     // def new symbol
     struct ulas_sym new_sym = {strdup(name), tok, scope, ulas.pass, constant};
-    // last char of name has to be : so we trim it away 
+    // last char of name has to be : so we trim it away
     new_sym.name[strlen(new_sym.name) - 1] = '\0';
     ulas_symbufpush(&ulas.syms, new_sym);
   } else if (exisitng->lastdefin != ulas.pass) {
