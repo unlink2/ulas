@@ -3,7 +3,6 @@
 #include <assert.h>
 
 #define ULAS_TOKMAX 64
-#define ULAS_SYMNAMEMAX 256
 #define TESTBEGIN(name) printf("[test %s]\n", (name));
 #define TESTEND(name) printf("[%s ok]\n", (name));
 
@@ -312,8 +311,11 @@ void test_asminstr(void) {
 void test_symscope(void) {
   TESTBEGIN("symscope");
 
+  // auto-scope
   ASSERT_SYMSCOPE(0, "t1:", -1, 1);
   ASSERT_SYMSCOPE(-1, "t1:", -1, 1);
+  ASSERT_SYMSCOPE(0, "@t1:", -1, 1);
+  ASSERT_SYMSCOPE(-1, "@t1:", -1, 1);
 
   TESTEND("symscope");
 }

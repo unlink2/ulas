@@ -420,7 +420,7 @@ struct ulas_sym *ulas_symbolresolve(const char *name, int *rc);
 // the function to auto-detect the scope
 // if a label starts with @ the current scope is used, otherwise 0 is used
 // if the symbol already exists -1 is returned
-int ulas_symbolset(const char *name, int scope, struct ulas_tok tok,
+int ulas_symbolset(const char *cname, int scope, struct ulas_tok tok,
                    int constant);
 
 // tokenisze according to pre-defined rules
