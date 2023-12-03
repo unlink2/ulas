@@ -208,6 +208,10 @@ int ulas_isname(const char *tok, unsigned long n) {
 }
 
 int ulas_islabelname(const char *tok, unsigned long n) {
+  if (tok[0] == '@' && n > 0) {
+    tok+=1;
+    n--;
+  }
   return tok[n - 1] == ':' && ulas_isname(tok, n - 1);
 }
 
