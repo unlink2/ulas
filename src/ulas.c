@@ -211,12 +211,19 @@ int ulas_islabelname(const char *tok, unsigned long n) {
   return tok[n - 1] == ':' && ulas_isname(tok, n - 1);
 }
 
-struct ulas_sym *ulas_symbolresolve(const char *name, int *rc) {
+struct ulas_sym *ulas_symbolresolve(const char *cname, int *rc) {
+  char name[ULAS_SYMNAMEMAX];
+  long len = strlen(cname);
+  assert(len < ULAS_SYMNAMEMAX);
+  strncpy(name, cname, len);
+  if (name[len - 1] == ':') {
+    name[len - 1] = '\0';
+  }
+
   for (int i = 0; i < ulas.syms.len; i++) {
     struct ulas_sym *sym = &ulas.syms.buf[i];
     // when scope is the same as the current one, or scope 0 (global)
     if ((sym->scope & ulas.scope) == 0 && strcmp(name, sym->name) == 0) {
-      puts("scope");
       return sym;
     }
   }
@@ -248,7 +255,11 @@ int ulas_symbolset(const char *name, int scope, struct ulas_tok tok,
     // def new symbol
     struct ulas_sym new_sym = {strdup(name), tok, scope, ulas.pass, constant};
     // last char of name has to be : so we trim it away
-    new_sym.name[strlen(new_sym.name) - 1] = '\0';
+    long len = strlen(new_sym.name);
+    assert(len < ULAS_SYMNAMEMAX);
+    if (new_sym.name[len - 1] == ':') {
+      new_sym.name[len - 1] = '\0';
+    }
     ulas_symbufpush(&ulas.syms, new_sym);
   } else if (exisitng->lastdefin != ulas.pass) {
     // redefine if not defined this pass

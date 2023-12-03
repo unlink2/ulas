@@ -8,6 +8,7 @@
 // if this is used as a path use stdin or stdout instead
 #define ULAS_STDFILEPATH "-"
 
+#define ULAS_SYMNAMEMAX 256
 #define ULAS_PATHMAX 4096
 #define ULAS_LINEMAX 4096
 #define ULAS_OUTBUFMAX 64
