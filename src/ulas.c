@@ -211,11 +211,11 @@ int ulas_islabelname(const char *tok, unsigned long n) {
   return tok[n - 1] == ':' && ulas_isname(tok, n - 1);
 }
 
-struct ulas_sym *ulas_symbolresolve(const char *name, int *rc) {
+struct ulas_sym *ulas_symbolresolve(const char *name, int scope, int *rc) {
   for (int i = 0; i < ulas.syms.len; i++) {
     struct ulas_sym *sym = &ulas.syms.buf[i];
     // when scope is the same as the current one, or scope 0 (global)
-    if ((sym->scope == 0 || sym->scope == ulas.scope) &&
+    if ((sym->scope == 0 || sym->scope == scope) &&
         strcmp(name, sym->name) == 0) {
       return sym;
     }
@@ -247,7 +247,7 @@ int ulas_symbolset(const char *cname, int scope, struct ulas_tok tok,
     }
   }
 
-  struct ulas_sym *exisitng = ulas_symbolresolve(name, &resolve_rc);
+  struct ulas_sym *exisitng = ulas_symbolresolve(name, scope, &resolve_rc);
   if (!exisitng) {
     // inc scope when symbol is global
     if (name[0] != ULAS_TOK_SCOPED_SYMBOL_BEGIN) {
@@ -1036,7 +1036,7 @@ fail:
 
 int ulas_valint(struct ulas_tok *lit, int *rc) {
   if (lit->type == ULAS_SYMBOL) {
-    struct ulas_sym *stok = ulas_symbolresolve(lit->val.strv, rc);
+    struct ulas_sym *stok = ulas_symbolresolve(lit->val.strv, ulas.scope, rc);
     if (!stok || *rc == -1) {
       ULASERR("Unabel to resolve '%s'\n", lit->val.strv);
       *rc = -1;
