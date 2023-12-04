@@ -79,3 +79,4 @@ l1:
 l2:
 @local: ld bc, @local
   ld bc, $
+  jr z, $ - l2

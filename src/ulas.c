@@ -1757,9 +1757,9 @@ const struct ulas_instr ULASINSTRS[] = {
     // jr
     ULAS_INSTR_R8_EXPR8("jr", 0x20, ULAS_REG_NOT_ZERO),
     ULAS_INSTR_R8_EXPR8("jr", 0x30, ULAS_REG_NOT_CARRY),
-    {"jr", {ULAS_E8, 0}, {0x18, ULAS_E8, 0x00}},
     ULAS_INSTR_R8_EXPR8("jr", 0x28, ULAS_REG_ZERO),
     ULAS_INSTR_R8_EXPR8("jr", 0x38, ULAS_REG_CARRY),
+    {"jr", {ULAS_E8, 0}, {0x18, ULAS_E8, 0x00}},
 
     // ret
     ULAS_INSTR_REG("ret", 0xC0, ULAS_REG_NOT_ZERO),
