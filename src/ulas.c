@@ -2071,7 +2071,6 @@ int ulas_asmdirset(const char **line, unsigned long n) {
   int rc = 0;
 
   union ulas_val val = {0};
-  struct ulas_tok tok = {t, val};
   switch (t) {
   case ULAS_INT:
     val.intv = ulas_intexpr(line, n, &rc);
@@ -2085,6 +2084,7 @@ int ulas_asmdirset(const char **line, unsigned long n) {
     ULASERR("Unexpected type\n");
     return -1;
   }
+  struct ulas_tok tok = {t, val};
 
   if (ulas.pass == ULAS_PASS_FINAL) {
     // only really define in final pass
