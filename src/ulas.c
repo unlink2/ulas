@@ -213,7 +213,6 @@ int ulas_islabelname(const char *tok, unsigned long n) {
   return tok[n - 1] == ':' && ulas_isname(tok, n - 1);
 }
 
-struct ulas_sym ulas_symaddr = {NULL, {ULAS_INT, {0}}, 0, 0, 1};
 struct ulas_sym *ulas_symbolresolve(const char *name, int scope, int *rc) {
   for (int i = 0; i < ulas.syms.len; i++) {
     struct ulas_sym *sym = &ulas.syms.buf[i];
