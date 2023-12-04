@@ -88,3 +88,5 @@ l2:
 
 .db 1, 2, 3
 .fill 1, 3
+.fill 1, 0x180-$ ; fill until 0x180
+  nop
