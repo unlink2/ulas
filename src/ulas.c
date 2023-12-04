@@ -2138,6 +2138,43 @@ int ulas_asmdirdef(const char **line, unsigned long n) {
   return ulas_asmdirset(line, n, t);
 }
 
+int ulas_asmdirfill(FILE *dst, const char **line, unsigned long n, int *rc) {
+  // fill <what>, <how many>
+  int written = 0;
+
+  int ival = ulas_intexpr(line, n, rc);
+  char val = (char)ival;
+  if (*rc == -1) {
+    return 0;
+  }
+
+  ulas_tok(&ulas.tok, line, n);
+  struct ulas_tok t =
+      ulas_totok(ulas.tok.buf, strnlen(ulas.tok.buf, ulas.tok.maxlen), rc);
+
+  if (*rc == -1 || t.type != ',') {
+    ULASERR("Expected ,\n");
+    return 0;
+  }
+
+  int count = ulas_intexpr(line, n, rc);
+  if (count < 0) {
+    ULASERR("Count must be positive\n");
+    return 0;
+  }
+
+  if (*rc == -1) {
+    return 0;
+  }
+
+  for (int i = 0; i < count; i++) {
+    ulas_asmout(dst, &val, 1);
+    written++;
+  }
+
+  return written;
+}
+
 int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
   // this buffer is written both to dst and to verbose output
   char outbuf[ULAS_OUTBUFMAX];
@@ -2195,10 +2232,12 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
     case ULAS_ASMDIR_BYTE:
       other_writes += ulas_asmdirbyte(dst, &line, n, &rc);
       break;
-    case ULAS_ASMDIR_STR:
     case ULAS_ASMDIR_FILL:
+      other_writes += ulas_asmdirfill(dst, &line, n, &rc);
+      break;
     case ULAS_ASMDIR_PAD:
     case ULAS_ASMDIR_INCBIN:
+    case ULAS_ASMDIR_STR:
     case ULAS_ASMDIR_NONE:
       ULASPANIC("asmdir not implemented\n");
       break;
