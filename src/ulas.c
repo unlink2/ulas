@@ -2235,9 +2235,10 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
     case ULAS_ASMDIR_FILL:
       other_writes += ulas_asmdirfill(dst, &line, n, &rc);
       break;
-    case ULAS_ASMDIR_PAD:
     case ULAS_ASMDIR_INCBIN:
     case ULAS_ASMDIR_STR:
+    case ULAS_ASMDIR_PAD:
+      // TODO: pad is the same as .fill n, $ - n
     case ULAS_ASMDIR_NONE:
       ULASPANIC("asmdir not implemented\n");
       break;
