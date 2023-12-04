@@ -80,3 +80,6 @@ l2:
 @local: ld bc, @local
   ld bc, $
   jr z, $ - l2
+
+.set int s1 = 1 + 2
+  ld a, s1

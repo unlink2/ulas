@@ -235,6 +235,7 @@ void test_totok(void) {
   {                                                                            \
     int rc = 0;                                                                \
     const char *oexpr = expr;                                                  \
+    ulas.pass = ULAS_PASS_FINAL;                                               \
     int val = ulas_intexpr(&oexpr, strlen((expr)), &rc);                       \
     assert(rc == (expected_rc));                                               \
     assert(val == (expected_val));                                             \

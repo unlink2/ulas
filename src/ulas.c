@@ -198,7 +198,7 @@ int ulas_isname(const char *tok, unsigned long n) {
     return 0;
   }
 
-  for (unsigned long i = 0; i < n; i++) {
+  for (unsigned long i = 0; i < n && tok[i]; i++) {
     char c = tok[i];
     if (c != '_' && !isalnum(c) &&
         !(i == 0 && c == ULAS_TOK_SCOPED_SYMBOL_BEGIN)) {
@@ -1043,6 +1043,10 @@ fail:
  */
 
 int ulas_valint(struct ulas_tok *lit, int *rc) {
+  if (ulas.pass != ULAS_PASS_FINAL) {
+    return 0;
+  }
+
   if (lit->type == ULAS_SYMBOL) {
     struct ulas_sym *stok = ulas_symbolresolve(lit->val.strv, ulas.scope, rc);
     if (!stok || *rc == -1) {
@@ -2030,6 +2034,66 @@ void ulas_asmout(FILE *dst, const char *outbuf, unsigned long n) {
   }
 }
 
+int ulas_asmdirbyte(FILE *dst, const char *line, unsigned long n) {
+  // .db expr, expr, expr
+  return 0;
+}
+
+int ulas_asmdirset(const char **line, unsigned long n) {
+  // .set <str,int> = name expr
+  char name[ULAS_SYMNAMEMAX];
+
+  ulas_tok(&ulas.tok, line, n);
+  enum ulas_type t = ULAS_INT;
+  if (strncmp(ulas.tok.buf, "int", ulas.tok.maxlen) == 0) {
+    t = ULAS_INT;
+  } else if (strncmp(ulas.tok.buf, "char", ulas.tok.maxlen) == 0) {
+    t = ULAS_STR;
+  } else {
+    ULASERR("Type (str,int) expected. Got '%s'\n", ulas.tok.buf);
+    return -1;
+  }
+
+  ulas_tok(&ulas.tok, line, n);
+  if (!ulas_isname(ulas.tok.buf, ulas.tok.maxlen)) {
+    ULASERR("Unexpected token '%s'\n", ulas.tok.buf);
+    return -1;
+  }
+  strncpy(name, ulas.tok.buf, ULAS_SYMNAMEMAX);
+
+  // consume =
+  ulas_tok(&ulas.tok, line, n);
+  if (strncmp(ulas.tok.buf, "=", ulas.tok.maxlen) != 0) {
+    ULASERR("Unexpected token '%s'. Expected '='\n", ulas.tok.buf);
+    return -1;
+  }
+
+  int rc = 0;
+
+  union ulas_val val = {0};
+  struct ulas_tok tok = {t, val};
+  switch (t) {
+  case ULAS_INT:
+    val.intv = ulas_intexpr(line, n, &rc);
+    if (rc == -1) {
+      goto fail;
+    }
+    break;
+  case ULAS_STR:
+    // TODO: implement str expressions
+  default:
+    ULASERR("Unexpected type\n");
+    return -1;
+  }
+
+  if (ulas.pass == ULAS_PASS_FINAL) {
+    // only really define in final pass
+    ulas_symbolset(name, -1, tok, 0);
+  }
+fail:
+  return rc;
+}
+
 int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
   // this buffer is written both to dst and to verbose output
   char outbuf[ULAS_OUTBUFMAX];
@@ -2078,8 +2142,7 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
       break;
     case ULAS_ASMDIR_SET:
       // only do this in the final pass
-      if (ulas.pass == ULAS_PASS_FINAL) {
-      }
+      rc = ulas_asmdirset(&line, n);
       break;
     case ULAS_ASMDIR_BYTE:
     case ULAS_ASMDIR_STR:
