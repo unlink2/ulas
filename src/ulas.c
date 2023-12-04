@@ -43,10 +43,11 @@ void ulas_init(struct ulas_config cfg) {
   ulas.exprs = ulas_exprbuf();
   ulas.syms = ulas_symbuf();
   ulas.pp = ulas_preprocinit();
+  ulas.scope = 1;
 }
 
 void ulas_nextpass(void) {
-  ulas.scope = 0;
+  ulas.scope = 1;
   ulas.line = 0;
   ulas.icntr = 0;
   ulas.address = 0;
@@ -199,7 +200,8 @@ int ulas_isname(const char *tok, unsigned long n) {
 
   for (unsigned long i = 0; i < n; i++) {
     char c = tok[i];
-    if (c != '_' && !isalnum(c)) {
+    if (c != '_' && !isalnum(c) &&
+        !(i == 0 && c == ULAS_TOK_SCOPED_SYMBOL_BEGIN)) {
       return 0;
     }
   }
@@ -208,10 +210,6 @@ int ulas_isname(const char *tok, unsigned long n) {
 }
 
 int ulas_islabelname(const char *tok, unsigned long n) {
-  if (tok[0] == '@' && n > 0) {
-    tok+=1;
-    n--;
-  }
   return tok[n - 1] == ':' && ulas_isname(tok, n - 1);
 }
 
@@ -252,12 +250,12 @@ int ulas_symbolset(const char *cname, int scope, struct ulas_tok tok,
   }
 
   struct ulas_sym *existing = ulas_symbolresolve(name, scope, &resolve_rc);
-  if (!existing) {
-    // inc scope when symbol is global
-    if (name[0] != ULAS_TOK_SCOPED_SYMBOL_BEGIN) {
-      ulas.scope++;
-    }
+  // inc scope when symbol is global
+  if (name[0] != ULAS_TOK_SCOPED_SYMBOL_BEGIN) {
+    ulas.scope++;
+  }
 
+  if (!existing) {
     // def new symbol
     struct ulas_sym new_sym = {strdup(name), tok, scope, ulas.pass, constant};
     ulas_symbufpush(&ulas.syms, new_sym);
@@ -270,7 +268,7 @@ int ulas_symbolset(const char *cname, int scope, struct ulas_tok tok,
   } else {
     // exists.. cannot have duplicates!
     rc = -1;
-    ULASERR("Redefenition of symbol '%s'\n", name);
+    ULASERR("Redefenition of symbol '%s' in scope %d\n", name, scope);
   }
   return rc;
 }

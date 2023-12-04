@@ -74,4 +74,7 @@ l1:
   bit 0, [hl]
 
   ld bc, l1 + 1
-@local1:
+@local:
+  ld bc, @local
+l2:
+@local: ld bc, @local
