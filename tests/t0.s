@@ -85,3 +85,5 @@ l2:
   ld a, s1
 .set s1 = 4
   ld a, s1
+
+.db 1, 2, 3

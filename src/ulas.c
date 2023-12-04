@@ -2034,9 +2034,26 @@ void ulas_asmout(FILE *dst, const char *outbuf, unsigned long n) {
   }
 }
 
-int ulas_asmdirbyte(FILE *dst, const char *line, unsigned long n) {
+int ulas_asmdirbyte(FILE *dst, const char **line, unsigned long n, int *rc) {
   // .db expr, expr, expr
-  return 0;
+  struct ulas_tok t;
+  int written = 0;
+  memset(&t, 0, sizeof(t));
+
+  do {
+    int val = ulas_intexpr(line, n, rc);
+    char w = (char)val;
+    ulas_asmout(dst, &w, 1);
+
+    written++;
+    if (ulas_tok(&ulas.tok, line, n) > 0) {
+      t = ulas_totok(ulas.tok.buf, strnlen(ulas.tok.buf, ulas.tok.maxlen), rc);
+    } else {
+      break;
+    }
+  } while (*rc != -1 && t.type == ',');
+
+  return written;
 }
 
 int ulas_asmdirset(const char **line, unsigned long n, enum ulas_type t) {
@@ -2126,6 +2143,7 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
   char outbuf[ULAS_OUTBUFMAX];
   memset(outbuf, 0, ULAS_OUTBUFMAX);
   long towrite = 0;
+  long other_writes = 0;
 
   const char *start = line;
   int rc = 0;
@@ -2164,7 +2182,6 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
     }
 
     switch (dir) {
-    case ULAS_ASMDIR_NONE:
     case ULAS_ASMDIR_ORG:
       ulas.address = ulas_intexpr(&line, strnlen(start, n), &rc);
       break;
@@ -2176,10 +2193,13 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
       rc = ulas_asmdirset_lookup(&line, n);
       break;
     case ULAS_ASMDIR_BYTE:
+      other_writes += ulas_asmdirbyte(dst, &line, n, &rc);
+      break;
     case ULAS_ASMDIR_STR:
     case ULAS_ASMDIR_FILL:
     case ULAS_ASMDIR_PAD:
     case ULAS_ASMDIR_INCBIN:
+    case ULAS_ASMDIR_NONE:
       ULASPANIC("asmdir not implemented\n");
       break;
     }
@@ -2227,6 +2247,7 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
   ulas_asmlst(start, outbuf, towrite);
 
   ulas.address += towrite;
+  ulas.address += other_writes;
 
 fail:
   return rc;
