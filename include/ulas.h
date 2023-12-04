@@ -49,6 +49,7 @@
 // start of preprocessor directives such as #define or #include
 #define ULAS_TOK_PREPROC_BEGIN '#'
 #define ULAS_TOK_SCOPED_SYMBOL_BEGIN '@'
+#define ULAS_TOK_CURRENT_ADDR '$'
 
 #define ULASINFO() fprintf(ulaserr, "%s:%ld ", ulas.filename, ulas.line);
 #define ULASDBG(...)                                                           \

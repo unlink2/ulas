@@ -49,10 +49,10 @@
 void test_tok(void) {
   TESTBEGIN("tok");
 
-  assert_tok(
-      "  test  tokens   with,   line / * + - , ; $1 = == != > < >= <=",
-      {"test", "tokens", "with", ",",  "line", "/", "*", "+",  "-",  ",",
-       ";",    "$1",     "=",    "==", "!=",   ">", "<", ">=", "<=", NULL});
+  assert_tok("  test  tokens   with,   line / * + - , ; $1 $ = == != > < >= <=",
+             {"test", "tokens", "with", ",", "line", "/",  "*",
+              "+",    "-",      ",",    ";", "$1",   "$",  "=",
+              "==",   "!=",     ">",    "<", ">=",   "<=", NULL});
 
   assert_tokuntil(" this is a, test for tok , until", ',',
                   {"this is a", "test for tok ", "until", NULL});

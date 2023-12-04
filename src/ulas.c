@@ -213,6 +213,7 @@ int ulas_islabelname(const char *tok, unsigned long n) {
   return tok[n - 1] == ':' && ulas_isname(tok, n - 1);
 }
 
+struct ulas_sym ulas_symaddr = {NULL, {ULAS_INT, {0}}, 0, 0, 1};
 struct ulas_sym *ulas_symbolresolve(const char *name, int scope, int *rc) {
   for (int i = 0; i < ulas.syms.len; i++) {
     struct ulas_sym *sym = &ulas.syms.buf[i];
@@ -322,7 +323,9 @@ int ulas_tok(struct ulas_str *dst, const char **out_line, unsigned long n) {
       ulas_strensr(dst, write + 2);
       // escape char tokens
       dst->buf[write++] = line[i++];
-      dst->buf[write++] = line[i++];
+      if (line[i] && !isspace(line[i])) {
+        dst->buf[write++] = line[i++];
+      }
       goto tokdone;
     case '=':
     case '<':
@@ -1051,10 +1054,14 @@ int ulas_valint(struct ulas_tok *lit, int *rc) {
     return ulas_valint(&stok->tok, rc);
   }
 
-  if (!lit || lit->type != ULAS_INT) {
+  if (!lit || (lit->type != ULAS_INT && lit->type != ULAS_TOK_CURRENT_ADDR)) {
     ULASERR("Expected int\n");
     *rc = -1;
     return 0;
+  }
+
+  if (lit->type == ULAS_TOK_CURRENT_ADDR) {
+    return ulas.address;
   }
 
   return lit->val.intv;
@@ -1272,8 +1279,9 @@ int ulas_parseexprat(int *i);
 
 int ulas_parseprim(int *i) {
   struct ulas_tok *t = ulas_tokbufget(&ulas.toks, *i);
-  if (!t || (t->type != ULAS_INT && t->type != ULAS_STR &&
-             t->type != ULAS_SYMBOL && t->type != '(' && t->type != ')')) {
+  if (!t ||
+      (t->type != ULAS_INT && t->type != ULAS_STR && t->type != ULAS_SYMBOL &&
+       t->type != ULAS_TOK_CURRENT_ADDR && t->type != '(' && t->type != ')')) {
     ULASERR("Primary expression expected\n");
     return -1;
   }

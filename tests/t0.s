@@ -78,3 +78,4 @@ l1:
   ld bc, @local
 l2:
 @local: ld bc, @local
+  ld bc, $
