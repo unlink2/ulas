@@ -41,6 +41,7 @@
 #define ULAS_ASMSTR_FILL ".fill"
 #define ULAS_ASMSTR_PAD ".pad"
 #define ULAS_ASMSTR_INCBIN ".incbin"
+#define ULAS_ASMSTR_DEF ".def"
 
 // configurable tokens
 #define ULAS_TOK_COMMENT ';'
@@ -327,7 +328,7 @@ enum ulas_asmdir {
   ULAS_ASMDIR_NONE = 0,
   // .org <address>
   ULAS_ASMDIR_ORG,
-  // .set name = <expr>
+  // .set <type> name = <expr>
   ULAS_ASMDIR_SET,
   // .byte <expr>, <expr>, <expr>, ...
   ULAS_ASMDIR_BYTE,
@@ -339,6 +340,8 @@ enum ulas_asmdir {
   ULAS_ASMDIR_PAD,
   // .incbin <filename>
   ULAS_ASMDIR_INCBIN,
+  // .def name = value
+  ULAS_ASMDIR_DEF,
 };
 
 // amount of registers

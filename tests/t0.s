@@ -81,5 +81,7 @@ l2:
   ld bc, $
   jr z, $ - l2
 
-.set int s1 = 1 + 2
+.def int s1 = 1 + 2
+  ld a, s1
+.set s1 = 4
   ld a, s1

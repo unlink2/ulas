@@ -2039,21 +2039,8 @@ int ulas_asmdirbyte(FILE *dst, const char *line, unsigned long n) {
   return 0;
 }
 
-int ulas_asmdirset(const char **line, unsigned long n) {
-  // .set <str,int> = name expr
+int ulas_asmdirset(const char **line, unsigned long n, enum ulas_type t) {
   char name[ULAS_SYMNAMEMAX];
-
-  ulas_tok(&ulas.tok, line, n);
-  enum ulas_type t = ULAS_INT;
-  if (strncmp(ulas.tok.buf, "int", ulas.tok.maxlen) == 0) {
-    t = ULAS_INT;
-  } else if (strncmp(ulas.tok.buf, "char", ulas.tok.maxlen) == 0) {
-    t = ULAS_STR;
-  } else {
-    ULASERR("Type (str,int) expected. Got '%s'\n", ulas.tok.buf);
-    return -1;
-  }
-
   ulas_tok(&ulas.tok, line, n);
   if (!ulas_isname(ulas.tok.buf, ulas.tok.maxlen)) {
     ULASERR("Unexpected token '%s'\n", ulas.tok.buf);
@@ -2094,6 +2081,46 @@ fail:
   return rc;
 }
 
+int ulas_asmdirset_lookup(const char **line, unsigned long n) {
+  if (ulas.pass != ULAS_PASS_FINAL) {
+    *line += strlen(*line);
+    return 0;
+  }
+  const char *start = *line;
+  ulas_tok(&ulas.tok, line, n);
+
+  int rc = 0;
+  struct ulas_sym *found = ulas_symbolresolve(ulas.tok.buf, -1, &rc);
+
+  if (rc == -1 || !found) {
+    ULASERR("Unable to set symbol '%s'\n", ulas.tok.buf);
+    return -1;
+  }
+
+  enum ulas_type t = found->tok.type;
+
+  *line = start;
+
+  return ulas_asmdirset(line, n, t);
+}
+
+int ulas_asmdirdef(const char **line, unsigned long n) {
+  // .set <str,int> = name expr
+
+  ulas_tok(&ulas.tok, line, n);
+  enum ulas_type t = ULAS_INT;
+  if (strncmp(ulas.tok.buf, "int", ulas.tok.maxlen) == 0) {
+    t = ULAS_INT;
+  } else if (strncmp(ulas.tok.buf, "char", ulas.tok.maxlen) == 0) {
+    t = ULAS_STR;
+  } else {
+    ULASERR("Type (str,int) expected. Got '%s'\n", ulas.tok.buf);
+    return -1;
+  }
+
+  return ulas_asmdirset(line, n, t);
+}
+
 int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
   // this buffer is written both to dst and to verbose output
   char outbuf[ULAS_OUTBUFMAX];
@@ -2114,11 +2141,12 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
 
   if (ulas.tok.buf[0] == ULAS_TOK_ASMDIR_BEGIN) {
     const char *dirstrs[] = {
-        ULAS_ASMSTR_ORG,  ULAS_ASMSTR_SET, ULAS_ASMSTR_BYTE,   ULAS_ASMSTR_STR,
-        ULAS_ASMSTR_FILL, ULAS_ASMSTR_PAD, ULAS_ASMSTR_INCBIN, NULL};
+        ULAS_ASMSTR_ORG,    ULAS_ASMSTR_SET,  ULAS_ASMSTR_BYTE,
+        ULAS_ASMSTR_STR,    ULAS_ASMSTR_FILL, ULAS_ASMSTR_PAD,
+        ULAS_ASMSTR_INCBIN, ULAS_ASMSTR_DEF,  NULL};
     enum ulas_asmdir dirs[] = {
-        ULAS_ASMDIR_ORG,  ULAS_ASMDIR_SET, ULAS_ASMDIR_BYTE,  ULAS_ASMDIR_STR,
-        ULAS_ASMDIR_FILL, ULAS_ASMDIR_PAD, ULAS_ASMDIR_INCBIN};
+        ULAS_ASMDIR_ORG,  ULAS_ASMDIR_SET, ULAS_ASMDIR_BYTE,   ULAS_ASMDIR_STR,
+        ULAS_ASMDIR_FILL, ULAS_ASMDIR_PAD, ULAS_ASMDIR_INCBIN, ULAS_ASMDIR_DEF};
 
     enum ulas_asmdir dir = ULAS_ASMDIR_NONE;
 
@@ -2140,9 +2168,12 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
     case ULAS_ASMDIR_ORG:
       ulas.address = ulas_intexpr(&line, strnlen(start, n), &rc);
       break;
-    case ULAS_ASMDIR_SET:
+    case ULAS_ASMDIR_DEF:
       // only do this in the final pass
-      rc = ulas_asmdirset(&line, n);
+      rc = ulas_asmdirdef(&line, n);
+      break;
+    case ULAS_ASMDIR_SET:
+      rc = ulas_asmdirset_lookup(&line, n);
       break;
     case ULAS_ASMDIR_BYTE:
     case ULAS_ASMDIR_STR:
