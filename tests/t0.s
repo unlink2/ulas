@@ -91,3 +91,5 @@ l2:
 .fill 1, 0x180-$ ; fill until 0x180
   nop
 .def str s2 = "Hello"
+
+.str "test1", "test2"

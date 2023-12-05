@@ -2223,6 +2223,28 @@ int ulas_asmdirfill(FILE *dst, const char **line, unsigned long n, int *rc) {
   return written;
 }
 
+int ulas_asmdirstr(FILE *dst, const char **line, unsigned long n, int *rc) {
+  // .str expr, expr, expr
+  struct ulas_tok t;
+  int written = 0;
+  memset(&t, 0, sizeof(t));
+
+  do {
+    char *s = ulas_strexpr(line, n, rc);
+    long len = strlen(s);
+    ulas_asmout(dst, s, len);
+
+    written += len;
+    if (ulas_tok(&ulas.tok, line, n) > 0) {
+      t = ulas_totok(ulas.tok.buf, strnlen(ulas.tok.buf, ulas.tok.maxlen), rc);
+    } else {
+      break;
+    }
+  } while (*rc != -1 && t.type == ',');
+
+  return written;
+}
+
 int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
   // this buffer is written both to dst and to verbose output
   char outbuf[ULAS_OUTBUFMAX];
@@ -2283,8 +2305,10 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
     case ULAS_ASMDIR_FILL:
       other_writes += ulas_asmdirfill(dst, &line, n, &rc);
       break;
-    case ULAS_ASMDIR_INCBIN:
     case ULAS_ASMDIR_STR:
+      other_writes += ulas_asmdirstr(dst, &line, n, &rc);
+      break;
+    case ULAS_ASMDIR_INCBIN:
     case ULAS_ASMDIR_PAD:
       // TODO: pad is the same as .fill n, $ - n
     case ULAS_ASMDIR_NONE:
