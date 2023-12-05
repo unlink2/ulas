@@ -295,7 +295,8 @@ void test_strexpr(void) {
   TESTBEGIN("strexpr");
 
   ASSERT_STREXPR("test", 0, "\"test\"");
-  // ASSERT_STREXPR("test\n", 0, "\"test\\n\"");
+  ASSERT_STREXPR("test\"", 0, "\"test\\\"\"");
+  ASSERT_STREXPR("test\" 123", 0, "\"test\\\" 123\"");
 
   TESTEND("strexpr");
 }

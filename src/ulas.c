@@ -288,69 +288,81 @@ int ulas_tok(struct ulas_str *dst, const char **out_line, unsigned long n) {
     i++;
   }
 
-  while (WELD_TOKCOND) {
-    char c = line[i];
-
-    switch (c) {
-    case '+':
-    case '-':
-    case '*':
-    case '/':
-    case '~':
-    case '|':
-    case '&':
-    case '%':
-    case '(':
-    case ')':
-    case '[':
-    case ']':
-    case ',':
-    case '\\':
-    case ULAS_TOK_COMMENT:
-      if (WELD_TOKISTERM) {
-        goto tokdone;
-      }
-      // single char tokens
-      dst->buf[write++] = line[i++];
-      goto tokdone;
-    case '$':
-      if (WELD_TOKISTERM) {
-        goto tokdone;
-      }
-      // special var for preprocessor
-      // make sure we have enough space in buffer
-      ulas_strensr(dst, write + 2);
-      // escape char tokens
-      dst->buf[write++] = line[i++];
-      if (line[i] && !isspace(line[i])) {
-        dst->buf[write++] = line[i++];
-      }
-      goto tokdone;
-    case '=':
-    case '<':
-    case '!':
-    case '>':
-      if (line[i + 1] == '=') {
-        dst->buf[write] = line[i];
-        i++;
-        write++;
-      }
-      dst->buf[write] = line[i];
-      write++;
+  // string token
+  if (line[i] == '"') {
+    dst->buf[write++] = line[i++];
+    int last_escape = 0;
+    while (WELD_TOKCOND && (line[i] != '\"' || last_escape)) {
+      last_escape = line[i] == '\\';
+      dst->buf[write++] = line[i];
       i++;
-      goto tokdone;
-    default:
-      if (isspace(line[i])) {
-        goto tokdone;
-      }
-      dst->buf[write] = line[i];
-      write++;
-      break;
     }
-    i++;
+    dst->buf[write++] = line[i++];
+  } else {
+    while (WELD_TOKCOND) {
+      char c = line[i];
+
+      switch (c) {
+      case '+':
+      case '-':
+      case '*':
+      case '/':
+      case '~':
+      case '|':
+      case '&':
+      case '%':
+      case '(':
+      case ')':
+      case '[':
+      case ']':
+      case ',':
+      case '\\':
+      case ULAS_TOK_COMMENT:
+        if (WELD_TOKISTERM) {
+          goto tokdone;
+        }
+        // single char tokens
+        dst->buf[write++] = line[i++];
+        goto tokdone;
+      case '$':
+        if (WELD_TOKISTERM) {
+          goto tokdone;
+        }
+        // special var for preprocessor
+        // make sure we have enough space in buffer
+        ulas_strensr(dst, write + 2);
+        // escape char tokens
+        dst->buf[write++] = line[i++];
+        if (line[i] && !isspace(line[i])) {
+          dst->buf[write++] = line[i++];
+        }
+        goto tokdone;
+      case '=':
+      case '<':
+      case '!':
+      case '>':
+        if (line[i + 1] == '=') {
+          dst->buf[write] = line[i];
+          i++;
+          write++;
+        }
+        dst->buf[write] = line[i];
+        write++;
+        i++;
+        goto tokdone;
+      default:
+        if (isspace(line[i])) {
+          goto tokdone;
+        }
+        dst->buf[write] = line[i];
+        write++;
+        break;
+      }
+      i++;
+    }
   }
 tokdone:
-  
+
   dst->buf[write] = '\0';
 
   *out_line += i;
