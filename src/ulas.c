@@ -2128,7 +2128,11 @@ int ulas_asmdirset(const char **line, unsigned long n, enum ulas_type t) {
     }
     break;
   case ULAS_STR:
-    // TODO: implement str expressions
+    val.strv = strdup(ulas_strexpr(line, n, &rc));
+    if (rc == -1) {
+      goto fail;
+    }
+    break;
   default:
     ULASERR("Unexpected type\n");
     return -1;
@@ -2173,7 +2177,7 @@ int ulas_asmdirdef(const char **line, unsigned long n) {
   enum ulas_type t = ULAS_INT;
   if (strncmp(ulas.tok.buf, "int", ulas.tok.maxlen) == 0) {
     t = ULAS_INT;
-  } else if (strncmp(ulas.tok.buf, "char", ulas.tok.maxlen) == 0) {
+  } else if (strncmp(ulas.tok.buf, "str", ulas.tok.maxlen) == 0) {
     t = ULAS_STR;
   } else {
     ULASERR("Type (str,int) expected. Got '%s'\n", ulas.tok.buf);
