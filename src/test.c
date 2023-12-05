@@ -210,6 +210,7 @@ void test_totok(void) {
 
   // string token
   ASSERT_STR_TOTOK("test", 0, "\"test\"");
+  ASSERT_STR_TOTOK("test\n", 0, "\"test\\n\"");
   // string with escape
   ASSERT_STR_TOTOK("test\n\"123\"", 0, "\"test\\n\\\"123\\\"\"");
   // unterminated string
@@ -277,6 +278,26 @@ void test_intexpr(void) {
   ASSERT_INTEXPR(4, 0, "1 + 3 ; comment");
 
   TESTEND("intexpr");
+}
+
+#define ASSERT_STREXPR(expected_val, expected_rc, expr)                        \
+  {                                                                            \
+    int rc = 0;                                                                \
+    const char *oexpr = expr;                                                  \
+    ulas.pass = ULAS_PASS_FINAL;                                               \
+    const char *val = ulas_strexpr(&oexpr, strlen((expr)), &rc);               \
+    assert(rc == (expected_rc));                                               \
+    assert(val);                                                               \
+    assert(strcmp((expected_val), val) == 0);                                  \
+  }
+
+void test_strexpr(void) {
+  TESTBEGIN("strexpr");
+
+  ASSERT_STREXPR("test", 0, "\"test\"");
+  // ASSERT_STREXPR("test\n", 0, "\"test\\n\"");
+
+  TESTEND("strexpr");
 }
 
 #define ASSERT_ASMINSTR(expect_len, line, ...)                                 \
@@ -380,6 +401,7 @@ int main(int arc, char **argv) {
   test_preproc();
   test_totok();
   test_intexpr();
+  test_strexpr();
   test_asminstr();
   test_symscope();
 

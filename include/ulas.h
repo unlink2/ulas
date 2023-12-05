@@ -551,5 +551,6 @@ int ulas_asm(FILE *dst, FILE *src);
 
 // parses and executes a 32 bit signed int math expressions
 int ulas_intexpr(const char **line, unsigned long n, int *rc);
+char *ulas_strexpr(const char **line, unsigned long n, int *rc);
 
 #endif

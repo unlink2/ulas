@@ -350,7 +350,7 @@ int ulas_tok(struct ulas_str *dst, const char **out_line, unsigned long n) {
     i++;
   }
 tokdone:
-
+  
   dst->buf[write] = '\0';
 
   *out_line += i;
@@ -1530,6 +1530,39 @@ int ulas_intexpr(const char **line, unsigned long n, int *rc) {
 
   // execute the tree of expressions
   return ulas_intexpreval(expr, rc);
+}
+
+char *ulas_strexpr(const char **line, unsigned long n, int *rc) {
+  if (ulas_tokexpr(line, n) == -1) {
+    *rc = -1;
+    return NULL;
+  }
+
+  int expr = ulas_parseexpr();
+  if (expr == -1) {
+    *rc = -1;
+    return NULL;
+  }
+
+  struct ulas_expr *e = ulas_exprbufget(&ulas.exprs, expr);
+  if (!e) {
+    ULASERR("unable to evaluate expression\n");
+    *rc = -1;
+    return NULL;
+  }
+
+  switch ((int)e->type) {
+  case ULAS_EXPPRIM: {
+    struct ulas_tok *t = ulas_tokbufget(&ulas.toks, (int)e->val.prim.tok);
+    char *s = ulas_valstr(t, rc);
+    return s;
+  }
+  default:
+    ULASERR("Unhandeled string expression\n");
+    *rc = -1;
+    return NULL;
+  }
+  return NULL;
 }
 
 const char *ulas_asmregstr(enum ulas_asmregs reg) {
