@@ -1217,7 +1217,6 @@ void ulas_symbufclear(struct ulas_symbuf *sb) {
   for (long i = 0; i < sb->len; i++) {
     struct ulas_sym *s = &sb->buf[i];
     free(s->name);
-    ulas_tokfree(&s->tok);
   }
   sb->len = 0;
 }
@@ -2128,7 +2127,7 @@ int ulas_asmdirset(const char **line, unsigned long n, enum ulas_type t) {
     }
     break;
   case ULAS_STR:
-    val.strv = strdup(ulas_strexpr(line, n, &rc));
+    val.strv = ulas_strexpr(line, n, &rc);
     if (rc == -1) {
       goto fail;
     }
