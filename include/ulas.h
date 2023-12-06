@@ -230,6 +230,10 @@ struct ulas {
   // internal counter
   // used whenever a new unique number might be needed
   int icntr;
+
+  // all include search paths
+  char **include_paths;
+  int include_paths_len;
 };
 
 extern struct ulas ulas;
@@ -407,6 +411,8 @@ extern struct ulas_config ulascfg;
 struct ulas_config ulas_cfg_from_env(void);
 void ulas_init(struct ulas_config cfg);
 void ulas_free(void);
+void ulas_pushincpath(const char *path);
+FILE* ulas_incpathfopen(const char *path, const char *mode);
 
 int ulas_main(struct ulas_config cfg);
 
