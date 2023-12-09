@@ -60,17 +60,13 @@ void ulas_free(void) {
   ulas_exprbuffree(&ulas.exprs);
   ulas_symbuffree(&ulas.syms);
   ulas_preprocfree(&ulas.pp);
-
-  if (ulas.include_paths) {
-    for (int i = 0; i < ulas.include_paths_len; i++) {
-      free(ulas.include_paths[i]);
-    }
-    free(ulas.include_paths);
-  }
 }
 
-void ulas_pushincpath(const char *path) {}
+
 FILE* ulas_incpathfopen(const char *path, const char *mode) {
+  // TODO: loop inc-paths 
+  // lastly check .
+
   return NULL;
 }
 
