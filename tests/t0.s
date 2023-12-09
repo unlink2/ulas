@@ -93,3 +93,5 @@ l2:
 .def str s2 = "Hello"
 
 .str "test1", "test2"
+
+.incbin "tests/inc.bin"

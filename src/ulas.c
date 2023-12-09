@@ -66,8 +66,8 @@ FILE *ulas_incpathfopen(const char *path, const char *mode) {
   char pathbuf[ULAS_PATHMAX];
   memset(pathbuf, 0, ULAS_PATHMAX);
   int baselen = strlen(path);
- 
-  // check all include paths 
+
+  // check all include paths
   for (int i = 0; i < ulas.include_paths_len; i++) {
     pathbuf[0] = '\0';
     char *ip = ulas.include_paths[i];
@@ -77,7 +77,7 @@ FILE *ulas_incpathfopen(const char *path, const char *mode) {
     }
 
     strcat(pathbuf, ip);
-    if (ip[len-1] != ULAS_PATHSEP[0]) {
+    if (ip[len - 1] != ULAS_PATHSEP[0]) {
       strcat(pathbuf, ULAS_PATHSEP);
     }
     strcat(pathbuf, path);
@@ -2280,6 +2280,29 @@ int ulas_asmdirstr(FILE *dst, const char **line, unsigned long n, int *rc) {
   return written;
 }
 
+int ulas_asmdirincbin(FILE *dst, const char **line, unsigned long n, int *rc) {
+  char *path = ulas_strexpr(line, n, rc);
+  char buf[256];
+  memset(buf, 0, 256);
+  int written = 0;
+
+  FILE *f = ulas_incpathfopen(path, "re");
+  if (!f) {
+    *rc = -1;
+    return 0;
+  }
+
+  int read = 0;
+  while ((read = fread(buf, 1, 256, f))) {
+    ulas_asmout(dst, buf, read);
+    written += read;
+  }
+
+  fclose(f);
+
+  return written;
+}
+
 int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
   // this buffer is written both to dst and to verbose output
   char outbuf[ULAS_OUTBUFMAX];
@@ -2344,6 +2367,8 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
       other_writes += ulas_asmdirstr(dst, &line, n, &rc);
       break;
     case ULAS_ASMDIR_INCBIN:
+      other_writes += ulas_asmdirincbin(dst, &line, n, &rc);
+      break;
     case ULAS_ASMDIR_PAD:
       // TODO: pad is the same as .fill n, $ - n
     case ULAS_ASMDIR_NONE:
