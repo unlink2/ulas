@@ -68,9 +68,9 @@ FILE *ulas_incpathfopen(const char *path, const char *mode) {
   int baselen = strlen(path);
 
   // check all include paths
-  for (int i = 0; i < ulas.include_paths_len; i++) {
+  for (int i = 0; i < ulascfg.incpathslen; i++) {
     pathbuf[0] = '\0';
-    char *ip = ulas.include_paths[i];
+    char *ip = ulascfg.incpaths[i];
     int len = strlen(ip);
     if (len + baselen + 1 >= ULAS_PATHMAX) {
       continue;

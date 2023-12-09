@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <string.h>
 #include "ulas.h"
 #include <unistd.h>
@@ -12,9 +13,14 @@
 #define ULAS_OPTS "hvVp"
 
 // args with value
-#define ULAS_OPTS_ARG "o:l:s:"
+#define ULAS_OPTS_ARG "o:l:s:i:"
 
 #define ULAS_HELP(a, desc) printf("\t-%s\t%s\n", (a), desc);
+
+#define ULAS_INCPATHSMAX 256
+
+const char *incpaths[ULAS_INCPATHSMAX];
+long incpathslen = 0;
 
 void ulas_help(void) {
   printf("%s\n", ULAS_NAME);
@@ -26,6 +32,7 @@ void ulas_help(void) {
   ULAS_HELP("o=path", "Output file");
   ULAS_HELP("l=path", "Listing file");
   ULAS_HELP("s=path", "Symbols file");
+  ULAS_HELP("i=path", "Add include search path");
 }
 
 void ulas_version(void) { printf("%s version %s\n", ULAS_NAME, ULAS_VER); }
@@ -57,6 +64,9 @@ void ulas_getopt(int argc, char **argv, struct ulas_config *cfg) {
     case 'l':
       cfg->lst_path = strndup(optarg, ULAS_PATHMAX);
       break;
+    case 'i':
+      assert(incpathslen < ULAS_INCPATHSMAX);
+      incpaths[incpathslen++] = strndup(optarg, ULAS_PATHMAX);
     case '?':
       break;
     default:
@@ -76,6 +86,8 @@ int main(int argc, char **argv) {
   struct ulas_config cfg = ulas_cfg_from_env();
 
   ulas_getopt(argc, argv, &cfg);
+  cfg.incpaths = incpaths;
+  cfg.incpathslen = incpathslen;
 
   int res = ulas_main(cfg);
 
@@ -89,6 +101,10 @@ int main(int argc, char **argv) {
 
   if (cfg.lst_path) {
     free(cfg.lst_path);
+  }
+
+  for (int i = 0; i < incpathslen; i++) {
+    free(incpaths[i]);
   }
 
   return res;

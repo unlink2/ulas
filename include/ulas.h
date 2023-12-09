@@ -102,6 +102,10 @@ struct ulas_config {
 
   int verbose;
   int preproc_only;
+
+  // all include search paths
+  char **incpaths;
+  int incpathslen;
 };
 
 /**
@@ -231,10 +235,6 @@ struct ulas {
   // internal counter
   // used whenever a new unique number might be needed
   int icntr;
-
-  // all include search paths
-  char **include_paths;
-  int include_paths_len;
 };
 
 extern struct ulas ulas;
