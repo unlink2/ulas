@@ -65,11 +65,15 @@ void ulas_free(void) {
 FILE *ulas_incpathfopen(const char *path, const char *mode) {
   char pathbuf[ULAS_PATHMAX];
   memset(pathbuf, 0, ULAS_PATHMAX);
+  int baselen = strlen(path);
   
   for (int i = 0; i < ulas.include_paths_len; i++) {
     pathbuf[0] = '\0';
     char *ip = ulas.include_paths[i];
     int len = strlen(ip);
+    if (len + baselen + 1 >= ULAS_PATHMAX) {
+      continue;
+    }
 
     strcat(pathbuf, ip);
     if (ip[len-1] != ULAS_PATHSEP[0]) {
