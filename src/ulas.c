@@ -62,12 +62,36 @@ void ulas_free(void) {
   ulas_preprocfree(&ulas.pp);
 }
 
+FILE *ulas_incpathfopen(const char *path, const char *mode) {
+  char pathbuf[ULAS_PATHMAX];
+  memset(pathbuf, 0, ULAS_PATHMAX);
+  
+  for (int i = 0; i < ulas.include_paths_len; i++) {
+    pathbuf[0] = '\0';
+    char *ip = ulas.include_paths[i];
+    int len = strlen(ip);
 
-FILE* ulas_incpathfopen(const char *path, const char *mode) {
-  // TODO: loop inc-paths 
+    strcat(pathbuf, ip);
+    if (ip[len-1] != ULAS_PATHSEP[0]) {
+      strcat(pathbuf, ULAS_PATHSEP);
+    }
+    strcat(pathbuf, path);
+
+    FILE *f = fopen(pathbuf, mode);
+    if (f != NULL) {
+      return f;
+    }
+  }
+
+  // TODO: loop inc-paths
   // lastly check .
 
-  return NULL;
+  FILE *f = fopen(path, mode);
+  if (f == NULL) {
+    ULASERR("%s: %s\n", path, strerror(errno));
+  }
+
+  return f;
 }
 
 int ulas_icntr(void) { return ulas.icntr++; }
