@@ -1017,11 +1017,11 @@ found:
       if (rc != -1) {
         rc = found_dir;
       }
-      
+
       free(ulas.filename);
       ulas.filename = prev_path;
       ulas.line = prev_lines;
-      
+
       fclose(f);
       fclose(tmp);
       return rc;
@@ -2326,8 +2326,9 @@ int ulas_asmdirfill(FILE *dst, const char **line, unsigned long n, int *rc) {
     ULASERR("Expected ,\n");
     return 0;
   }
+  int count = 0;
 
-  int count = ulas_intexpr(line, n, rc);
+  ULAS_EVALEXPRS(count = ulas_intexpr(line, n, rc));
   if (count < 0) {
     ULASERR("Count must be positive\n");
     return 0;
@@ -2434,9 +2435,11 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
     }
 
     switch (dir) {
-    case ULAS_ASMDIR_ORG:
-      ulas.address = ulas_intexpr(&line, strnlen(start, n), &rc);
+    case ULAS_ASMDIR_ORG: {
+      ULAS_EVALEXPRS(ulas.address =
+                         ulas_intexpr(&line, strnlen(start, n), &rc));
       break;
+    }
     case ULAS_ASMDIR_DEF:
       // only do this in the final pass
       rc = ulas_asmdirdef(&line, n);

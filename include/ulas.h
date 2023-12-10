@@ -74,6 +74,19 @@
     fprintf((f), "%s", (fmt));                                                 \
   }
 
+// this is a bit of a hack to get the int expression to evaluate anyway
+// because expressions only work in the final pass
+// Beware that this can cause unforseen writes to the file and should really
+// only be uesd to evalulate an expression that needs to be evaled during 
+// all passes and nothing else!
+#define ULAS_EVALEXPRS(...)                                                    \
+  {                                                                            \
+    int pass = ulas.pass;                                                      \
+    ulas.pass = ULAS_PASS_FINAL;                                               \
+    __VA_ARGS__;                                                               \
+    ulas.pass = pass;                                                          \
+  }
+
 /**
  * Output target files
  */

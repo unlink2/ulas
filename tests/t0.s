@@ -97,3 +97,6 @@ l2:
 .incbin "tests/inc.bin"
 #include "tests/t1.s"
   nop
+  jp j1
+j1:
+  jp j1
