@@ -1013,11 +1013,15 @@ found:
 
       FILE *tmp = tmpfile();
       rc = ulas_preproc(tmp, f);
+      // only error if -1
+      if (rc != -1) {
+        rc = found_dir;
+      }
       
+      free(ulas.filename);
       ulas.filename = prev_path;
       ulas.line = prev_lines;
       
-      free(ulas.filename);
       fclose(f);
       fclose(tmp);
       return rc;
