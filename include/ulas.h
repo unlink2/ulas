@@ -129,7 +129,9 @@ enum ulas_type {
   ULAS_EQ,
   ULAS_NEQ,
   ULAS_GTEQ,
-  ULAS_LTEQ
+  ULAS_LTEQ,
+  ULAS_RSHIFT,
+  ULAS_LSHIFT,
 };
 
 // data type value

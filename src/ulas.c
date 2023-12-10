@@ -526,11 +526,16 @@ struct ulas_tok ulas_totok(char *buf, unsigned long n, int *rc) {
       if (*buf == '=') {
         tok.type = ULAS_LTEQ;
         buf++;
+      } else if (*buf == '<') {
+        tok.type = ULAS_LSHIFT;
       }
       break;
     case '>':
       if (*buf == '=') {
         tok.type = ULAS_GTEQ;
+        buf++;
+      } else if (*buf == '>') {
+        tok.type = ULAS_RSHIFT;
         buf++;
       }
       break;
@@ -1527,6 +1532,16 @@ int ulas_intexpreval(int i, int *rc) {
         return 0;
       }
       return left % right;
+    case ULAS_RSHIFT:
+      return left >> right;
+    case ULAS_LSHIFT:
+      return left << right;
+    case '|':
+      return left | right;
+    case '&':
+      return left & right;
+    case '^':
+      return left ^ right;
     default:
       ULASPANIC("Unhandeled binary operator\n");
       break;
@@ -1544,6 +1559,8 @@ int ulas_intexpreval(int i, int *rc) {
       return !right;
     case '-':
       return -right;
+    case '~':
+      return ~right;
     default:
       ULASPANIC("Unhandeled unary operation\n");
       break;

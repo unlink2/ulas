@@ -19,7 +19,7 @@
 
 #define ULAS_INCPATHSMAX 256
 
-const char *incpaths[ULAS_INCPATHSMAX];
+char *incpaths[ULAS_INCPATHSMAX];
 long incpathslen = 0;
 
 void ulas_help(void) {
