@@ -376,7 +376,7 @@ int ulas_tok(struct ulas_str *dst, const char **out_line, unsigned long n) {
       case '<':
       case '!':
       case '>':
-        if (line[i + 1] == '=') {
+        if (line[i + 1] == '=' || line[i + 1] == '>' || line[i + 1] == '<') {
           dst->buf[write] = line[i];
           i++;
           write++;
@@ -528,6 +528,7 @@ struct ulas_tok ulas_totok(char *buf, unsigned long n, int *rc) {
         buf++;
       } else if (*buf == '<') {
         tok.type = ULAS_LSHIFT;
+        buf++;
       }
       break;
     case '>':
@@ -1369,7 +1370,7 @@ int ulas_parsecmp(int *i);
 int ulas_parseun(int *i) {
   struct ulas_tok *t = ulas_tokbufget(&ulas.toks, *i);
 
-  if (t && (t->type == '!' || t->type == '-')) {
+  if (t && (t->type == '!' || t->type == '-' || t->type == '~')) {
     int op = *i;
     *i += 1;
     int right = ulas_parseun(i);
@@ -1421,8 +1422,27 @@ int ulas_parseterm(int *i) {
   return expr;
 }
 
-int ulas_parsecmp(int *i) {
+int ulas_parseshift(int *i) {
   int expr = ulas_parseterm(i);
+  struct ulas_tok *t = NULL;
+
+  while ((t = ulas_tokbufget(&ulas.toks, *i)) &&
+         (t->type == ULAS_RSHIFT || t->type == ULAS_LSHIFT)) {
+    int op = *i;
+    *i += 1;
+    int right = ulas_parseterm(i);
+
+    struct ulas_expbin bin = {expr, right, op};
+    union ulas_expval val = {.bin = bin};
+    struct ulas_expr e = {ULAS_EXPBIN, val};
+    expr = ulas_exprbufpush(&ulas.exprs, e);
+  }
+
+  return expr;
+}
+
+int ulas_parsecmp(int *i) {
+  int expr = ulas_parseshift(i);
   struct ulas_tok *t = NULL;
 
   while ((t = ulas_tokbufget(&ulas.toks, *i)) &&
@@ -1430,7 +1450,7 @@ int ulas_parsecmp(int *i) {
           t->type == '<')) {
     int op = *i;
     *i += 1;
-    int right = ulas_parseterm(i);
+    int right = ulas_parseshift(i);
 
     struct ulas_expbin bin = {expr, right, op};
     union ulas_expval val = {.bin = bin};
@@ -1459,7 +1479,26 @@ int ulas_parseeq(int *i) {
   return expr;
 }
 
-int ulas_parseexprat(int *i) { return ulas_parseeq(i); }
+int ulas_parsebit(int *i) {
+  int expr = ulas_parseeq(i);
+  struct ulas_tok *t = NULL;
+
+  while ((t = ulas_tokbufget(&ulas.toks, *i)) &&
+         (t->type == '&' || t->type == '|' || t->type == '^')) {
+    int op = *i;
+    *i += 1;
+    int right = ulas_parseeq(i);
+
+    struct ulas_expbin bin = {expr, right, op};
+    union ulas_expval val = {.bin = bin};
+    struct ulas_expr e = {ULAS_EXPBIN, val};
+    expr = ulas_exprbufpush(&ulas.exprs, e);
+  }
+
+  return expr;
+}
+
+int ulas_parseexprat(int *i) { return ulas_parsebit(i); }
 
 // parses tokens to expression tree
 // returns head expression index
