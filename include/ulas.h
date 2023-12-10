@@ -44,6 +44,7 @@
 #define ULAS_ASMSTR_PAD ".pad"
 #define ULAS_ASMSTR_INCBIN ".incbin"
 #define ULAS_ASMSTR_DEF ".def"
+#define ULAS_ASMSTR_CHKSM ".chksm"
 
 // configurable tokens
 #define ULAS_TOK_COMMENT ';'
@@ -77,7 +78,7 @@
 // this is a bit of a hack to get the int expression to evaluate anyway
 // because expressions only work in the final pass
 // Beware that this can cause unforseen writes to the file and should really
-// only be uesd to evalulate an expression that needs to be evaled during 
+// only be uesd to evalulate an expression that needs to be evaled during
 // all passes and nothing else!
 #define ULAS_EVALEXPRS(...)                                                    \
   {                                                                            \
@@ -251,6 +252,8 @@ struct ulas {
   // internal counter
   // used whenever a new unique number might be needed
   int icntr;
+
+  char chksm;
 };
 
 extern struct ulas ulas;
@@ -365,6 +368,8 @@ enum ulas_asmdir {
   ULAS_ASMDIR_INCBIN,
   // .def name = value
   ULAS_ASMDIR_DEF,
+  // inserts checksum into rom
+  ULAS_ASMDIR_CHKSM,
 };
 
 // amount of registers

@@ -51,6 +51,7 @@ void ulas_nextpass(void) {
   ulas.line = 0;
   ulas.icntr = 0;
   ulas.address = 0;
+  ulas.chksm = 0;
   ulas.filename = ulas.initial_filename;
 }
 
@@ -2198,6 +2199,12 @@ void ulas_asmout(FILE *dst, const char *outbuf, unsigned long n) {
   if (ulas.pass == ULAS_PASS_FINAL) {
     fwrite(outbuf, 1, n, dst);
   }
+
+  if (ulas.address < 0x14C) {
+    for (int i =0; i < n; i++) {
+      ulas.chksm = ulas.chksm - outbuf[i] - 1;
+    }
+  }
 }
 
 int ulas_asmdirbyte(FILE *dst, const char **line, unsigned long n, int *rc) {
@@ -2411,13 +2418,15 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
   }
 
   if (ulas.tok.buf[0] == ULAS_TOK_ASMDIR_BEGIN) {
-    const char *dirstrs[] = {
-        ULAS_ASMSTR_ORG,    ULAS_ASMSTR_SET,  ULAS_ASMSTR_BYTE,
-        ULAS_ASMSTR_STR,    ULAS_ASMSTR_FILL, ULAS_ASMSTR_PAD,
-        ULAS_ASMSTR_INCBIN, ULAS_ASMSTR_DEF,  NULL};
+    const char *dirstrs[] = {ULAS_ASMSTR_ORG,    ULAS_ASMSTR_SET,
+                             ULAS_ASMSTR_BYTE,   ULAS_ASMSTR_STR,
+                             ULAS_ASMSTR_FILL,   ULAS_ASMSTR_PAD,
+                             ULAS_ASMSTR_INCBIN, ULAS_ASMSTR_DEF,
+                             ULAS_ASMSTR_CHKSM,  NULL};
     enum ulas_asmdir dirs[] = {
-        ULAS_ASMDIR_ORG,  ULAS_ASMDIR_SET, ULAS_ASMDIR_BYTE,   ULAS_ASMDIR_STR,
-        ULAS_ASMDIR_FILL, ULAS_ASMDIR_PAD, ULAS_ASMDIR_INCBIN, ULAS_ASMDIR_DEF};
+        ULAS_ASMDIR_ORG,    ULAS_ASMDIR_SET,  ULAS_ASMDIR_BYTE,
+        ULAS_ASMDIR_STR,    ULAS_ASMDIR_FILL, ULAS_ASMDIR_PAD,
+        ULAS_ASMDIR_INCBIN, ULAS_ASMDIR_DEF,  ULAS_ASMDIR_CHKSM};
 
     enum ulas_asmdir dir = ULAS_ASMDIR_NONE;
 
@@ -2458,6 +2467,10 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
       break;
     case ULAS_ASMDIR_INCBIN:
       other_writes += ulas_asmdirincbin(dst, &line, n, &rc);
+      break;
+    case ULAS_ASMDIR_CHKSM:
+      ulas_asmout(dst, &ulas.chksm, 1);
+      other_writes += 1;
       break;
     case ULAS_ASMDIR_PAD:
       // TODO: pad is the same as .fill n, $ - n

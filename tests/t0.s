@@ -100,3 +100,4 @@ l2:
   jp j1
 j1:
   jp j1
+.chksm
