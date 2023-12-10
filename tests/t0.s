@@ -95,3 +95,5 @@ l2:
 .str "test1", "test2"
 
 .incbin "tests/inc.bin"
+#include "tests/t1.s"
+  nop

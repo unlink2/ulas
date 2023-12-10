@@ -840,14 +840,14 @@ int ulas_preprocline(struct ulas_preproc *pp, FILE *dst, FILE *src,
   char *line = ulas_preprocexpand(pp, raw_line, &n);
   const char *pline = line;
 
-  const char *dirstrs[] = {ULAS_PPSTR_DEF,   ULAS_PPSTR_MACRO,
-                           ULAS_PPSTR_IFDEF, ULAS_PPSTR_IFNDEF,
-                           ULAS_PPSTR_ENDIF, ULAS_PPSTR_ENDMACRO,
-                           ULAS_PPSTR_UNDEF, NULL};
+  const char *dirstrs[] = {
+      ULAS_PPSTR_DEF,    ULAS_PPSTR_MACRO,   ULAS_PPSTR_IFDEF,
+      ULAS_PPSTR_IFNDEF, ULAS_PPSTR_ENDIF,   ULAS_PPSTR_ENDMACRO,
+      ULAS_PPSTR_UNDEF,  ULAS_PPSTR_INCLUDE, NULL};
   enum ulas_ppdirs dirs[] = {ULAS_PPDIR_DEF,   ULAS_PPDIR_MACRO,
                              ULAS_PPDIR_IFDEF, ULAS_PPDIR_IFNDEF,
                              ULAS_PPDIR_ENDIF, ULAS_PPDIR_ENDMACRO,
-                             ULAS_PPDIR_UNDEF};
+                             ULAS_PPDIR_UNDEF, ULAS_PPDIR_INCLUDE};
 
   enum ulas_ppdirs found_dir = ULAS_PPDIR_NONE;
 
@@ -994,6 +994,33 @@ found:
       }
 
       break;
+    }
+    case ULAS_PPDIR_INCLUDE: {
+      int rc = found_dir;
+      char *path = ulas_strexpr(&pline, strlen(pline), &rc);
+      if (rc == -1 || !path) {
+        return rc;
+      }
+      FILE *f = ulas_incpathfopen(path, "re");
+      if (!f) {
+        return -1;
+      }
+      char *prev_path = ulas.filename;
+      int prev_lines = ulas.line;
+
+      ulas.filename = strdup(path);
+      ulas.line = 0;
+
+      FILE *tmp = tmpfile();
+      rc = ulas_preproc(tmp, f);
+      
+      ulas.filename = prev_path;
+      ulas.line = prev_lines;
+      
+      free(ulas.filename);
+      fclose(f);
+      fclose(tmp);
+      return rc;
     }
     default:
       // this should not happen!

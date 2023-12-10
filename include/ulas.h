@@ -34,6 +34,7 @@
 #define ULAS_PPSTR_IFNDEF "#ifndef"
 #define ULAS_PPSTR_ENDMACRO "#endmacro"
 #define ULAS_PPSTR_UNDEF "#undefine"
+#define ULAS_PPSTR_INCLUDE "#include"
 
 #define ULAS_ASMSTR_ORG ".org"
 #define ULAS_ASMSTR_SET ".set"
@@ -268,7 +269,9 @@ enum ulas_ppdirs {
   // ifndef name
   ULAS_PPDIR_IFNDEF,
   // endif
-  ULAS_PPDIR_ENDIF
+  ULAS_PPDIR_ENDIF,
+  // include "filename"
+  ULAS_PPDIR_INCLUDE,
 };
 
 enum ulas_ppdefs {
