@@ -104,3 +104,4 @@ j1:
   ld [hl], a
 .adv 1
 l3: .db 1
+  ld a, l3
