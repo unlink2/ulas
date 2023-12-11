@@ -10,6 +10,7 @@
  * TODO: Implement -d flag to disassemble input file 
  * TODO: Add symbol file output
  * TODO: Write documentation
+ * TODO: process defined variables inside defines correctly
  */
 
 #define ULAS_NAME "ulas"
