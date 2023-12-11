@@ -7,7 +7,7 @@
 #include <getopt.h>
 
 /**
- * TODO: Implement -d flag to disassemble input file 
+ * TODO: Implement -d flag to disassemble input file
  * TODO: Add symbol file output
  * TODO: Write documentation
  * TODO: process defined variables inside defines correctly

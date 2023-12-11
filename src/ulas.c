@@ -2202,7 +2202,7 @@ void ulas_asmout(FILE *dst, const char *outbuf, unsigned long n) {
   }
 
   if (ulas.address < 0x14C) {
-    for (int i =0; i < n; i++) {
+    for (int i = 0; i < n; i++) {
       ulas.chksm = ulas.chksm - outbuf[i] - 1;
     }
   }
@@ -2407,6 +2407,7 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
   long other_writes = 0;
 
   const char *start = line;
+  const char *instr_start = start;
   int rc = 0;
 
   // read the first token and decide
@@ -2416,6 +2417,19 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
   if (ulas_istokend(&ulas.tok)) {
     ulas_asmlst(start, outbuf, towrite);
     return 0;
+  }
+
+  // is it a label?
+  if (ulas_islabelname(ulas.tok.buf, strlen(ulas.tok.buf))) {
+    instr_start = line;
+    struct ulas_tok label_tok = {ULAS_INT, {ulas.address}};
+    ulas_symbolset(ulas.tok.buf, -1, label_tok, 1);
+    ulas_tok(&ulas.tok, &line, n);
+    // is next token empty?
+    if (ulas_istokend(&ulas.tok)) {
+      ulas_asmlst(start, outbuf, towrite);
+      return 0;
+    }
   }
 
   if (ulas.tok.buf[0] == ULAS_TOK_ASMDIR_BEGIN) {
@@ -2482,24 +2496,8 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
 
   } else {
     // is regular line in form of [label:] instruction ; comment
-    // is it a label?
-    if (ulas_islabelname(ulas.tok.buf, strlen(ulas.tok.buf))) {
-      const char *prev = line;
-      struct ulas_tok label_tok = {ULAS_INT, {ulas.address}};
-      ulas_symbolset(ulas.tok.buf, -1, label_tok, 1);
-
-      // is next token empty?
-      if (ulas_tok(&ulas.tok, &line, n) == 0 ||
-          strnlen(ulas.tok.buf, ulas.tok.maxlen) == 0) {
-        ulas_asmlst(start, outbuf, towrite);
-        return 0;
-      }
-
-      line = prev;
-    } else {
-      // start over for the next step...
-      line = start;
-    }
+    // start over for the next step...
+    line = instr_start;
 
     int nextwrite = ulas_asminstr(outbuf, ULAS_OUTBUFMAX, &line, n);
     if (nextwrite == -1) {

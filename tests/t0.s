@@ -103,3 +103,4 @@ j1:
 .chksm
 
   ld [hl], a
+l3: .db 1
