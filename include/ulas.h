@@ -45,6 +45,7 @@
 #define ULAS_ASMSTR_INCBIN ".incbin"
 #define ULAS_ASMSTR_DEF ".def"
 #define ULAS_ASMSTR_CHKSM ".chksm"
+#define ULAS_ASMSTR_ADV ".adv"
 
 // configurable tokens
 #define ULAS_TOK_COMMENT ';'
@@ -370,6 +371,9 @@ enum ulas_asmdir {
   ULAS_ASMDIR_DEF,
   // inserts checksum into rom
   ULAS_ASMDIR_CHKSM,
+  // .adv <int>
+  // advance .org by n bytes without writing to rom
+  ULAS_ASMDIR_ADV,
 };
 
 // amount of registers

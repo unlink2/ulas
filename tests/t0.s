@@ -101,6 +101,6 @@ l2:
 j1:
   jp j1
 .chksm
-
   ld [hl], a
+.adv 1
 l3: .db 1
