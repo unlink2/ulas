@@ -1882,11 +1882,12 @@ const struct ulas_instr ULASINSTRS[] = {
     ULAS_INSTR_R8R8D("ld", 0x78, ULAS_REG_A),
 
     // ld [r16], a
-    {"ld", {'[', ULAS_REG_HL, ']', ',', ULAS_E8, 0}, {0x36, ULAS_E8, 0x00}},
     {"ld", {'[', ULAS_REG_BC, ']', ',', ULAS_REG_A, 0}, {0x02, 0}},
     {"ld", {'[', ULAS_REG_DE, ']', ',', ULAS_REG_A, 0}, {0x12, 0}},
+    {"ld", {'[', ULAS_REG_HL, ']', ',', ULAS_REG_A, 0}, {0x77, 0}},
     {"ld", {'[', ULAS_REG_HL, '+', ']', ',', ULAS_REG_A, 0}, {0x22, 0}},
     {"ld", {'[', ULAS_REG_HL, '-', ']', ',', ULAS_REG_A, 0}, {0x32, 0}},
+    {"ld", {'[', ULAS_REG_HL, ']', ',', ULAS_E8, 0}, {0x36, ULAS_E8, 0x00}},
 
     // ld a, [r16]
     {"ld", {ULAS_REG_A, ',', '[', ULAS_REG_BC, ']', 0}, {0x0A, 0}},

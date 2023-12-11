@@ -101,3 +101,5 @@ l2:
 j1:
   jp j1
 .chksm
+
+  ld [hl], a
