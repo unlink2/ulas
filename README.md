@@ -1,6 +1,6 @@
 # ulas
 
-Unlink's light assembler is a C99 assembler without any external dependencies.
+Unlink's light assembler is a SM83 assembler without any external dependencies written in C99.
 
 ## Table of content
 
@@ -15,7 +15,6 @@ Unlink's light assembler is a C99 assembler without any external dependencies.
 To build this program you will require a recent C compiler, and make.
 
 ```sh
-premake gmake # to build gnu make file 
 make # to compile all targets 
 ```
 
