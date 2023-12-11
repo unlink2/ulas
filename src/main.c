@@ -6,6 +6,12 @@
 #include <unistd.h>
 #include <getopt.h>
 
+/**
+ * TODO: Implement -d flag to disassemble input file 
+ * TODO: Add symbol file output
+ * TODO: Write documentation
+ */
+
 #define ULAS_NAME "ulas"
 #define ULAS_VER "0.0.1"
 
