@@ -109,3 +109,5 @@ l3: .db 1
 ; local label forward declaration 
   call @fl0
 @fl0:
+  swap a
+  ld [1], a

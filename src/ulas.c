@@ -2037,13 +2037,13 @@ const struct ulas_instr ULASINSTRS[] = {
     ULAS_INSTR_REG("push", 0xF5, ULAS_REG_AF),
 
     // prefixed
+    ULAS_INSTR_PRER8D("swap", 0x30),
     ULAS_INSTR_PRER8D("rlc", 0x00),
     ULAS_INSTR_PRER8D("rrc", 0x08),
     ULAS_INSTR_PRER8D("rl", 0x10),
     ULAS_INSTR_PRER8D("rr", 0x18),
     ULAS_INSTR_PRER8D("sla", 0x10),
     ULAS_INSTR_PRER8D("sra", 0x18),
-    ULAS_INSTR_PRER8D("swap", 0x30),
     ULAS_INSTR_PRER8D("srl", 0x38),
 
     ULAS_INSTR_PREBITR8D("bit", 0x40, '0'),
