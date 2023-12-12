@@ -287,7 +287,7 @@ int ulas_symbolset(const char *cname, int scope, struct ulas_tok tok,
 
   struct ulas_sym *existing = ulas_symbolresolve(name, scope, &resolve_rc);
   // inc scope when symbol is global
-  if (name[0] != ULAS_TOK_SCOPED_SYMBOL_BEGIN) {
+  if (name[0] != ULAS_TOK_SCOPED_SYMBOL_BEGIN && cname[len - 1] == ':') {
     ulas.scope++;
   }
 

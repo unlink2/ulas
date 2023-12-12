@@ -105,3 +105,7 @@ j1:
 .adv 1
 l3: .db 1
   ld a, l3
+
+; local label forward declaration 
+  call @fl0
+@fl0:
