@@ -1936,8 +1936,8 @@ const struct ulas_instr ULASINSTRS[] = {
     // ret
     ULAS_INSTR_REG("ret", 0xC0, ULAS_REG_NOT_ZERO),
     ULAS_INSTR_REG("ret", 0xD0, ULAS_REG_NOT_CARRY),
-    ULAS_INSTR_REG("ret", 0xC9, ULAS_REG_ZERO),
-    ULAS_INSTR_REG("ret", 0xD9, ULAS_REG_CARRY),
+    ULAS_INSTR_REG("ret", 0xC8, ULAS_REG_ZERO),
+    ULAS_INSTR_REG("ret", 0xD8, ULAS_REG_CARRY),
     {"ret", {0}, {0xC9, 0x00}},
     {"reti", {0}, {0xD9, 0x00}},
 
