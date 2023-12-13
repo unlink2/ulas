@@ -111,3 +111,6 @@ l3: .db 1
 @fl0:
   swap a
   ld [1], a
+.def int dbtest = 0x213
+.db (dbtest & 0xFF)
+.db (dbtest >> 8) & 0xFF
