@@ -319,7 +319,7 @@ int ulas_symbolout(FILE *dst, struct ulas_sym *s) {
   }
 
   int rc = 0;
-  fprintf(dst, "%s\t\t\t= ", s->name);
+  fprintf(dst, "%s = ", s->name);
   switch (s->tok.type) {
   case ULAS_INT:
     fprintf(dst, "0x%x", ulas_valint(&s->tok, &rc));
