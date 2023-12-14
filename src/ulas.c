@@ -266,6 +266,7 @@ int ulas_symbolset(const char *cname, int scope, struct ulas_tok tok,
                    int constant) {
   // remove : from name
   char name[ULAS_SYMNAMEMAX];
+  memset(name, 0, ULAS_SYMNAMEMAX);
   long len = strlen(cname);
   assert(len < ULAS_SYMNAMEMAX);
   strncpy(name, cname, len);
@@ -293,7 +294,7 @@ int ulas_symbolset(const char *cname, int scope, struct ulas_tok tok,
 
   if (!existing) {
     // def new symbol
-    struct ulas_sym new_sym = {strdup(name), tok, scope, ulas.pass, constant};
+    struct ulas_sym new_sym = {strndup(name, len), tok, scope, ulas.pass, constant};
     ulas_symbufpush(&ulas.syms, new_sym);
     
     rc = ulas_symbolout(ulassymout, &new_sym);

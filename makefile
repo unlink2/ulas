@@ -27,6 +27,9 @@ OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 all: bin test
 
+release: 
+	make DBGCFLAGS="" DBGLDFLAGS=""
+
 $(ODIR)/%.o: src/%.c include/*.h
 	mkdir -p $(@D)
 	$(CC) -c -o $@ $< $(CFLAGS) $(LDFLAGS)
