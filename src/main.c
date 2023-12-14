@@ -11,6 +11,7 @@
  * TODO: Add symbol file output
  * TODO: Write documentation
  * TODO: process defined variables inside defines correctly
+ * TODO: Implement struct and enum syntax
  */
 
 #define ULAS_NAME "ulas"
