@@ -460,6 +460,8 @@ struct ulas_sym *ulas_symbolresolve(const char *name, int scope, int *rc);
 int ulas_symbolset(const char *cname, int scope, struct ulas_tok tok,
                    int constant);
 
+int ulas_symbolout(FILE *dst, struct ulas_sym *s);
+
 // tokenisze according to pre-defined rules
 // returns the amount of bytes of line that were
 // consumed or -1 on error

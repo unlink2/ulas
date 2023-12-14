@@ -366,6 +366,7 @@ void test_symscope(void) {
   {                                                                            \
     printf("[source: %s; expect: %s]\n", in_path, expect_path);                \
     ulaslstout = stdout;                                                       \
+    ulassymout = stdout;                                                       \
     struct ulas_config cfg = ulas_cfg_from_env();                              \
     cfg.verbose = 1;                                                           \
     char dstbuf[ULAS_FULLEN];                                                  \

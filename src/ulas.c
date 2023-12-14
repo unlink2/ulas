@@ -295,17 +295,44 @@ int ulas_symbolset(const char *cname, int scope, struct ulas_tok tok,
     // def new symbol
     struct ulas_sym new_sym = {strdup(name), tok, scope, ulas.pass, constant};
     ulas_symbufpush(&ulas.syms, new_sym);
+    
+    rc = ulas_symbolout(ulassymout, &new_sym);
   } else if (existing->lastdefin != ulas.pass || !existing->constant) {
     // redefine if not defined this pass
     existing->lastdefin = ulas.pass;
     ulas_tokfree(&existing->tok);
     existing->tok = tok;
     existing->constant = constant;
+
+    rc = ulas_symbolout(ulassymout, existing);
   } else {
     // exists.. cannot have duplicates!
     rc = -1;
     ULASERR("Redefenition of symbol '%s' in scope %d\n", name, scope);
   }
+  return rc;
+}
+
+int ulas_symbolout(FILE *dst, struct ulas_sym *s) {
+  if (!dst || ulas.pass != ULAS_PASS_FINAL) {
+    return 0;
+  }
+
+  int rc = 0;
+  fprintf(dst, "%s\t\t= ", s->name);
+  switch (s->tok.type) {
+  case ULAS_INT:
+    fprintf(dst, "%d", ulas_valint(&s->tok, &rc));
+    break;
+  case ULAS_STR:
+    fprintf(dst, "%s", ulas_valstr(&s->tok, &rc));
+    break;
+  default:
+    fprintf(dst, "<Unknown type>");
+    break;
+  }
+  fprintf(dst, "\n");
+
   return rc;
 }
 
@@ -2400,8 +2427,7 @@ int ulas_asmdirincbin(FILE *dst, const char **line, unsigned long n, int *rc) {
 }
 
 int ulas_asmdiradv(FILE *dst, const char **line, unsigned long n, int *rc) {
-  ULAS_EVALEXPRS(ulas.address +=
-                         ulas_intexpr(line, strnlen(*line, n), rc));
+  ULAS_EVALEXPRS(ulas.address += ulas_intexpr(line, strnlen(*line, n), rc));
   return 0;
 }
 
@@ -2439,15 +2465,21 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
   }
 
   if (ulas.tok.buf[0] == ULAS_TOK_ASMDIR_BEGIN) {
-    const char *dirstrs[] = {ULAS_ASMSTR_ORG,    ULAS_ASMSTR_SET,
-                             ULAS_ASMSTR_BYTE,   ULAS_ASMSTR_STR,
-                             ULAS_ASMSTR_FILL,   ULAS_ASMSTR_PAD,
-                             ULAS_ASMSTR_INCBIN, ULAS_ASMSTR_DEF,
-                             ULAS_ASMSTR_CHKSM, ULAS_ASMSTR_ADV,  NULL};
+    const char *dirstrs[] = {ULAS_ASMSTR_ORG,
+                             ULAS_ASMSTR_SET,
+                             ULAS_ASMSTR_BYTE,
+                             ULAS_ASMSTR_STR,
+                             ULAS_ASMSTR_FILL,
+                             ULAS_ASMSTR_PAD,
+                             ULAS_ASMSTR_INCBIN,
+                             ULAS_ASMSTR_DEF,
+                             ULAS_ASMSTR_CHKSM,
+                             ULAS_ASMSTR_ADV,
+                             NULL};
     enum ulas_asmdir dirs[] = {
-        ULAS_ASMDIR_ORG,    ULAS_ASMDIR_SET,  ULAS_ASMDIR_BYTE,
-        ULAS_ASMDIR_STR,    ULAS_ASMDIR_FILL, ULAS_ASMDIR_PAD,
-        ULAS_ASMDIR_INCBIN, ULAS_ASMDIR_DEF,  ULAS_ASMDIR_CHKSM, ULAS_ASMDIR_ADV};
+        ULAS_ASMDIR_ORG,   ULAS_ASMDIR_SET, ULAS_ASMDIR_BYTE,   ULAS_ASMDIR_STR,
+        ULAS_ASMDIR_FILL,  ULAS_ASMDIR_PAD, ULAS_ASMDIR_INCBIN, ULAS_ASMDIR_DEF,
+        ULAS_ASMDIR_CHKSM, ULAS_ASMDIR_ADV};
 
     enum ulas_asmdir dir = ULAS_ASMDIR_NONE;
 
