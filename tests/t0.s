@@ -120,3 +120,5 @@ l3: .db 1
 .de de2, 1
   ld a, de1
   ld a, de2
+
+  jp hl
