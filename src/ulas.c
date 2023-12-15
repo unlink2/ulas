@@ -294,9 +294,10 @@ int ulas_symbolset(const char *cname, int scope, struct ulas_tok tok,
 
   if (!existing) {
     // def new symbol
-    struct ulas_sym new_sym = {strndup(name, len), tok, scope, ulas.pass, constant};
+    struct ulas_sym new_sym = {strndup(name, len), tok, scope, ulas.pass,
+                               constant};
     ulas_symbufpush(&ulas.syms, new_sym);
-    
+
     rc = ulas_symbolout(ulassymout, &new_sym);
   } else if (existing->lastdefin != ulas.pass || !existing->constant) {
     // redefine if not defined this pass
@@ -2344,6 +2345,40 @@ int ulas_asmdirdef(const char **line, unsigned long n) {
   return ulas_asmdirset(line, n, t);
 }
 
+int ulas_asmdirdefenum(const char **line, unsigned long n) {
+  char name[ULAS_SYMNAMEMAX];
+  ulas_tok(&ulas.tok, line, n);
+  if (!ulas_isname(ulas.tok.buf, ulas.tok.maxlen)) {
+    ULASERR("Unexpected token '%s'\n", ulas.tok.buf);
+    return -1;
+  }
+  strncpy(name, ulas.tok.buf, ULAS_SYMNAMEMAX);
+
+  // consume ,
+  ulas_tok(&ulas.tok, line, n);
+  if (strncmp(ulas.tok.buf, ",", ulas.tok.maxlen) != 0) {
+    ULASERR("Unexpected token '%s'. Expected ','\n", ulas.tok.buf);
+    return -1;
+  }
+
+  union ulas_val val = {0};
+  val.intv = ulas.enumv; 
+  
+  int rc = 0;
+  ulas.enumv += ulas_intexpr(line, n, &rc);
+  if (rc == -1) {
+    goto fail;
+  }
+  struct ulas_tok tok = {ULAS_INT, val};
+
+  if (ulas.pass == ULAS_PASS_FINAL) {
+    // only really define in final pass
+    ulas_symbolset(name, -1, tok, 1);
+  }
+fail:
+  return rc;
+}
+
 int ulas_asmdirfill(FILE *dst, const char **line, unsigned long n, int *rc) {
   // fill <what>, <how many>
   int written = 0;
@@ -2432,6 +2467,11 @@ int ulas_asmdiradv(FILE *dst, const char **line, unsigned long n, int *rc) {
   return 0;
 }
 
+int ulas_asmdirsetenum(FILE *dst, const char **line, unsigned long n, int *rc) {
+  ULAS_EVALEXPRS(ulas.enumv = ulas_intexpr(line, strnlen(*line, n), rc));
+  return 0;
+}
+
 int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
   // this buffer is written both to dst and to verbose output
   char outbuf[ULAS_OUTBUFMAX];
@@ -2476,11 +2516,14 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
                              ULAS_ASMSTR_DEF,
                              ULAS_ASMSTR_CHKSM,
                              ULAS_ASMSTR_ADV,
+                             ULAS_ASMSTR_SET_ENUM_DEF,
+                             ULAS_ASMSTR_DEFINE_ENUM,
                              NULL};
     enum ulas_asmdir dirs[] = {
-        ULAS_ASMDIR_ORG,   ULAS_ASMDIR_SET, ULAS_ASMDIR_BYTE,   ULAS_ASMDIR_STR,
-        ULAS_ASMDIR_FILL,  ULAS_ASMDIR_PAD, ULAS_ASMDIR_INCBIN, ULAS_ASMDIR_DEF,
-        ULAS_ASMDIR_CHKSM, ULAS_ASMDIR_ADV};
+        ULAS_ASMDIR_ORG,    ULAS_ASMDIR_SET,          ULAS_ASMDIR_BYTE,
+        ULAS_ASMDIR_STR,    ULAS_ASMDIR_FILL,         ULAS_ASMDIR_PAD,
+        ULAS_ASMDIR_INCBIN, ULAS_ASMDIR_DEF,          ULAS_ASMDIR_CHKSM,
+        ULAS_ASMDIR_ADV,    ULAS_ASMDIR_SET_ENUM_DEF, ULAS_ASMDIR_DEFINE_ENUM};
 
     enum ulas_asmdir dir = ULAS_ASMDIR_NONE;
 
@@ -2528,6 +2571,12 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
       break;
     case ULAS_ASMDIR_ADV:
       ulas_asmdiradv(dst, &line, n, &rc);
+      break;
+    case ULAS_ASMDIR_SET_ENUM_DEF:
+      ulas_asmdirsetenum(dst, &line, n, &rc);
+      break;
+    case ULAS_ASMDIR_DEFINE_ENUM:
+      rc = ulas_asmdirdefenum(&line, n);
       break;
     case ULAS_ASMDIR_PAD:
       // TODO: pad is the same as .fill n, $ - n

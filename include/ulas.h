@@ -46,6 +46,8 @@
 #define ULAS_ASMSTR_DEF ".def"
 #define ULAS_ASMSTR_CHKSM ".chksm"
 #define ULAS_ASMSTR_ADV ".adv"
+#define ULAS_ASMSTR_SET_ENUM_DEF ".se"
+#define ULAS_ASMSTR_DEFINE_ENUM ".de"
 
 // configurable tokens
 #define ULAS_TOK_COMMENT ';'
@@ -245,6 +247,7 @@ struct ulas {
   struct ulas_symbuf syms;
 
   unsigned int address;
+  int enumv;
 
   // current scope index
   // each global-label increments the scope
@@ -374,6 +377,13 @@ enum ulas_asmdir {
   // .adv <int>
   // advance .org by n bytes without writing to rom
   ULAS_ASMDIR_ADV,
+  // .setenum <int>
+  // sets the internal _ENUM counter
+  ULAS_ASMDIR_SET_ENUM_DEF,
+  // .de <size>
+  // acts like .def but sets the value to the current _ENUM counter
+  // and increments it by size
+  ULAS_ASMDIR_DEFINE_ENUM,
 };
 
 // amount of registers

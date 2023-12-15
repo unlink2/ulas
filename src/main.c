@@ -12,7 +12,8 @@
  * TODO: Write documentation
  * TODO: process defined variables inside defines correctly
  * TODO: Implement struct, union and enum syntax
- * TODO: Add warning levels such as: warning when literal is too large for register with -w syntax 
+ * TODO: Add warning levels such as: warning when literal is too large for
+ * register with -w syntax
  */
 
 #define ULAS_NAME "ulas"

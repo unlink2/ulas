@@ -114,3 +114,9 @@ l3: .db 1
 .def int dbtest = 0x213
 .db (dbtest & 0xFF)
 .db (dbtest >> 8) & 0xFF
+
+.se 0x21
+.de de1, 2
+.de de2, 1
+  ld a, de1
+  ld a, de2
