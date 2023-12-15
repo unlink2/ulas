@@ -1885,7 +1885,7 @@ const struct ulas_instr ULASINSTRS[] = {
     {"nop", {0}, {(short)ULAS_DATZERO, 0}},
     {"halt", {0}, {0x76, 0}},
     {"stop", {0}, {0x10, (short)ULAS_DATZERO, 0x00}},
-    {"di", {0}, {0xF4, 0x00}},
+    {"di", {0}, {0xF3, 0x00}},
     {"ei", {0}, {0xFB, 0x00}},
 
     // misc
