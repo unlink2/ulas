@@ -1975,6 +1975,7 @@ const struct ulas_instr ULASINSTRS[] = {
     ULAS_INSTR_R16E16("jp", 0xD2, ULAS_REG_NOT_CARRY),
     ULAS_INSTR_R16E16("jp", 0xCA, ULAS_REG_ZERO),
     ULAS_INSTR_R16E16("jp", 0xDA, ULAS_REG_CARRY),
+    ULAS_INSTR_R16E16("jp", 0xE9, ULAS_REG_HL),
     {"jp", {ULAS_E16, 0}, {0xC3, ULAS_E16, 0x00}},
 
     // call
