@@ -2366,16 +2366,14 @@ int ulas_asmdirdefenum(const char **line, unsigned long n) {
   val.intv = ulas.enumv; 
   
   int rc = 0;
-  ulas.enumv += ulas_intexpr(line, n, &rc);
+  ULAS_EVALEXPRS(ulas.enumv += ulas_intexpr(line, n, &rc));
   if (rc == -1) {
     goto fail;
   }
   struct ulas_tok tok = {ULAS_INT, val};
 
-  if (ulas.pass == ULAS_PASS_FINAL) {
-    // only really define in final pass
-    ulas_symbolset(name, -1, tok, 1);
-  }
+  // only really define in final pass
+  ulas_symbolset(name, -1, tok, 1);
 fail:
   return rc;
 }
