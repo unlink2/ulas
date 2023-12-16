@@ -23,7 +23,7 @@
 #define ULAS_OPTS "hvVp"
 
 // args with value
-#define ULAS_OPTS_ARG "o:l:s:i:"
+#define ULAS_OPTS_ARG "o:l:s:i:w:"
 
 #define ULAS_HELP(a, desc) printf("\t-%s\t%s\n", (a), desc);
 
@@ -43,11 +43,17 @@ void ulas_help(void) {
   ULAS_HELP("l=path", "Listing file");
   ULAS_HELP("s=path", "Symbols file");
   ULAS_HELP("i=path", "Add include search path");
+  ULAS_HELP("w=warning", "Toggle warnings: a=all, o=overflow");
 }
 
 void ulas_version(void) { printf("%s version %s\n", ULAS_NAME, ULAS_VER); }
 
 void ulas_getopt(int argc, char **argv, struct ulas_config *cfg) {
+  int warnings[255];
+  memset(warnings, 0, 255 * sizeof(int));
+  warnings['a'] = ULAS_WARN_ALL;
+  warnings['o'] = ULAS_WARN_OVERFLOW;
+
   int c = 0;
   while ((c = getopt(argc, argv, ULAS_OPTS ULAS_OPTS_ARG)) != -1) {
     switch (c) {
@@ -77,6 +83,9 @@ void ulas_getopt(int argc, char **argv, struct ulas_config *cfg) {
     case 'i':
       assert(incpathslen < ULAS_INCPATHSMAX);
       incpaths[incpathslen++] = strndup(optarg, ULAS_PATHMAX);
+    case 'w':
+      cfg->warn_level ^= warnings[(int)optarg[0]];
+      break;
     case '?':
       break;
     default:

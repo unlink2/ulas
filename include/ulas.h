@@ -71,6 +71,7 @@
     fprintf(ulaserr, __VA_ARGS__);                                             \
     exit(-1);                                                                  \
   }
+#define ULASWARNLEVEL(level) ulascfg.warn_level & (level)
 
 // format macros
 #define ULAS_FMT(f, fmt)                                                       \
@@ -109,6 +110,8 @@ extern FILE *ulassymout;
 struct ulas_expr;
 struct ulas_tok;
 
+enum ulas_warm { ULAS_WARN_OVERFLOW = 1, ULAS_WARN_ALL = 0x7FFFFFFF };
+
 struct ulas_config {
   // argv represents file names
   char **argv;
@@ -124,6 +127,8 @@ struct ulas_config {
   // all include search paths
   char **incpaths;
   int incpathslen;
+
+  enum ulas_warm warn_level;
 };
 
 /**

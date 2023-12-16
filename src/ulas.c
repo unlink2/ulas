@@ -104,6 +104,8 @@ struct ulas_config ulas_cfg_from_env(void) {
   struct ulas_config cfg;
   memset(&cfg, 0, sizeof(cfg));
 
+  cfg.warn_level = ULAS_WARN_OVERFLOW;
+
   return cfg;
 }
 
@@ -2150,9 +2152,18 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
       } else if (tok[i] == ULAS_E8 || tok[i] == ULAS_E16) {
         assert(expridx < ULAS_INSTRDATMAX);
         int rc = 0;
-        exprres[expridx++] = ulas_intexpr(line, n, &rc);
+        int res = ulas_intexpr(line, n, &rc);
+        exprres[expridx++] = res;
         if (rc == -1) {
           return -1;
+        }
+
+        if (ULASWARNLEVEL(ULAS_WARN_OVERFLOW) &&
+            (unsigned int)res > 0xFF && tok[i] == ULAS_E8) {
+          ULASWARN("Warning: 0x%X overflows the maximum allowed value of 0xFF\n", res);
+        } else if (ULASWARNLEVEL(ULAS_WARN_OVERFLOW) &&
+                   (unsigned int)res > 0xFFFF && tok[i] == ULAS_E16) {
+          ULASWARN("Warning: 0x%X overflows the maximum allowed value of 0xFFFF\n", res);
         }
       } else {
         if (ulas_tok(&ulas.tok, line, n) == -1) {
@@ -2363,8 +2374,8 @@ int ulas_asmdirdefenum(const char **line, unsigned long n) {
   }
 
   union ulas_val val = {0};
-  val.intv = ulas.enumv; 
-  
+  val.intv = ulas.enumv;
+
   int rc = 0;
   ULAS_EVALEXPRS(ulas.enumv += ulas_intexpr(line, n, &rc));
   if (rc == -1) {
