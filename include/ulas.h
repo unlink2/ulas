@@ -71,7 +71,7 @@
     fprintf(ulaserr, __VA_ARGS__);                                             \
     exit(-1);                                                                  \
   }
-#define ULASWARNLEVEL(level) ulascfg.warn_level & (level)
+#define ULASWARNLEVEL(level) ulascfg.warn_level &(level)
 
 // format macros
 #define ULAS_FMT(f, fmt)                                                       \
@@ -430,7 +430,12 @@ enum ulas_asmregs {
 };
 
 // special asm tokens for instr enum
-enum ulas_asmspetok { ULAS_E8 = -1, ULAS_E16 = -2, ULAS_DATZERO = 0xFF00 };
+enum ulas_asmspetok {
+  ULAS_E8 = -1,
+  ULAS_E16 = -2,
+  ULAS_A8 = -3,
+  ULAS_DATZERO = 0xFF00
+};
 
 #define ULAS_INSTRTOKMAX 16
 #define ULAS_INSTRDATMAX 16

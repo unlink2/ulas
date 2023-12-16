@@ -1938,8 +1938,8 @@ const struct ulas_instr ULASINSTRS[] = {
     {"ldh", {'[', ULAS_REG_C, ']', ',', ULAS_REG_A, 0}, {0xE2, 0}},
     {"ldh", {ULAS_REG_A, ',', '[', ULAS_REG_C, ']', 0}, {0xF2, 0}},
 
-    {"ldh", {'[', ULAS_E8, ']', ',', ULAS_REG_A, 0}, {0xE0, ULAS_E8, 0}},
-    {"ldh", {ULAS_REG_A, ',', '[', ULAS_E8, ']', 0}, {0xF0, ULAS_E8, 0}},
+    {"ldh", {'[', ULAS_A8, ']', ',', ULAS_REG_A, 0}, {0xE0, ULAS_A8, 0}},
+    {"ldh", {ULAS_REG_A, ',', '[', ULAS_A8, ']', 0}, {0xF0, ULAS_A8, 0}},
 
     // ld r8, e8
     ULAS_INSTR_R8_EXPR8("ld", 0x06, ULAS_REG_B),
@@ -2149,7 +2149,7 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
         if (strncmp(regstr, ulas.tok.buf, ulas.tok.maxlen) != 0) {
           goto skip;
         }
-      } else if (tok[i] == ULAS_E8 || tok[i] == ULAS_E16) {
+      } else if (tok[i] == ULAS_E8 || tok[i] == ULAS_E16 || tok[i] == ULAS_A8) {
         assert(expridx < ULAS_INSTRDATMAX);
         int rc = 0;
         int res = ulas_intexpr(line, n, &rc);
@@ -2158,12 +2158,16 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
           return -1;
         }
 
-        if (ULASWARNLEVEL(ULAS_WARN_OVERFLOW) &&
-            (unsigned int)res > 0xFF && tok[i] == ULAS_E8) {
-          ULASWARN("Warning: 0x%X overflows the maximum allowed value of 0xFF\n", res);
+        if (ULASWARNLEVEL(ULAS_WARN_OVERFLOW) && (unsigned int)res > 0xFF &&
+            tok[i] == ULAS_E8) {
+          ULASWARN(
+              "Warning: 0x%X overflows the maximum allowed value of 0xFF\n",
+              res);
         } else if (ULASWARNLEVEL(ULAS_WARN_OVERFLOW) &&
                    (unsigned int)res > 0xFFFF && tok[i] == ULAS_E16) {
-          ULASWARN("Warning: 0x%X overflows the maximum allowed value of 0xFFFF\n", res);
+          ULASWARN(
+              "Warning: 0x%X overflows the maximum allowed value of 0xFFFF\n",
+              res);
         }
       } else {
         if (ulas_tok(&ulas.tok, line, n) == -1) {
@@ -2187,7 +2191,7 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
       assert(datread < ULAS_INSTRDATMAX);
       assert(expridx < ULAS_INSTRDATMAX);
 
-      if (dat[datread] == ULAS_E8) {
+      if (dat[datread] == ULAS_E8 || dat[datread] == ULAS_A8) {
         dst[written] = (char)exprres[expridx++];
       } else if (dat[datread] == ULAS_E16) {
         // write 16-bit le values
