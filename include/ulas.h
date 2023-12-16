@@ -433,6 +433,8 @@ enum ulas_asmregs {
 enum ulas_asmspetok {
   ULAS_E8 = -1,
   ULAS_E16 = -2,
+  // A8 is like E8, but it will not emit an overflow warning
+  // because it is commont to pass a 16-bit label as a value
   ULAS_A8 = -3,
   ULAS_DATZERO = 0xFF00
 };
