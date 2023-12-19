@@ -1621,6 +1621,9 @@ int ulas_intexpreval(int i, int *rc) {
     case '*':
       return left * right;
     case '/':
+      if (ulas.pass != ULAS_PASS_FINAL) {
+        return 0;
+      }
       if (right == 0) {
         ULASERR("integer division by 0\n");
         *rc = -1;
@@ -1628,6 +1631,9 @@ int ulas_intexpreval(int i, int *rc) {
       }
       return left / right;
     case '%':
+      if (ulas.pass != ULAS_PASS_FINAL) {
+        return 0;
+      }
       if (right == 0) {
         ULASERR("integer division by 0\n");
         *rc = -1;
