@@ -122,3 +122,4 @@ l3: .db 1
   ld a, de2
 
   jp hl
+  ld a, 4/2
