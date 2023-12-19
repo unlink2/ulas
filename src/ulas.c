@@ -682,6 +682,9 @@ int ulas_preproclws(struct ulas_preproc *pp, const char *praw_line,
 
 void ulas_trimend(char c, char *buf, unsigned long n) {
   unsigned long buflen = strnlen(buf, n);
+  if (buflen == 0) {
+    return;
+  }
   // remove trailing new line if present
   while (buf[buflen - 1] == '\n') {
     buf[buflen - 1] = '\0';
