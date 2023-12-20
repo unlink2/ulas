@@ -826,7 +826,7 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
           }
 
           if (!tocat) {
-            ulas_strensr(&pp->line, valread + 1);
+            ulas_strensr(&pp->line, strlen(pp->line.buf) + valread + 1);
             strncat(pp->line.buf, val - valread, valread);
           } else {
             // make sure to include leading white space
