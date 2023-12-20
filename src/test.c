@@ -122,6 +122,13 @@ void test_preproc(void) {
       "#macro test\nnested macro $1\n#macro "
       "nested\ncontent $1\n#endmacro\nafter\nnested n1\n#endmacro\ntest t1");
 
+  // this macro caused a heap buffer overflow in production code
+  assert_preproc("ld a, verylongmacroinput & 0xFF\nld [hl+], a\nld a, "
+                 "(verylongmacroinput >> 8) & 0xFF\nld [hl+], a\n",
+                 0,
+                 "#macro testlonginput\nld a, $1 & 0xFF\nld [hl+], a\nld a, "
+                 "($1 >> 8) & 0xFF\nld [hl+], a\n#endmacro\ntestlonginput verylongmacroinput");
+
   // ifdef
   assert_preproc(
       "before\nifdeftest defined!\nafter", 0,
