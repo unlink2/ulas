@@ -2280,6 +2280,11 @@ int ulas_asmdirbyte(FILE *dst, const char **line, unsigned long n, int *rc) {
       break;
     }
   } while (*rc != -1 && t.type == ',');
+  
+  // go back one byte if the token was a comment 
+  if (t.type == ULAS_TOK_COMMENT) {
+    *line = *line - strlen(ulas.tok.buf);
+  }
 
   return written;
 }
