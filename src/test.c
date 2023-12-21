@@ -127,7 +127,8 @@ void test_preproc(void) {
                  "(verylongmacroinput >> 8) & 0xFF\nld [hl+], a\n",
                  0,
                  "#macro testlonginput\nld a, $1 & 0xFF\nld [hl+], a\nld a, "
-                 "($1 >> 8) & 0xFF\nld [hl+], a\n#endmacro\ntestlonginput verylongmacroinput");
+                 "($1 >> 8) & 0xFF\nld [hl+], a\n#endmacro\ntestlonginput "
+                 "verylongmacroinput");
 
   // ifdef
   assert_preproc(

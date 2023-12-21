@@ -9,6 +9,8 @@
 #define ULAS_STDFILEPATH "-"
 #define ULAS_PATHSEP "/"
 
+#define ULAS_CHARCODEMAPLEN 256
+
 #define ULAS_SYMNAMEMAX 256
 #define ULAS_PATHMAX 4096
 #define ULAS_LINEMAX 4096
@@ -48,6 +50,7 @@
 #define ULAS_ASMSTR_ADV ".adv"
 #define ULAS_ASMSTR_SET_ENUM_DEF ".se"
 #define ULAS_ASMSTR_DEFINE_ENUM ".de"
+#define ULAS_ASMSTR_SETCHRCODE ".scc"
 
 // configurable tokens
 #define ULAS_TOK_COMMENT ';'
@@ -263,6 +266,11 @@ struct ulas {
   int icntr;
 
   char chksm;
+
+  // character code map
+  // defaults to just x=x mapping
+  // but cna be set with a directive
+  char charcodemap[ULAS_CHARCODEMAPLEN];
 };
 
 extern struct ulas ulas;
@@ -389,11 +397,16 @@ enum ulas_asmdir {
   // acts like .def but sets the value to the current _ENUM counter
   // and increments it by size
   ULAS_ASMDIR_DEFINE_ENUM,
+  // .scc '<char>'=<value>
+  // allows to set custom encoding for char codes
+  // when using .str
+  ULAS_ASMDIR_SETCHRCODE
 };
 
 // amount of registers
 #define ULAS_NR8 7
 #define ULAS_NR16 3
+
 
 enum ulas_asmregs {
   // r8

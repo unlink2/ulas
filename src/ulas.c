@@ -44,6 +44,10 @@ void ulas_init(struct ulas_config cfg) {
   ulas.syms = ulas_symbuf();
   ulas.pp = ulas_preprocinit();
   ulas.scope = 1;
+
+  for (int i = 0; i < ULAS_CHARCODEMAPLEN; i++) {
+    ulas.charcodemap[i] = i;
+  }
 }
 
 void ulas_nextpass(void) {
@@ -53,6 +57,10 @@ void ulas_nextpass(void) {
   ulas.address = 0;
   ulas.chksm = 0;
   ulas.filename = ulas.initial_filename;
+
+  for (int i = 0; i < ULAS_CHARCODEMAPLEN; i++) {
+    ulas.charcodemap[i] = i;
+  }
 }
 
 void ulas_free(void) {
@@ -1370,7 +1378,7 @@ int ulas_tokexpr(const char **line, unsigned long n) {
     }
 
     // check for any expression terminators here
-    if (tok.type == ',' || tok.type == ']' || ulas_istokend(&ulas.tok)) {
+    if (tok.type == ',' || tok.type == ']' || tok.type == '=' || ulas_istokend(&ulas.tok)) {
       // on terminator we roll back line so that the terminator token
       // is not consumed now
       *line -= tokrc;
@@ -2280,8 +2288,8 @@ int ulas_asmdirbyte(FILE *dst, const char **line, unsigned long n, int *rc) {
       break;
     }
   } while (*rc != -1 && t.type == ',');
-  
-  // go back one byte if the token was a comment 
+
+  // go back one byte if the token was a comment
   if (t.type == ULAS_TOK_COMMENT) {
     *line = *line - strlen(ulas.tok.buf);
   }
@@ -2454,6 +2462,12 @@ int ulas_asmdirstr(FILE *dst, const char **line, unsigned long n, int *rc) {
   do {
     char *s = ulas_strexpr(line, n, rc);
     long len = strlen(s);
+    
+    // apply char code map 
+    for (int i = 0; i < len; i++) {
+      s[i] = ulas.charcodemap[(int)s[i]];
+    }
+
     ulas_asmout(dst, s, len);
 
     written += len;
@@ -2500,6 +2514,30 @@ int ulas_asmdirsetenum(FILE *dst, const char **line, unsigned long n, int *rc) {
   return 0;
 }
 
+int ulas_asmdirsetcharcode(const char **line, unsigned long n) {
+  int rc = 0;
+  int charcode = 0;
+  int setto = 0;
+  ULAS_EVALEXPRS(charcode = ulas_intexpr(line, n, &rc));
+  charcode = charcode & 0xFF;
+
+  ulas_tok(&ulas.tok, line, n);
+  struct ulas_tok t =
+      ulas_totok(ulas.tok.buf, strnlen(ulas.tok.buf, ulas.tok.maxlen), &rc);
+
+  if (rc == -1 || t.type != '=') {
+    ULASERR("Expected =\n");
+    return 0;
+  }
+  
+  ULAS_EVALEXPRS(setto = ulas_intexpr(line, n, &rc));
+  setto = setto & 0xFF;
+
+  ulas.charcodemap[charcode] = setto;
+
+  return rc;
+}
+
 int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
   // this buffer is written both to dst and to verbose output
   char outbuf[ULAS_OUTBUFMAX];
@@ -2534,24 +2572,21 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
   }
 
   if (ulas.tok.buf[0] == ULAS_TOK_ASMDIR_BEGIN) {
-    const char *dirstrs[] = {ULAS_ASMSTR_ORG,
-                             ULAS_ASMSTR_SET,
-                             ULAS_ASMSTR_BYTE,
-                             ULAS_ASMSTR_STR,
-                             ULAS_ASMSTR_FILL,
-                             ULAS_ASMSTR_PAD,
-                             ULAS_ASMSTR_INCBIN,
-                             ULAS_ASMSTR_DEF,
-                             ULAS_ASMSTR_CHKSM,
-                             ULAS_ASMSTR_ADV,
-                             ULAS_ASMSTR_SET_ENUM_DEF,
-                             ULAS_ASMSTR_DEFINE_ENUM,
-                             NULL};
+    const char *dirstrs[] = {ULAS_ASMSTR_ORG,          ULAS_ASMSTR_SET,
+                             ULAS_ASMSTR_BYTE,         ULAS_ASMSTR_STR,
+                             ULAS_ASMSTR_FILL,         ULAS_ASMSTR_PAD,
+                             ULAS_ASMSTR_INCBIN,       ULAS_ASMSTR_DEF,
+                             ULAS_ASMSTR_CHKSM,        ULAS_ASMSTR_ADV,
+                             ULAS_ASMSTR_SET_ENUM_DEF, ULAS_ASMSTR_DEFINE_ENUM,
+                             ULAS_ASMSTR_SETCHRCODE,   NULL};
     enum ulas_asmdir dirs[] = {
-        ULAS_ASMDIR_ORG,    ULAS_ASMDIR_SET,          ULAS_ASMDIR_BYTE,
-        ULAS_ASMDIR_STR,    ULAS_ASMDIR_FILL,         ULAS_ASMDIR_PAD,
-        ULAS_ASMDIR_INCBIN, ULAS_ASMDIR_DEF,          ULAS_ASMDIR_CHKSM,
-        ULAS_ASMDIR_ADV,    ULAS_ASMDIR_SET_ENUM_DEF, ULAS_ASMDIR_DEFINE_ENUM};
+        ULAS_ASMDIR_ORG,          ULAS_ASMDIR_SET,
+        ULAS_ASMDIR_BYTE,         ULAS_ASMDIR_STR,
+        ULAS_ASMDIR_FILL,         ULAS_ASMDIR_PAD,
+        ULAS_ASMDIR_INCBIN,       ULAS_ASMDIR_DEF,
+        ULAS_ASMDIR_CHKSM,        ULAS_ASMDIR_ADV,
+        ULAS_ASMDIR_SET_ENUM_DEF, ULAS_ASMDIR_DEFINE_ENUM,
+        ULAS_ASMDIR_SETCHRCODE};
 
     enum ulas_asmdir dir = ULAS_ASMDIR_NONE;
 
@@ -2605,6 +2640,9 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
       break;
     case ULAS_ASMDIR_DEFINE_ENUM:
       rc = ulas_asmdirdefenum(&line, n);
+      break;
+    case ULAS_ASMDIR_SETCHRCODE:
+      rc = ulas_asmdirsetcharcode(&line, n);
       break;
     case ULAS_ASMDIR_PAD:
       // TODO: pad is the same as .fill n, $ - n

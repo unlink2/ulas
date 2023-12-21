@@ -124,3 +124,7 @@ l3: .db 1
   jp hl
   ld a, 4/2
 .db 1 ; comment
+
+.str "abc"
+.scc 'a' = 'f'
+.str "abc"
