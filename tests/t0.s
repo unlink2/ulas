@@ -128,3 +128,5 @@ l3: .db 1
 .str "abc"
 .scc 'a' = 'f'
 .str "abc"
+.db 1, 2, 3
+.chr 01233213
