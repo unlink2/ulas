@@ -130,3 +130,5 @@ l3: .db 1
 .str "abc"
 .db 1, 2, 3
 .chr 01233213
+
+.rep 6, 2, halt

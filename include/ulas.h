@@ -411,7 +411,7 @@ enum ulas_asmdir {
   // it requires up to 8 integer expressions between 0 and 3
   ULAS_ASMDIR_CHR,
   // .rep <n>, <step>, <line>
-  // repeats a line n times 
+  // repeats a line n times
   ULAS_ASMDIR_REP,
 };
 
@@ -629,6 +629,7 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
 //         -1 on error
 int ulas_asmnext(FILE *dst, FILE *src, char *buf, int n);
 int ulas_asm(FILE *dst, FILE *src);
+int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n);
 
 // parses and executes a 32 bit signed int math expressions
 int ulas_intexpr(const char **line, unsigned long n, int *rc);
