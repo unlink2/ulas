@@ -2585,6 +2585,26 @@ int ulas_asmdirchr(FILE *dst, const char **line, unsigned long n, int *rc) {
 }
 
 int ulas_asmdirrep(FILE *dst, FILE *src, const char **line, unsigned long n) {
+  char name[ULAS_SYMNAMEMAX];
+  ulas_tok(&ulas.tok, line, n);
+  if (!ulas_isname(ulas.tok.buf, ulas.tok.maxlen)) {
+    ULASERR("Unexpected token '%s'\n", ulas.tok.buf);
+    return -1;
+  }
+  strncpy(name, ulas.tok.buf, ULAS_SYMNAMEMAX);
+
+  // consume ,
+  ulas_tok(&ulas.tok, line, n);
+  if (strncmp(ulas.tok.buf, ",", ulas.tok.maxlen) != 0) {
+    ULASERR("Unexpected token '%s'. Expected ','\n", ulas.tok.buf);
+    return -1;
+  }
+
+  union ulas_val val = {0};
+  val.intv = 0;
+  struct ulas_tok tok = {ULAS_INT, val};
+  ulas_symbolset(name, ulas.scope, tok, 0);
+
   int repval = 0;
   int rc = 0;
 
@@ -2609,6 +2629,8 @@ int ulas_asmdirrep(FILE *dst, FILE *src, const char **line, unsigned long n) {
   unsigned long argline_len = strlen(*line);
 
   for (int i = 0; i < repval; i += step) {
+    tok.val.intv = i;
+    ulas_symbolset(name, ulas.scope, tok, 0);
     rc = ulas_asmline(dst, src, *line, argline_len);
     if (rc == -1) {
       break;

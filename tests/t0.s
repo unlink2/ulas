@@ -131,4 +131,5 @@ l3: .db 1
 .db 1, 2, 3
 .chr 01233213
 
-.rep 6, 2, halt
+.rep repc, 6, 2, ld a, repc
+.rep repc, 6, 1, ld a, repc
