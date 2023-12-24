@@ -2632,6 +2632,7 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
                              ULAS_ASMSTR_DEFINE_ENUM,
                              ULAS_ASMSTR_SETCHRCODE,
                              ULAS_ASMSTR_CHR,
+                             ULAS_ASMSTR_REP,
                              NULL};
     enum ulas_asmdir dirs[] = {
         ULAS_ASMDIR_ORG,          ULAS_ASMDIR_SET,
@@ -2640,7 +2641,7 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
         ULAS_ASMDIR_INCBIN,       ULAS_ASMDIR_DEF,
         ULAS_ASMDIR_CHKSM,        ULAS_ASMDIR_ADV,
         ULAS_ASMDIR_SET_ENUM_DEF, ULAS_ASMDIR_DEFINE_ENUM,
-        ULAS_ASMDIR_SETCHRCODE,   ULAS_ASMDIR_CHR};
+        ULAS_ASMDIR_SETCHRCODE,   ULAS_ASMDIR_CHR, ULAS_ASMDIR_REP};
 
     enum ulas_asmdir dir = ULAS_ASMDIR_NONE;
 
@@ -2700,6 +2701,8 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
       break;
     case ULAS_ASMDIR_CHR:
       other_writes += ulas_asmdirchr(dst, &line, n, &rc);
+      break;
+    case ULAS_ASMDIR_REP:
       break;
     case ULAS_ASMDIR_PAD:
       // TODO: pad is the same as .fill n, $ - n

@@ -52,6 +52,7 @@
 #define ULAS_ASMSTR_DEFINE_ENUM ".de"
 #define ULAS_ASMSTR_SETCHRCODE ".scc"
 #define ULAS_ASMSTR_CHR ".chr"
+#define ULAS_ASMSTR_REP ".rep"
 
 // configurable tokens
 #define ULAS_TOK_COMMENT ';'
@@ -403,12 +404,15 @@ enum ulas_asmdir {
   // when using .str
   ULAS_ASMDIR_SETCHRCODE,
 
-  // .chr 0, 1, 2, 3, 0, 1, 2, 3
+  // .chr 01230123
   // allows defining
   // chr (tile) data from 0-3
   // for each possible color
   // it requires up to 8 integer expressions between 0 and 3
   ULAS_ASMDIR_CHR,
+  // .rep <n>, <step>, <line>
+  // repeats a line n times 
+  ULAS_ASMDIR_REP,
 };
 
 // amount of registers
