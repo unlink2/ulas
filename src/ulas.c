@@ -714,7 +714,8 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
   // otherwise memcpy the read bytes 1:1 into the new string
   while ((read = ulas_tok(&pp->tok, &praw_line, *n))) {
     // if it is the first token, and it begins with a # do not process at all!
-    if (first_tok && pp->tok.buf[0] == ULAS_TOK_PREPROC_BEGIN) {
+    // only apply this to certain preproc types such as #undefine, #ifdef and #ifndef 
+    if (first_tok && pp->tok.buf[0] == ULAS_TOK_PREPROC_BEGIN && strcmp(ULAS_PPSTR_DEF, pp->tok.buf) != 0) {
       ulas_strensr(&pp->line, (*n) + 1);
       strncat(pp->line.buf, raw_line, *n);
       break;

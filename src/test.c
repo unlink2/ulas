@@ -104,6 +104,9 @@ void test_preproc(void) {
   assert_preproc("", -1, "  #define\n");
   assert_preproc("this is a 123 for defs", 0,
                  "  #define test 123\nthis is a test for defs");
+  // define used inside define 
+  assert_preproc("this is a 123 for defs", 0,
+                 "  #define ftest 123\n#define test ftest\nthis is a test for defs");
 
   // undefined
   assert_preproc("123\ntest", 0,
