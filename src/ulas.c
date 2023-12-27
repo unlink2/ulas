@@ -716,7 +716,6 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
   while ((read = ulas_tok(&pp->tok, &praw_line, *n))) {
     struct ulas_ppdef *def =
         ulas_preprocgetdef(pp, pp->tok.buf, pp->tok.maxlen);
-    ;
 
     // if it is the first token, and it begins with a # do not process at all!
     // if the first token is a # preproc directive skip the second token at all
