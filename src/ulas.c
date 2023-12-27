@@ -707,23 +707,27 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
 
   int read = 0;
   int first_tok = 1;
+  int skip_next_tok = 0;
 
   // go through all tokens, see if a define matches the token,
   // if so expand it
   // only expand macros if they match toks[0] though!
   // otherwise memcpy the read bytes 1:1 into the new string
   while ((read = ulas_tok(&pp->tok, &praw_line, *n))) {
+    struct ulas_ppdef *def =
+        ulas_preprocgetdef(pp, pp->tok.buf, pp->tok.maxlen);
+    ;
+
     // if it is the first token, and it begins with a # do not process at all!
-    // only apply this to certain preproc types such as #undefine, #ifdef and #ifndef 
-    if (first_tok && pp->tok.buf[0] == ULAS_TOK_PREPROC_BEGIN && strcmp(ULAS_PPSTR_DEF, pp->tok.buf) != 0) {
-      ulas_strensr(&pp->line, (*n) + 1);
-      strncat(pp->line.buf, raw_line, *n);
-      break;
+    // if the first token is a # preproc directive skip the second token at all
+    // times
+    if ((first_tok && pp->tok.buf[0] == ULAS_TOK_PREPROC_BEGIN) ||
+        skip_next_tok) {
+      def = NULL;
+      skip_next_tok = !skip_next_tok;
     }
     first_tok = 0;
 
-    struct ulas_ppdef *def =
-        ulas_preprocgetdef(pp, pp->tok.buf, pp->tok.maxlen);
     if (def) {
       // if so... expand now and leave
       switch (def->type) {
