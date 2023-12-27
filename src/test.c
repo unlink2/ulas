@@ -87,7 +87,6 @@ void test_strbuf(void) {
     assert(ulas_preproc(dst, src) == (expect_ret));                            \
     fclose(src);                                                               \
     fclose(dst);                                                               \
-    puts(dstbuf);                                                              \
     assert(strcmp(dstbuf, (expect_dst)) == 0);                                 \
   }
 
