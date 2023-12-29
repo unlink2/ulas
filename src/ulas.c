@@ -724,6 +724,10 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
         skip_next_tok) {
       def = NULL;
       skip_next_tok = !skip_next_tok;
+    } else if (pp->tok.buf[0] == ULAS_TOK_COMMENT) {
+      // if its a comment at the end of a preproc statement
+      // just bail now
+      break;
     }
     first_tok = 0;
 
