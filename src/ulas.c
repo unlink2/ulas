@@ -708,6 +708,7 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
   int read = 0;
   int first_tok = 1;
   int skip_next_tok = 0;
+  int comment_seen = 0;
 
   // go through all tokens, see if a define matches the token,
   // if so expand it
@@ -727,11 +728,11 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
     } else if (pp->tok.buf[0] == ULAS_TOK_COMMENT) {
       // if its a comment at the end of a preproc statement
       // just bail now
-      break;
+      comment_seen = 1;
     }
     first_tok = 0;
 
-    if (def) {
+    if (def && !comment_seen) {
       // if so... expand now and leave
       switch (def->type) {
       case ULAS_PPDEF: {
