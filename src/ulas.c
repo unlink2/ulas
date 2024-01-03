@@ -757,6 +757,7 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
       }
       case ULAS_PPMACRO: {
         // TODO: i am sure we can optimize the resize of line buffers here...
+        // TODO: allow recursive macro calls
 
         // get 9 comma separated values.
         // $1-$9 will reference the respective arg
@@ -773,6 +774,7 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
         // loop until 9 args are found or the line ends
         int paramc = 0;
         while (paramc < ULAS_MACROPARAMMAX &&
+                // TODO: allow escaping , with \, 
                ulas_tokuntil(&pp->macroparam[paramc], ',', &praw_line, *n) >
                    0) {
           // trim new lines from the end of macro params
@@ -783,7 +785,7 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
         ulas_strensr(&pp->line, strlen(def->value) + 2);
 
         const char *macro_argname[ULAS_MACROPARAMMAX] = {
-            "$1", "$2", "$3", "$4", "$5", "$6", "$7", "$8", "$9"};
+            "$1", "$2", "$3", "$4", "$5", "$6", "$7", "$8", "$9", "$10", "$11", "$12", "$13", "$14", "$15"};
 
         const char *val = def->value;
         unsigned long vallen = strlen(def->value);

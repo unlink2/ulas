@@ -15,7 +15,7 @@
 #define ULAS_PATHMAX 4096
 #define ULAS_LINEMAX 4096
 #define ULAS_OUTBUFMAX 64
-#define ULAS_MACROPARAMMAX 9
+#define ULAS_MACROPARAMMAX 15
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
