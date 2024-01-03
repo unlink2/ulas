@@ -138,6 +138,7 @@ l3: .db 1
 .db $10
 .db $11
 .db $12
+.str $13
 #endmacro
 
-testmacro 1, 2, 3, 4, 5, 6, 7, 8, 9, 61, 62, 63 
+testmacro 1, 2, 3, 4, 5, 6, 7, 8, 9, 61, 62, 63, "test" 

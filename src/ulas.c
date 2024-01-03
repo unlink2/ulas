@@ -2473,6 +2473,10 @@ int ulas_asmdirstr(FILE *dst, const char **line, unsigned long n, int *rc) {
 
   do {
     char *s = ulas_strexpr(line, n, rc);
+    if (!s || *rc != 0) {
+      *rc = -1;
+      return 0;
+    }
     long len = strlen(s);
 
     // apply char code map
