@@ -408,8 +408,12 @@ int ulas_tok(struct ulas_str *dst, const char **out_line, unsigned long n) {
         ulas_strensr(dst, write + 2);
         // escape char tokens
         dst->buf[write++] = line[i++];
-        if (line[i] && !isspace(line[i])) {
+        if (line[i] == '$') {
           dst->buf[write++] = line[i++];
+        } else {
+          while (line[i] && isdigit(line[i])) {
+            dst->buf[write++] = line[i++];
+          }
         }
         goto tokdone;
       case '=':
@@ -774,7 +778,7 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
         // loop until 9 args are found or the line ends
         int paramc = 0;
         while (paramc < ULAS_MACROPARAMMAX &&
-                // TODO: allow escaping , with \, 
+               // TODO: allow escaping , with \,
                ulas_tokuntil(&pp->macroparam[paramc], ',', &praw_line, *n) >
                    0) {
           // trim new lines from the end of macro params
@@ -785,7 +789,8 @@ char *ulas_preprocexpand(struct ulas_preproc *pp, const char *raw_line,
         ulas_strensr(&pp->line, strlen(def->value) + 2);
 
         const char *macro_argname[ULAS_MACROPARAMMAX] = {
-            "$1", "$2", "$3", "$4", "$5", "$6", "$7", "$8", "$9", "$10", "$11", "$12", "$13", "$14", "$15"};
+            "$1", "$2",  "$3",  "$4",  "$5",  "$6",  "$7", "$8",
+            "$9", "$10", "$11", "$12", "$13", "$14", "$15"};
 
         const char *val = def->value;
         unsigned long vallen = strlen(def->value);

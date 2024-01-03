@@ -135,10 +135,11 @@ l3: .db 1
 .rep repc, 6, 1, ld a, repc
 
 #macro testmacro
+.db $9
 .db $10
 .db $11
 .db $12
 .str $13
 #endmacro
 
-testmacro 1, 2, 3, 4, 5, 6, 7, 8, 9, 61, 62, 63, "test" 
+testmacro 1, 2, 3, 4, 5, 6, 7, 8, 60, 61, 62, 63, "test" 
