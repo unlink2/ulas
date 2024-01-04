@@ -151,6 +151,7 @@ testmacro 1, 2, 3, 4, 5, 6, 7, 8, 60, 61, 62, 63, "test"
 #macro toplevel 
 .db $1
 nextlevel 4
+nextlevel $2
 #endmacro 
 
-toplevel 5
+toplevel 5, 6
