@@ -143,3 +143,14 @@ l3: .db 1
 #endmacro
 
 testmacro 1, 2, 3, 4, 5, 6, 7, 8, 60, 61, 62, 63, "test" 
+
+#macro nextlevel
+.db $1
+#endmacro 
+
+#macro toplevel 
+.db $1
+nextlevel 4
+#endmacro 
+
+toplevel 5
