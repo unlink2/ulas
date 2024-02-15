@@ -277,7 +277,7 @@ int ulas_symbolset(const char *cname, int scope, struct ulas_tok tok,
   // remove : from name
   char name[ULAS_SYMNAMEMAX];
   memset(name, 0, ULAS_SYMNAMEMAX);
-  long len = strlen(cname);
+  unsigned long len = strlen(cname);
   assert(len < ULAS_SYMNAMEMAX);
   strncpy(name, cname, len);
   if (name[len - 1] == ':') {
