@@ -1,5 +1,5 @@
 NAME=ulas
-IDIR=./include
+IDIR=./src
 SDIR=./src 
 CC=gcc
 DBGCFLAGS=-g -fsanitize=address
@@ -30,7 +30,7 @@ all: bin test
 release: 
 	make DBGCFLAGS="" DBGLDFLAGS=""
 
-$(ODIR)/%.o: src/%.c include/*.h
+$(ODIR)/%.o: src/%.c src/*.h
 	mkdir -p $(@D)
 	$(CC) -c -o $@ $< $(CFLAGS) $(LDFLAGS)
 
@@ -66,17 +66,8 @@ ccmds:
 
 .PHONY: format
 format:
-	clang-format -i ./src/*.c ./include/*.h
+	clang-format -i ./src/*.c ./src/*.h
 
 .PHONY: lint 
 lint:
-	clang-tidy ./include/*.h ./src/*.c
-
-.PHONY: runtest
-runtest:
-	./$(BDIR)/$(TEST_BNAME)
-
-.PHONY: buildtests
-buildtests:
-	./$(BDIR)/$(BNAME) tests/t0.s -l - -o tests/t0.bin
-
+	clang-tidy ./src/*.h ./src/*.c
