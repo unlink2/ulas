@@ -1764,6 +1764,10 @@ char *ulas_strexpr(const char **line, unsigned long n, int *rc) {
   return NULL;
 }
 
+// TODO: instead of hard-coding the 
+// registers
+// we should use a register table 
+// that is used to look up register tokens 
 const char *ulas_asmregstr(enum ulas_asmregs reg) {
   switch (reg) {
   case ULAS_REG_A:
