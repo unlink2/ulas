@@ -150,6 +150,8 @@ struct ulas_str {
 
 // any token before 256 is just the literal char value
 // primitive data types
+// FIXME: split up types and operators
+// TODO:add float expressions 
 enum ulas_type {
   ULAS_SYMBOL = 256,
   ULAS_INT,
@@ -454,6 +456,8 @@ enum ulas_asmregs {
 };
 
 // special asm tokens for instr enum
+// TODO: add more expressions types such as e8, e16, e24, e32, e64
+// as well as the corresponding addresses
 enum ulas_asmspetok {
   ULAS_E8 = -1,
   ULAS_E16 = -2,
