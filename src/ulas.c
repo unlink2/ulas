@@ -1764,11 +1764,11 @@ char *ulas_strexpr(const char **line, unsigned long n, int *rc) {
   return NULL;
 }
 
-// TODO: instead of hard-coding the 
+// TODO: instead of hard-coding the
 // registers
-// we should use a register table 
-// that is used to look up register tokens 
-const char *ulas_asmregstr(enum ulas_asmregs reg) {
+// we should use a register table
+// that is used to look up register tokens
+const char *ulas_asmregstr(unsigned int reg) {
   switch (reg) {
   case ULAS_REG_A:
     return "a";
@@ -1818,12 +1818,14 @@ const char *ulas_asmregstr(enum ulas_asmregs reg) {
     return "0x30";
   case ULAS_VEC38:
     return "0x38";
+  default:
+    return NULL;
   }
 
   return NULL;
 }
 
-enum ulas_asmregs ulas_asmstrreg(const char *s, unsigned long n) {
+unsigned int ulas_asmstrreg(const char *s, unsigned long n) {
   for (int i = 0; i < 10; i++) {
     const char *rs = ulas_asmregstr(i);
     if (rs && strncmp(rs, s, n) == 0) {
@@ -1832,10 +1834,6 @@ enum ulas_asmregs ulas_asmstrreg(const char *s, unsigned long n) {
   }
 
   return -1;
-}
-
-int ulas_asmregisr8(enum ulas_asmregs reg) {
-  return reg != ULAS_REG_BC && reg != ULAS_REG_DE && reg != ULAS_REG_HL;
 }
 
 /**

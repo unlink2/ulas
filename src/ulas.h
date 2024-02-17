@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "archs.h"
 
 // if this is used as a path use stdin or stdout instead
 #define ULAS_STDFILEPATH "-"
@@ -151,7 +152,7 @@ struct ulas_str {
 // any token before 256 is just the literal char value
 // primitive data types
 // FIXME: split up types and operators
-// TODO:add float expressions 
+// TODO:add float expressions
 enum ulas_type {
   ULAS_SYMBOL = 256,
   ULAS_INT,
@@ -417,43 +418,6 @@ enum ulas_asmdir {
   ULAS_ASMDIR_REP,
 };
 
-// amount of registers
-#define ULAS_NR8 7
-#define ULAS_NR16 3
-
-enum ulas_asmregs {
-  // r8
-  ULAS_REG_B = 1,
-  ULAS_REG_C = 2,
-  ULAS_REG_D = 3,
-  ULAS_REG_E = 4,
-  ULAS_REG_H = 5,
-  ULAS_REG_L = 6,
-  ULAS_REG_A = 7,
-
-  // r16
-  ULAS_REG_BC = 8,
-  ULAS_REG_DE = 9,
-  ULAS_REG_HL = 10,
-  ULAS_REG_AF = 16,
-
-  // flags
-  ULAS_REG_NOT_ZERO = 11,
-  ULAS_REG_ZERO = 12,
-  ULAS_REG_NOT_CARRY = 13,
-  ULAS_REG_CARRY = 14,
-
-  // misc
-  ULAS_REG_SP = 15,
-  ULAS_VEC00 = 17,
-  ULAS_VEC08 = 18,
-  ULAS_VEC10 = 19,
-  ULAS_VEC18 = 20,
-  ULAS_VEC20 = 21,
-  ULAS_VEC28 = 22,
-  ULAS_VEC30 = 23,
-  ULAS_VEC38 = 24
-};
 
 // special asm tokens for instr enum
 // TODO: add more expressions types such as e8, e16, e24, e32, e64
