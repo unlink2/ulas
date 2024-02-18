@@ -46,7 +46,7 @@ void ulas_init(struct ulas_config cfg) {
   ulas.scope = 1;
 
   for (int i = 0; i < ULAS_CHARCODEMAPLEN; i++) {
-    ulas.charcodemap[i] = i;
+    ulas.charcodemap[i] = (char)i;
   }
 }
 
@@ -59,7 +59,7 @@ void ulas_nextpass(void) {
   ulas.filename = ulas.initial_filename;
 
   for (int i = 0; i < ULAS_CHARCODEMAPLEN; i++) {
-    ulas.charcodemap[i] = i;
+    ulas.charcodemap[i] = (char)i;
   }
 }
 
@@ -74,13 +74,13 @@ void ulas_free(void) {
 FILE *ulas_incpathfopen(const char *path, const char *mode) {
   char pathbuf[ULAS_PATHMAX];
   memset(pathbuf, 0, ULAS_PATHMAX);
-  int baselen = strlen(path);
+  unsigned long baselen = strlen(path);
 
   // check all include paths
   for (int i = 0; i < ulascfg.incpathslen; i++) {
     pathbuf[0] = '\0';
     char *ip = ulascfg.incpaths[i];
-    int len = strlen(ip);
+    unsigned long len = strlen(ip);
     if (len + baselen + 1 >= ULAS_PATHMAX) {
       continue;
     }

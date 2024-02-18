@@ -47,6 +47,7 @@
 #define ULAS_ASMSTR_PAD ".pad"
 #define ULAS_ASMSTR_INCBIN ".incbin"
 #define ULAS_ASMSTR_DEF ".def"
+// TODO: chksm should only work on sm83
 #define ULAS_ASMSTR_CHKSM ".chksm"
 #define ULAS_ASMSTR_ADV ".adv"
 #define ULAS_ASMSTR_SET_ENUM_DEF ".se"
@@ -77,7 +78,7 @@
     fprintf(ulaserr, __VA_ARGS__);                                             \
     exit(-1);                                                                  \
   }
-#define ULASWARNLEVEL(level) ulascfg.warn_level &(level)
+#define ULASWARNLEVEL(level) (ulascfg.warn_level &(level))
 
 // format macros
 #define ULAS_FMT(f, fmt)                                                       \
