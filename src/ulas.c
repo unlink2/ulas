@@ -2143,10 +2143,11 @@ const struct ulas_instr ULASINSTRS[] = {
 
     {NULL}};
 
+#define ULAS_INSTRBUF_MIN 4
 int ulas_asminstr(char *dst, unsigned long max, const char **line,
                   unsigned long n) {
   const char *start = *line;
-  if (max < 4) {
+  if (max < ULAS_INSTRBUF_MIN) {
     ULASPANIC("Instruction buffer is too small!");
     return -1;
   }
