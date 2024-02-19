@@ -243,6 +243,7 @@ struct ulas_preproc {
   struct ulas_str macrobuf;
 };
 
+
 struct ulas {
   struct ulas_preproc pp;
   char *filename;
@@ -277,6 +278,8 @@ struct ulas {
   // defaults to just x=x mapping
   // but cna be set with a directive
   char charcodemap[ULAS_CHARCODEMAPLEN];
+
+  struct ulas_arch arch;
 };
 
 extern struct ulas ulas;

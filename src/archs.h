@@ -35,4 +35,15 @@ enum ulas_asmregs_sm83 {
   ULAS_VEC38 = 24
 };
 
+enum ulas_archs { ULAS_ARCH_SM83 };
+
+struct ulas_arch {
+  const char **regs_names;
+  unsigned long regs_len;
+  
+  const struct ulas_instr *instrs;
+};
+
+void ulas_arch_set(enum ulas_archs arch);
+
 #endif
