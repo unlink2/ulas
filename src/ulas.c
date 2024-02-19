@@ -85,11 +85,11 @@ FILE *ulas_incpathfopen(const char *path, const char *mode) {
       continue;
     }
 
-    strcat(pathbuf, ip);
+    strlcat(pathbuf, ip, ULAS_PATHMAX);
     if (ip[len - 1] != ULAS_PATHSEP[0]) {
-      strcat(pathbuf, ULAS_PATHSEP);
+      strlcat(pathbuf, ULAS_PATHSEP, ULAS_PATHMAX);
     }
-    strcat(pathbuf, path);
+    strlcat(pathbuf, path, ULAS_PATHMAX);
 
     FILE *f = fopen(pathbuf, mode);
     if (f != NULL) {
@@ -2285,7 +2285,7 @@ void ulas_asmout(FILE *dst, const char *outbuf, unsigned long n) {
 
   if (ulas.address < 0x14C) {
     for (int i = 0; i < n; i++) {
-      ulas.chksm = ulas.chksm - outbuf[i] - 1;
+      ulas.chksm = (char)(ulas.chksm - outbuf[i] - 1);
     }
   }
 }
