@@ -78,7 +78,7 @@
     fprintf(ulaserr, __VA_ARGS__);                                             \
     exit(-1);                                                                  \
   }
-#define ULASWARNLEVEL(level) (ulascfg.warn_level &(level))
+#define ULASWARNLEVEL(level) (ulascfg.warn_level & (level))
 
 // format macros
 #define ULAS_FMT(f, fmt)                                                       \
@@ -133,7 +133,7 @@ struct ulas_config {
 
   // all include search paths
   char **incpaths;
-  int incpathslen;
+  unsigned int incpathslen;
 
   enum ulas_warm warn_level;
 };
@@ -418,7 +418,6 @@ enum ulas_asmdir {
   // repeats a line n times
   ULAS_ASMDIR_REP,
 };
-
 
 // special asm tokens for instr enum
 // TODO: add more expressions types such as e8, e16, e24, e32, e64

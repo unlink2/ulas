@@ -30,7 +30,7 @@
 #define ULAS_INCPATHSMAX 256
 
 char *incpaths[ULAS_INCPATHSMAX];
-long incpathslen = 0;
+unsigned long incpathslen = 0;
 
 void ulas_help(void) {
   printf("%s\n", ULAS_NAME);

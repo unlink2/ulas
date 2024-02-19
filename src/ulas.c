@@ -1065,7 +1065,7 @@ found:
         return -1;
       }
       char *prev_path = ulas.filename;
-      int prev_lines = ulas.line;
+      unsigned long prev_lines = ulas.line;
 
       ulas.filename = strdup(path);
       ulas.line = 0;
@@ -1207,7 +1207,7 @@ int ulas_valint(struct ulas_tok *lit, int *rc) {
   }
 
   if (lit->type == ULAS_TOK_CURRENT_ADDR) {
-    return ulas.address;
+    return (int)ulas.address;
   }
 
   return lit->val.intv;
@@ -2476,7 +2476,7 @@ int ulas_asmdirfill(FILE *dst, const char **line, unsigned long n, int *rc) {
 int ulas_asmdirstr(FILE *dst, const char **line, unsigned long n, int *rc) {
   // .str expr, expr, expr
   struct ulas_tok t;
-  int written = 0;
+  unsigned long written = 0;
   memset(&t, 0, sizeof(t));
 
   do {
@@ -2485,7 +2485,7 @@ int ulas_asmdirstr(FILE *dst, const char **line, unsigned long n, int *rc) {
       *rc = -1;
       return 0;
     }
-    long len = strlen(s);
+    unsigned long len = strlen(s);
 
     // apply char code map
     for (int i = 0; i < len; i++) {
@@ -2502,14 +2502,14 @@ int ulas_asmdirstr(FILE *dst, const char **line, unsigned long n, int *rc) {
     }
   } while (*rc != -1 && t.type == ',');
 
-  return written;
+  return (int)written;
 }
 
 int ulas_asmdirincbin(FILE *dst, const char **line, unsigned long n, int *rc) {
   char *path = ulas_strexpr(line, n, rc);
   char buf[256];
   memset(buf, 0, 256);
-  int written = 0;
+  unsigned long written = 0;
 
   FILE *f = ulas_incpathfopen(path, "re");
   if (!f) {
@@ -2517,7 +2517,7 @@ int ulas_asmdirincbin(FILE *dst, const char **line, unsigned long n, int *rc) {
     return 0;
   }
 
-  int read = 0;
+  unsigned long read = 0;
   while ((read = fread(buf, 1, 256, f))) {
     ulas_asmout(dst, buf, read);
     written += read;
@@ -2525,7 +2525,7 @@ int ulas_asmdirincbin(FILE *dst, const char **line, unsigned long n, int *rc) {
 
   fclose(f);
 
-  return written;
+  return (int)written;
 }
 
 int ulas_asmdiradv(FILE *dst, const char **line, unsigned long n, int *rc) {
@@ -2557,19 +2557,19 @@ int ulas_asmdirsetcharcode(const char **line, unsigned long n) {
   ULAS_EVALEXPRS(setto = ulas_intexpr(line, n, &rc));
   setto = setto & 0xFF;
 
-  ulas.charcodemap[charcode] = setto;
+  ulas.charcodemap[charcode] = (char)setto;
 
   return rc;
 }
 
 int ulas_asmdirchr(FILE *dst, const char **line, unsigned long n, int *rc) {
-  char b[2] = {0, 0};
+  unsigned char b[2] = {0, 0};
   struct ulas_tok t;
   memset(&t, 0, sizeof(t));
   int bit = 7;
   ulas_tok(&ulas.tok, line, n);
 
-  int len = strlen(ulas.tok.buf);
+  unsigned long len = strlen(ulas.tok.buf);
   if (len > 8) {
     *rc = -1;
     ULASERR("chr input exceeds 8 pixels\n");
@@ -2583,16 +2583,16 @@ int ulas_asmdirchr(FILE *dst, const char **line, unsigned long n, int *rc) {
       break;
     case '1':
       // 1 sets 01
-      b[1] |= (1 << bit);
+      b[1] |= (char)(1 << bit);
       break;
     case '2':
       // 2 sets 10
-      b[0] |= (1 << bit);
+      b[0] |= (char)(1 << bit);
       break;
     case '3':
       // 3 sets 11
-      b[0] |= (1 << bit);
-      b[1] |= (1 << bit);
+      b[0] |= (char)(1 << bit);
+      b[1] |= (char)(1 << bit);
       break;
     default:
       ULASERR("Invalid chr value: '%c'. Expected 0-3.\n", ulas.tok.buf[i]);
@@ -2601,7 +2601,7 @@ int ulas_asmdirchr(FILE *dst, const char **line, unsigned long n, int *rc) {
   }
 
   int written = 2;
-  ulas_asmout(dst, b, written);
+  ulas_asmout(dst, (char*)b, written);
 
   // this always writes 2 bytes
   return written;
@@ -2687,7 +2687,7 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
   // is it a label?
   if (ulas_islabelname(ulas.tok.buf, strlen(ulas.tok.buf))) {
     instr_start = line;
-    struct ulas_tok label_tok = {ULAS_INT, {ulas.address}};
+    struct ulas_tok label_tok = {ULAS_INT, {(int)ulas.address}};
     ulas_symbolset(ulas.tok.buf, -1, label_tok, 1);
     ulas_tok(&ulas.tok, &line, n);
     // is next token empty?
