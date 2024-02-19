@@ -1765,15 +1765,11 @@ char *ulas_strexpr(const char **line, unsigned long n, int *rc) {
   return NULL;
 }
 
-// TODO: instead of hard-coding the
-// registers
-// we should use a register table
-// that is used to look up register tokens
 const char *ulas_asmregstr(unsigned int reg) {
   if (reg >= ulas.arch.regs_len) {
     return NULL;
   }
-  
+
   return ulas.arch.regs_names[reg];
 }
 
