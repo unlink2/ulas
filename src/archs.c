@@ -7,78 +7,78 @@
  */
 
 // define <name> r8, r8
-#define ULAS_INSTRSM83_R8R8(name, base_op, reg_left, reg_right)                    \
+#define ULAS_INSTRSM83_R8R8(name, base_op, reg_left, reg_right)                \
   {                                                                            \
     (name), {(reg_left), ',', (reg_right), 0}, { base_op, 0 }                  \
   }
 
-#define ULAS_INSTRSM83_R16R16(name, op, reg_left, reg_right)                       \
+#define ULAS_INSTRSM83_R16R16(name, op, reg_left, reg_right)                   \
   ULAS_INSTRSM83_R8R8(name, op, reg_left, reg_right)
 
-#define ULAS_INSTRSM83_R8R8D(name, base_op, reg_left)                              \
-  ULAS_INSTRSM83_R8R8(name, base_op, reg_left, ULAS_REGSM83_B),                        \
-      ULAS_INSTRSM83_R8R8(name, (base_op) + 1, reg_left, ULAS_REGSM83_C),              \
-      ULAS_INSTRSM83_R8R8(name, (base_op) + 2, reg_left, ULAS_REGSM83_D),              \
-      ULAS_INSTRSM83_R8R8(name, (base_op) + 3, reg_left, ULAS_REGSM83_E),              \
-      ULAS_INSTRSM83_R8R8(name, (base_op) + 4, reg_left, ULAS_REGSM83_H),              \
-      ULAS_INSTRSM83_R8R8(name, (base_op) + 5, reg_left, ULAS_REGSM83_L),              \
+#define ULAS_INSTRSM83_R8R8D(name, base_op, reg_left)                          \
+  ULAS_INSTRSM83_R8R8(name, base_op, reg_left, ULAS_REGSM83_B),                \
+      ULAS_INSTRSM83_R8R8(name, (base_op) + 1, reg_left, ULAS_REGSM83_C),      \
+      ULAS_INSTRSM83_R8R8(name, (base_op) + 2, reg_left, ULAS_REGSM83_D),      \
+      ULAS_INSTRSM83_R8R8(name, (base_op) + 3, reg_left, ULAS_REGSM83_E),      \
+      ULAS_INSTRSM83_R8R8(name, (base_op) + 4, reg_left, ULAS_REGSM83_H),      \
+      ULAS_INSTRSM83_R8R8(name, (base_op) + 5, reg_left, ULAS_REGSM83_L),      \
       {(name),                                                                 \
-       {(reg_left), ',', '[', ULAS_REGSM83_HL, ']', 0},                            \
+       {(reg_left), ',', '[', ULAS_REGSM83_HL, ']', 0},                        \
        {(base_op) + 6, 0}},                                                    \
       ULAS_INSTRSM83_R8R8(name, (base_op) + 7, reg_left, ULAS_REGSM83_A)
 
 // <name> a, r8
-#define ULAS_INSTRSM83_ALUR8D(name, base_op)                                       \
+#define ULAS_INSTRSM83_ALUR8D(name, base_op)                                   \
   ULAS_INSTRSM83_R8R8D(name, base_op, ULAS_REGSM83_A)
 
-#define ULAS_INSTRSM83_R8_EXPR8(name, op, reg_left)                                \
+#define ULAS_INSTRSM83_R8_EXPR8(name, op, reg_left)                            \
   {                                                                            \
     (name), {(reg_left), ',', ULAS_E8, 0}, { (op), ULAS_E8, 0 }                \
   }
 
 // <name> r16, e16
-#define ULAS_INSTRSM83_R16E16(name, op, reg_left)                                  \
+#define ULAS_INSTRSM83_R16E16(name, op, reg_left)                              \
   {                                                                            \
     (name), {(reg_left), ',', ULAS_E16, 0}, { (op), ULAS_E16, 0 }              \
   }
 
 // <name> reg
-#define ULAS_INSTRSM83_REG(name, op, reg)                                          \
+#define ULAS_INSTRSM83_REG(name, op, reg)                                      \
   {                                                                            \
     (name), {(reg), 0}, { (op), 0x00 }                                         \
   }
 
 // prefixed <name> reg
-#define ULAS_INSTRSM83_PRER8(name, base_op, reg_right)                             \
+#define ULAS_INSTRSM83_PRER8(name, base_op, reg_right)                         \
   {                                                                            \
     (name), {(reg_right), 0}, { 0xCB, base_op, 0 }                             \
   }
 
-#define ULAS_INSTRSM83_PRER8D(name, base_op)                                       \
-  ULAS_INSTRSM83_PRER8(name, (base_op), ULAS_REGSM83_B),                               \
-      ULAS_INSTRSM83_PRER8(name, (base_op) + 1, ULAS_REGSM83_C),                       \
-      ULAS_INSTRSM83_PRER8(name, (base_op) + 2, ULAS_REGSM83_D),                       \
-      ULAS_INSTRSM83_PRER8(name, (base_op) + 3, ULAS_REGSM83_E),                       \
-      ULAS_INSTRSM83_PRER8(name, (base_op) + 4, ULAS_REGSM83_H),                       \
-      ULAS_INSTRSM83_PRER8(name, (base_op) + 5, ULAS_REGSM83_L),                       \
-      {(name), {'[', ULAS_REGSM83_HL, ']', 0}, {0xCB, (base_op) + 6, 0}},          \
+#define ULAS_INSTRSM83_PRER8D(name, base_op)                                   \
+  ULAS_INSTRSM83_PRER8(name, (base_op), ULAS_REGSM83_B),                       \
+      ULAS_INSTRSM83_PRER8(name, (base_op) + 1, ULAS_REGSM83_C),               \
+      ULAS_INSTRSM83_PRER8(name, (base_op) + 2, ULAS_REGSM83_D),               \
+      ULAS_INSTRSM83_PRER8(name, (base_op) + 3, ULAS_REGSM83_E),               \
+      ULAS_INSTRSM83_PRER8(name, (base_op) + 4, ULAS_REGSM83_H),               \
+      ULAS_INSTRSM83_PRER8(name, (base_op) + 5, ULAS_REGSM83_L),               \
+      {(name), {'[', ULAS_REGSM83_HL, ']', 0}, {0xCB, (base_op) + 6, 0}},      \
       ULAS_INSTRSM83_PRER8(name, (base_op) + 7, ULAS_REGSM83_A)
 
 // prefixed <name> <bit>, reg
-#define ULAS_INSTRSM83_PREBITR8(name, base_op, bit, reg_right)                     \
+#define ULAS_INSTRSM83_PREBITR8(name, base_op, bit, reg_right)                 \
   {                                                                            \
     (name), {(bit), ',', (reg_right), 0}, { 0xCB, base_op, 0 }                 \
   }
 
-#define ULAS_INSTRSM83_PREBITR8D(name, base_op, bit)                               \
-  ULAS_INSTRSM83_PREBITR8(name, base_op, bit, ULAS_REGSM83_B),                         \
-      ULAS_INSTRSM83_PREBITR8(name, (base_op) + 1, bit, ULAS_REGSM83_C),               \
-      ULAS_INSTRSM83_PREBITR8(name, (base_op) + 2, bit, ULAS_REGSM83_D),               \
-      ULAS_INSTRSM83_PREBITR8(name, (base_op) + 3, bit, ULAS_REGSM83_E),               \
-      ULAS_INSTRSM83_PREBITR8(name, (base_op) + 4, bit, ULAS_REGSM83_H),               \
-      ULAS_INSTRSM83_PREBITR8(name, (base_op) + 5, bit, ULAS_REGSM83_L),               \
+#define ULAS_INSTRSM83_PREBITR8D(name, base_op, bit)                           \
+  ULAS_INSTRSM83_PREBITR8(name, base_op, bit, ULAS_REGSM83_B),                 \
+      ULAS_INSTRSM83_PREBITR8(name, (base_op) + 1, bit, ULAS_REGSM83_C),       \
+      ULAS_INSTRSM83_PREBITR8(name, (base_op) + 2, bit, ULAS_REGSM83_D),       \
+      ULAS_INSTRSM83_PREBITR8(name, (base_op) + 3, bit, ULAS_REGSM83_E),       \
+      ULAS_INSTRSM83_PREBITR8(name, (base_op) + 4, bit, ULAS_REGSM83_H),       \
+      ULAS_INSTRSM83_PREBITR8(name, (base_op) + 5, bit, ULAS_REGSM83_L),       \
       {(name),                                                                 \
-       {(bit), ',', '[', ULAS_REGSM83_HL, ']', 0},                                 \
+       {(bit), ',', '[', ULAS_REGSM83_HL, ']', 0},                             \
        {0xCB, (base_op) + 6, 0}},                                              \
       ULAS_INSTRSM83_PREBITR8(name, (base_op) + 7, bit, ULAS_REGSM83_A)
 
@@ -311,7 +311,7 @@ const struct ulas_instr ULASINSTRS_SM83[] = {
 
 const char *ULAS_SM83_REGS[] = {
     NULL,   "b",    "c",    "d",    "e",    "h",    "l",   "a",  "bc",
-    "de",   "hl",   "nz",   "z",    "nc",   "c",   "sp",  "af",  "0x00",
+    "de",   "hl",   "nz",   "z",    "nc",   "c",    "sp",  "af", "0x00",
     "0x08", "0x10", "0x18", "0x20", "0x28", "0x30", "0x38"};
 
 void ulas_arch_set(enum ulas_archs arch) {
