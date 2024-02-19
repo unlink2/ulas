@@ -1,6 +1,13 @@
 #ifndef ARCHS_H_
 #define ARCHS_H_
 
+/**
+ * Insturction table:
+ * It is simply a table of all possible instructions for
+ * the architecture.
+ * 0 means the list has ended
+ */
+
 enum ulas_asmregs_sm83 {
   // r8
   ULAS_REGSM83_B = 1,
@@ -35,6 +42,20 @@ enum ulas_asmregs_sm83 {
   ULAS_VECSM83_38 = 24,
 
   ULAS_SM83_REGS_LEN
+};
+
+// special asm tokens for instr enum
+// TODO: add more expressions types such as e8, e16, e24, e32, e64
+// as well as the corresponding addresses
+// Use ULAS_DATZERO if an actual byte is expected to appear in the assembly
+// output (since 0 denotes the end of the list)
+enum ulas_asmspetok {
+  ULAS_E8 = -1,
+  ULAS_E16 = -2,
+  // A8 is like E8, but it will not emit an overflow warning
+  // because it is commont to pass a 16-bit label as a value
+  ULAS_A8 = -3,
+  ULAS_DATZERO = 0xFF00
 };
 
 enum ulas_archs { ULAS_ARCH_SM83 };
