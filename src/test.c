@@ -411,6 +411,7 @@ void test_full(void) {
 }
 
 int main(int arc, char **argv) {
+  TESTBEGIN("ulas test");
   ulas_init(ulas_cfg_from_env());
 
   /*if (!ulascfg.verbose) {
@@ -432,5 +433,6 @@ int main(int arc, char **argv) {
   // so call after free
   test_full();
 
+  TESTEND("ulas test");
   return 0;
 }
