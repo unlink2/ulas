@@ -1,7 +1,6 @@
 #include "archs.h"
 #include "ulas.h"
 
-
 /**
  * Instruction table
  */
@@ -309,10 +308,17 @@ const struct ulas_instr ULASINSTRS_SM83[] = {
 
     {NULL}};
 
+const char *ULAS_SM83_REGS[] = {
+    NULL,   "b",    "c",    "d",    "e",    "h",    "l",   "a",  "bc",
+    "de",   "hl",   "nz",   "z",    "nc",   "c",   "sp",  "af",  "0x00",
+    "0x08", "0x10", "0x18", "0x20", "0x28", "0x30", "0x38"};
+
 void ulas_arch_set(enum ulas_archs arch) {
   switch (arch) {
   case ULAS_ARCH_SM83:
     ulas.arch = (struct ulas_arch){NULL, 0, ULASINSTRS_SM83};
+    ulas.arch.regs_names = ULAS_SM83_REGS;
+    ulas.arch.regs_len = ULAS_SM83_REGS_LEN;
     break;
   default:
     ULASPANIC("Unknown architecture\n");

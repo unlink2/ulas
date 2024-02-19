@@ -1770,71 +1770,11 @@ char *ulas_strexpr(const char **line, unsigned long n, int *rc) {
 // we should use a register table
 // that is used to look up register tokens
 const char *ulas_asmregstr(unsigned int reg) {
-  switch (reg) {
-  case ULAS_REG_A:
-    return "a";
-  case ULAS_REG_B:
-    return "b";
-  case ULAS_REG_C:
-    return "c";
-  case ULAS_REG_D:
-    return "d";
-  case ULAS_REG_E:
-    return "e";
-  case ULAS_REG_H:
-    return "h";
-  case ULAS_REG_L:
-    return "l";
-  case ULAS_REG_HL:
-    return "hl";
-  case ULAS_REG_DE:
-    return "de";
-  case ULAS_REG_BC:
-    return "bc";
-  case ULAS_REG_NOT_ZERO:
-    return "nz";
-  case ULAS_REG_ZERO:
-    return "z";
-  case ULAS_REG_NOT_CARRY:
-    return "nc";
-  case ULAS_REG_CARRY:
-    return "c";
-  case ULAS_REG_SP:
-    return "sp";
-  case ULAS_REG_AF:
-    return "af";
-  case ULAS_VEC00:
-    return "0x00";
-  case ULAS_VEC08:
-    return "0x08";
-  case ULAS_VEC10:
-    return "0x10";
-  case ULAS_VEC18:
-    return "0x18";
-  case ULAS_VEC20:
-    return "0x20";
-  case ULAS_VEC28:
-    return "0x28";
-  case ULAS_VEC30:
-    return "0x30";
-  case ULAS_VEC38:
-    return "0x38";
-  default:
+  if (reg >= ulas.arch.regs_len) {
     return NULL;
   }
-
-  return NULL;
-}
-
-unsigned int ulas_asmstrreg(const char *s, unsigned long n) {
-  for (int i = 0; i < 10; i++) {
-    const char *rs = ulas_asmregstr(i);
-    if (rs && strncmp(rs, s, n) == 0) {
-      return i;
-    }
-  }
-
-  return -1;
+  
+  return ulas.arch.regs_names[reg];
 }
 
 #define ULAS_INSTRBUF_MIN 4

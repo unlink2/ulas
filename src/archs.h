@@ -1,6 +1,7 @@
 #ifndef ARCHS_H_
 #define ARCHS_H_
 
+// TODO: rename reg constants so that they contain SM83
 enum ulas_asmregs_sm83 {
   // r8
   ULAS_REG_B = 1,
@@ -32,7 +33,9 @@ enum ulas_asmregs_sm83 {
   ULAS_VEC20 = 21,
   ULAS_VEC28 = 22,
   ULAS_VEC30 = 23,
-  ULAS_VEC38 = 24
+  ULAS_VEC38 = 24,
+
+  ULAS_SM83_REGS_LEN
 };
 
 enum ulas_archs { ULAS_ARCH_SM83 };
