@@ -5,6 +5,7 @@
 #include <string.h>
 #include <assert.h>
 #include <sys/time.h>
+#include "uldas.h"
 
 FILE *ulasin = NULL;
 FILE *ulasout = NULL;
@@ -168,40 +169,44 @@ int ulas_main(struct ulas_config cfg) {
     ULASDBG("input: %s\n", cfg.argv[0]);
     ulasin = ulas_fopen(cfg.argv[0], "re", stdin);
   }
-
-  // only do 2 pass if we have a file as input
-  // because  we cannot really rewind stdout
-  if (!cfg.preproc_only && ulasin != stdin) {
-    ulas.pass = ULAS_PASS_RESOLVE;
-  }
-
   FILE *preprocdst = NULL;
-  while (ulas.pass >= 0) {
-    if (ulascfg.verbose) {
-      fprintf(ulaserr, "[Pass %d]\n", ulas.pass);
+
+  if (!ulascfg.disas) {
+    // only do 2 pass if we have a file as input
+    // because  we cannot really rewind stdout
+    if (!cfg.preproc_only && ulasin != stdin) {
+      ulas.pass = ULAS_PASS_RESOLVE;
     }
 
-    ulas_nextpass();
+    while (ulas.pass >= 0) {
+      if (ulascfg.verbose) {
+        fprintf(ulaserr, "[Pass %d]\n", ulas.pass);
+      }
 
-    // FIXME: it would be nice if we could do the 2 pass by clearing the
-    // tmpfile instead of making an entierly new one
-    if (cfg.preproc_only) {
-      preprocdst = ulasout;
-    } else {
-      preprocdst = tmpfile();
-    }
+      ulas_nextpass();
 
-    if (ulas_preproc(preprocdst, ulasin) == -1) {
-      rc = -1;
-      goto cleanup;
-    }
+      // FIXME: it would be nice if we could do the 2 pass by clearing the
+      // tmpfile instead of making an entierly new one
+      if (cfg.preproc_only) {
+        preprocdst = ulasout;
+      } else {
+        preprocdst = tmpfile();
+      }
 
-    if (ulas.pass > ULAS_PASS_FINAL) {
-      fclose(preprocdst);
-      preprocdst = NULL;
-      rewind(ulasin);
+      if (ulas_preproc(preprocdst, ulasin) == -1) {
+        rc = -1;
+        goto cleanup;
+      }
+
+      if (ulas.pass > ULAS_PASS_FINAL) {
+        fclose(preprocdst);
+        preprocdst = NULL;
+        rewind(ulasin);
+      }
+      ulas.pass -= 1;
     }
-    ulas.pass -= 1;
+  } else {
+    rc = ulas_dasm(ulasin, ulasout);
   }
 
 cleanup:

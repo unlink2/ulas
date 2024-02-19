@@ -130,6 +130,7 @@ struct ulas_config {
 
   int verbose;
   int preproc_only;
+  int disas;
 
   // all include search paths
   char **incpaths;

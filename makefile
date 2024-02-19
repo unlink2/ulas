@@ -22,7 +22,7 @@ TEST_BNAME=testulas
 BIN_INSTALL_DIR=/usr/local/bin
 MAN_INSTALL_DIR=/usr/local/man
 
-_OBJ = $(MAIN) ulas.o archs.o
+_OBJ = $(MAIN) ulas.o archs.o uldas.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 all: bin test
