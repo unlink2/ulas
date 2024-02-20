@@ -84,6 +84,7 @@
 
 // all instructions
 // when name is NULL list ended
+// FIXME: Add ULAS_A16 and make all absolute calls/jumps A16 instead of E16
 const struct ulas_instr ULASINSTRS_SM83[] = {
     // control instructions
     {"nop", {0}, {(short)ULAS_DATZERO, 0}},
