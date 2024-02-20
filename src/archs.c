@@ -320,6 +320,7 @@ void ulas_arch_set(enum ulas_archs arch) {
     ulas.arch = (struct ulas_arch){NULL, 0, ULASINSTRS_SM83};
     ulas.arch.regs_names = ULAS_SM83_REGS;
     ulas.arch.regs_len = ULAS_SM83_REGS_LEN;
+    ulas.arch.endianess = ULAS_LE;
     break;
   default:
     ULASPANIC("Unknown architecture\n");

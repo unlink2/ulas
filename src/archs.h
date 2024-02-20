@@ -1,6 +1,11 @@
 #ifndef ARCHS_H_
 #define ARCHS_H_
 
+enum ulas_endianess {
+  ULAS_BE,
+  ULAS_LE
+};
+
 /**
  * Insturction table:
  * It is simply a table of all possible instructions for
@@ -65,6 +70,7 @@ struct ulas_arch {
   unsigned long regs_len;
 
   const struct ulas_instr *instrs;
+  enum ulas_endianess endianess;
 };
 
 void ulas_arch_set(enum ulas_archs arch);
