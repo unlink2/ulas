@@ -1803,6 +1803,7 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
     }
 
     // expression results in order they appear
+    // TODO: this should probably become a union of sort to allow float expressions
     int exprres[ULAS_INSTRDATMAX];
     int expridx = 0;
     memset(&exprres, 0, sizeof(int) * ULAS_INSTRDATMAX);
@@ -1863,6 +1864,7 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
       assert(datread < ULAS_INSTRDATMAX);
       assert(expridx < ULAS_INSTRDATMAX);
 
+      // TODO: implement big endian here
       if (dat[datread] == ULAS_E8 || dat[datread] == ULAS_A8) {
         dst[written] = (char)exprres[expridx++];
       } else if (dat[datread] == ULAS_E16) {
