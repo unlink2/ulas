@@ -1823,7 +1823,8 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
         if (strncmp(regstr, ulas.tok.buf, ulas.tok.maxlen) != 0) {
           goto skip;
         }
-      } else if (tok[i] == ULAS_E8 || tok[i] == ULAS_E16 || tok[i] == ULAS_A8) {
+      } else if (tok[i] == ULAS_E8 || tok[i] == ULAS_E16 || tok[i] == ULAS_A8 ||
+                 tok[i] == ULAS_A16) {
         assert(expridx < ULAS_INSTRDATMAX);
         int rc = 0;
         int res = ulas_intexpr(line, n, &rc);
@@ -1867,7 +1868,7 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
 
       if (dat[datread] == ULAS_E8 || dat[datread] == ULAS_A8) {
         dst[written] = (char)exprres[expridx++];
-      } else if (dat[datread] == ULAS_E16) {
+      } else if (dat[datread] == ULAS_E16 || dat[datread] == ULAS_A16) {
         short val = (short)exprres[expridx++];
         if (ulas.arch.endianess == ULAS_BE) {
           dst[written++] = (char)(val >> 8);
