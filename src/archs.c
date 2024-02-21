@@ -42,6 +42,14 @@
     (name), {(reg_left), ',', ULAS_E16, 0}, { (op), ULAS_E16, 0 }              \
   }
 
+// <name> r16, a16
+#define ULAS_INSTRSM83_R16A16(name, op, reg_left)                              \
+  {                                                                            \
+    (name), {(reg_left), ',', ULAS_A16, 0}, { (op), ULAS_A16, 0 }              \
+  }
+
+
+
 // <name> reg
 #define ULAS_INSTRSM83_REG(name, op, reg)                                      \
   {                                                                            \
@@ -129,10 +137,10 @@ const struct ulas_instr ULASINSTRS_SM83[] = {
     {"ld", {ULAS_REGSM83_A, ',', '[', ULAS_REGSM83_HL, '+', ']', 0}, {0x2A, 0}},
     {"ld", {ULAS_REGSM83_A, ',', '[', ULAS_REGSM83_HL, '-', ']', 0}, {0x3A, 0}},
 
-    {"ld", {'[', ULAS_E16, ']', ',', ULAS_REGSM83_SP, 0}, {0x08, ULAS_E16, 0}},
+    {"ld", {'[', ULAS_A16, ']', ',', ULAS_REGSM83_SP, 0}, {0x08, ULAS_A16, 0}},
 
-    {"ld", {'[', ULAS_E16, ']', ',', ULAS_REGSM83_A, 0}, {0xEA, ULAS_E16, 0}},
-    {"ld", {ULAS_REGSM83_A, ',', '[', ULAS_E16, ']', 0}, {0xFA, ULAS_E16, 0}},
+    {"ld", {'[', ULAS_A16, ']', ',', ULAS_REGSM83_A, 0}, {0xEA, ULAS_A16, 0}},
+    {"ld", {ULAS_REGSM83_A, ',', '[', ULAS_A16, ']', 0}, {0xFA, ULAS_A16, 0}},
 
     {"ld",
      {ULAS_REGSM83_HL, ',', ULAS_REGSM83_SP, '+', ULAS_E8, 0},
@@ -176,19 +184,19 @@ const struct ulas_instr ULASINSTRS_SM83[] = {
     {"reti", {0}, {0xD9, 0x00}},
 
     // jp
-    ULAS_INSTRSM83_R16E16("jp", 0xC2, ULAS_REGSM83_NOT_ZERO),
-    ULAS_INSTRSM83_R16E16("jp", 0xD2, ULAS_REGSM83_NOT_CARRY),
-    ULAS_INSTRSM83_R16E16("jp", 0xCA, ULAS_REGSM83_ZERO),
-    ULAS_INSTRSM83_R16E16("jp", 0xDA, ULAS_REGSM83_CARRY),
+    ULAS_INSTRSM83_R16A16("jp", 0xC2, ULAS_REGSM83_NOT_ZERO),
+    ULAS_INSTRSM83_R16A16("jp", 0xD2, ULAS_REGSM83_NOT_CARRY),
+    ULAS_INSTRSM83_R16A16("jp", 0xCA, ULAS_REGSM83_ZERO),
+    ULAS_INSTRSM83_R16A16("jp", 0xDA, ULAS_REGSM83_CARRY),
     {"jp", {ULAS_REGSM83_HL, 0}, {0xE9, 0x00}},
-    {"jp", {ULAS_E16, 0}, {0xC3, ULAS_E16, 0x00}},
+    {"jp", {ULAS_A16, 0}, {0xC3, ULAS_A16, 0x00}},
 
     // call
-    ULAS_INSTRSM83_R16E16("call", 0xC4, ULAS_REGSM83_NOT_ZERO),
-    ULAS_INSTRSM83_R16E16("call", 0xD4, ULAS_REGSM83_NOT_CARRY),
-    ULAS_INSTRSM83_R16E16("call", 0xCC, ULAS_REGSM83_ZERO),
-    ULAS_INSTRSM83_R16E16("call", 0xDC, ULAS_REGSM83_CARRY),
-    {"call", {ULAS_E16, 0}, {0xCD, ULAS_E16, 0x00}},
+    ULAS_INSTRSM83_R16A16("call", 0xC4, ULAS_REGSM83_NOT_ZERO),
+    ULAS_INSTRSM83_R16A16("call", 0xD4, ULAS_REGSM83_NOT_CARRY),
+    ULAS_INSTRSM83_R16A16("call", 0xCC, ULAS_REGSM83_ZERO),
+    ULAS_INSTRSM83_R16A16("call", 0xDC, ULAS_REGSM83_CARRY),
+    {"call", {ULAS_A16, 0}, {0xCD, ULAS_A16, 0x00}},
 
     // rst
     ULAS_INSTRSM83_REG("rst", 0xC7, ULAS_VECSM83_00),
