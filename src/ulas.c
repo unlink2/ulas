@@ -171,42 +171,45 @@ int ulas_main(struct ulas_config cfg) {
   }
   FILE *preprocdst = NULL;
 
-  if (!ulascfg.disas) {
-    // only do 2 pass if we have a file as input
-    // because  we cannot really rewind stdout
-    if (!cfg.preproc_only && ulasin != stdin) {
-      ulas.pass = ULAS_PASS_RESOLVE;
+  // only do 2 pass if we have a file as input
+  // because  we cannot really rewind stdout
+  if (!cfg.preproc_only && ulasin != stdin) {
+    ulas.pass = ULAS_PASS_RESOLVE;
+  }
+
+  while (ulas.pass >= 0) {
+    if (ulascfg.verbose) {
+      fprintf(ulaserr, "[Pass %d]\n", ulas.pass);
     }
 
-    while (ulas.pass >= 0) {
-      if (ulascfg.verbose) {
-        fprintf(ulaserr, "[Pass %d]\n", ulas.pass);
-      }
+    ulas_nextpass();
 
-      ulas_nextpass();
+    // FIXME: it would be nice if we could do the 2 pass by clearing the
+    // tmpfile instead of making an entierly new one
+    if (cfg.preproc_only) {
+      preprocdst = ulasout;
+    } else {
+      preprocdst = tmpfile();
+    }
 
-      // FIXME: it would be nice if we could do the 2 pass by clearing the
-      // tmpfile instead of making an entierly new one
-      if (cfg.preproc_only) {
-        preprocdst = ulasout;
-      } else {
-        preprocdst = tmpfile();
-      }
-
+    if (!ulascfg.disas) {
       if (ulas_preproc(preprocdst, ulasin) == -1) {
         rc = -1;
         goto cleanup;
       }
-
-      if (ulas.pass > ULAS_PASS_FINAL) {
-        fclose(preprocdst);
-        preprocdst = NULL;
-        rewind(ulasin);
+    } else {
+      if (ulas_dasm(ulasin, ulasout) == -1) {
+        rc = -1;
+        goto cleanup;
       }
-      ulas.pass -= 1;
     }
-  } else {
-    rc = ulas_dasm(ulasin, ulasout);
+
+    if (ulas.pass > ULAS_PASS_FINAL) {
+      fclose(preprocdst);
+      preprocdst = NULL;
+      rewind(ulasin);
+    }
+    ulas.pass -= 1;
   }
 
 cleanup:
