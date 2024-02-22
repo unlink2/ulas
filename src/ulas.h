@@ -132,6 +132,8 @@ struct ulas_config {
   int preproc_only;
   int disas;
 
+  unsigned int org;
+
   // all include search paths
   char **incpaths;
   unsigned int incpathslen;

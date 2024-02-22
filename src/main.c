@@ -23,7 +23,7 @@
 #define ULAS_OPTS "hvVpd"
 
 // args with value
-#define ULAS_OPTS_ARG "o:l:s:i:w:"
+#define ULAS_OPTS_ARG "o:l:s:i:w:a:"
 
 #define ULAS_HELP(a, desc) printf("\t-%s\t%s\n", (a), desc);
 
@@ -34,7 +34,9 @@ unsigned long incpathslen = 0;
 
 void ulas_help(void) {
   printf("%s\n", ULAS_NAME);
-  printf("Usage %s [-%s] [-o=path] [input]\n\n", ULAS_NAME, ULAS_OPTS);
+  printf("Usage %s [-%s] [-o=path] [-i=path] [-l=path] [-a=initial-address] "
+         "[input]\n\n",
+         ULAS_NAME, ULAS_OPTS);
   ULAS_HELP("h", "display this help and exit");
   ULAS_HELP("V", "display version info and exit");
   ULAS_HELP("v", "verbose output");
@@ -43,6 +45,7 @@ void ulas_help(void) {
   ULAS_HELP("l=path", "Listing file");
   ULAS_HELP("s=path", "Symbols file");
   ULAS_HELP("i=path", "Add include search path");
+  ULAS_HELP("a=initial-address", "Initial starting address");
   ULAS_HELP("d", "Disassemble a file");
   ULAS_HELP("w=warning", "Toggle warnings: a=all, o=overflow");
 }
@@ -84,6 +87,10 @@ void ulas_getopt(int argc, char **argv, struct ulas_config *cfg) {
     case 'i':
       assert(incpathslen < ULAS_INCPATHSMAX);
       incpaths[incpathslen++] = strndup(optarg, ULAS_PATHMAX);
+      break;
+    case 'a':
+      cfg->org = strtol(optarg, NULL, 0);
+      break;
     case 'w':
       cfg->warn_level ^= warnings[(int)optarg[0]];
       break;

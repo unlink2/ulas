@@ -56,7 +56,7 @@ void ulas_nextpass(void) {
   ulas.scope = 1;
   ulas.line = 0;
   ulas.icntr = 0;
-  ulas.address = 0;
+  ulas.address = ulascfg.org;
   ulas.chksm = 0;
   ulas.filename = ulas.initial_filename;
 
