@@ -28,7 +28,7 @@ int ulas_dasm_next(FILE *src, FILE *dst) {
 
     // test all instruction's contents
     for (int j = 0; instr->data[j]; j++) {
-      unsigned short dat = instr->data[j];
+      int dat = instr->data[j];
       if (dat == ULAS_DATZERO) {
         dat = 0;
       }
