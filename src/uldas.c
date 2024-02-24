@@ -1,11 +1,93 @@
 #include "uldas.h"
 
+// this function assumes the bounds checks
+// for buf have already been done and will not check anymore!
+void ulas_dasm_instr_fout(FILE *src, FILE *dst, const struct ulas_instr *instr,
+                          const char *buf, unsigned long read) {
+  if (ulas.pass != ULAS_PASS_FINAL) {
+    return;
+  }
+
+  fprintf(dst, "%s ", instr->name);
+  int bi = 0;
+  for (int i = 0; instr->tokens[i]; i++) {
+    int dat = instr->tokens[i];
+    switch (dat) {
+    case ULAS_E8:
+    case ULAS_A8:
+      printf("%x", buf[bi++]);
+      break;
+    case ULAS_E16:
+    case ULAS_A16:
+      break;
+    default: {
+      const char *reg = ulas_asmregstr(dat);
+      if (reg) {
+      printf("%s", reg);
+      } else {
+      printf("%c", dat);
+      }
+      break;
+    }
+    }
+  }
+
+  fprintf(dst, "\n");
+}
+
+// returns > 1 if instruction was found, and 0 if not
+// the integer returned is the amount of bytes this instruction consumed
+int ulas_dasm_instr_check(FILE *src, FILE *dst, const struct ulas_instr *instr,
+                          const char *buf, unsigned long read) {
+  int i = 0;
+  int bi = 0; // current buffer index
+  // test all instruction's contents
+  for (i = 0; instr->data[i]; i++) {
+    int dat = instr->data[i];
+    if (dat == ULAS_DATZERO) {
+      dat = 0;
+    }
+
+    // do we even have enough data?
+    // this is a general check for 1 byte
+    if (bi >= read) {
+      break;
+    }
+
+    switch (dat) {
+    case ULAS_E8:
+    case ULAS_A8:
+      // just ignore it
+      bi++;
+      break;
+    case ULAS_E16:
+    case ULAS_A16:
+      // need 2 bytes here
+      if (bi + 1 >= read) {
+        goto fail;
+      }
+      bi += 2;
+      break;
+    default:
+      if (buf[bi++] != dat) {
+        goto fail;
+      }
+      break;
+    }
+  }
+
+  ulas_dasm_instr_fout(src, dst, instr, buf, read);
+  return i;
+fail:
+  return 0;
+}
+
 // dasm the next instruction
 // if there are no more bytes to be read, return 0
 // on error return -1
 // otherwise return 1
 int ulas_dasm_next(FILE *src, FILE *dst) {
-  unsigned long srctell = ftell(src);
+  long srctell = ftell(src);
   // read n bytes (as many as in instruction)
   char buf[ULAS_OUTBUFMAX];
   memset(buf, 0, ULAS_OUTBUFMAX);
@@ -26,28 +108,10 @@ int ulas_dasm_next(FILE *src, FILE *dst) {
   for (int i = 0; ulas.arch.instrs[i].name; i++) {
     const struct ulas_instr *instr = &ulas.arch.instrs[i];
 
-    // test all instruction's contents
-    for (int j = 0; instr->data[j]; j++) {
-      int dat = instr->data[j];
-      if (dat == ULAS_DATZERO) {
-        dat = 0;
-      }
-    
-      // do we even have enough data?
-      if (j >= read) {
-        break;
-      }
-
-      switch (dat) {
-      case ULAS_E8:
-      case ULAS_A8:
-        break;
-      case ULAS_E16:
-      case ULAS_A16:
-        break;
-      default:
-        break;
-      }
+    int consumed = ulas_dasm_instr_check(src, dst, instr, buf, read);
+    if (consumed) {
+      fseek(src, srctell + consumed, 0);
+      return 1;
     }
   }
 

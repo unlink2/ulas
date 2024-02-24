@@ -593,6 +593,7 @@ int ulas_asminstr(char *dst, unsigned long max, const char **line,
 int ulas_asmnext(FILE *dst, FILE *src, char *buf, int n);
 int ulas_asm(FILE *dst, FILE *src);
 int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n);
+const char *ulas_asmregstr(unsigned int reg);
 
 // parses and executes a 32 bit signed int math expressions
 int ulas_intexpr(const char **line, unsigned long n, int *rc);
