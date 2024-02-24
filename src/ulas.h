@@ -134,6 +134,8 @@ struct ulas_config {
 
   unsigned int org;
 
+  unsigned int print_addrs;
+
   // all include search paths
   char **incpaths;
   unsigned int incpathslen;

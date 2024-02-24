@@ -8,7 +8,10 @@ void ulas_dasm_instr_fout(FILE *src, FILE *dst, const struct ulas_instr *instr,
     return;
   }
 
-  fprintf(dst, "%s ", instr->name);
+  if (ulascfg.print_addrs) {
+    fprintf(dst, "%08x ", ulas.address);
+  }
+  fprintf(dst, "  %s ", instr->name);
   int bi = 0;
   for (int i = 0; instr->tokens[i]; i++) {
     int dat = instr->tokens[i];
@@ -23,9 +26,9 @@ void ulas_dasm_instr_fout(FILE *src, FILE *dst, const struct ulas_instr *instr,
     default: {
       const char *reg = ulas_asmregstr(dat);
       if (reg) {
-      printf("%s", reg);
+        printf("%s", reg);
       } else {
-      printf("%c", dat);
+        printf("%c", dat);
       }
       break;
     }
@@ -33,6 +36,19 @@ void ulas_dasm_instr_fout(FILE *src, FILE *dst, const struct ulas_instr *instr,
   }
 
   fprintf(dst, "\n");
+}
+
+// fallback if no instruction was found
+void ulas_dasm_db_fout(FILE *src, FILE *dst, const char *buf,
+                       unsigned long read) {
+  ulas.address++;
+  if (ulas.pass != ULAS_PASS_FINAL) {
+    return;
+  }
+  if (ulascfg.print_addrs) {
+    fprintf(dst, "%08x ", ulas.address);
+  }
+  fprintf(dst, ".db %x\n", buf[0] & 0xFF);
 }
 
 // returns > 1 if instruction was found, and 0 if not
@@ -63,20 +79,22 @@ int ulas_dasm_instr_check(FILE *src, FILE *dst, const struct ulas_instr *instr,
     case ULAS_E16:
     case ULAS_A16:
       // need 2 bytes here
-      if (bi + 1 >= read) {
+      if (bi + 1 < read) {
         goto fail;
       }
       bi += 2;
       break;
     default:
-      if (buf[bi++] != dat) {
+      if (buf[bi] != dat) {
         goto fail;
       }
+      bi++;
       break;
     }
   }
 
   ulas_dasm_instr_fout(src, dst, instr, buf, read);
+  ulas.address += i;
   return i;
 fail:
   return 0;
@@ -115,6 +133,8 @@ int ulas_dasm_next(FILE *src, FILE *dst) {
     }
   }
 
+  ulas_dasm_db_fout(src, dst, buf, read);
+  fseek(src, srctell + 1, 0);
   return 1;
 }
 
