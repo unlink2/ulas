@@ -1,6 +1,8 @@
 #ifndef ARCHS_H_
 #define ARCHS_H_
 
+#define ULAS_INSTRDATMAX_VAL 0xFFFF
+
 enum ulas_endianess {
   ULAS_BE,
   ULAS_LE

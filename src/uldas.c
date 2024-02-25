@@ -67,7 +67,7 @@ int ulas_dasm_instr_check(FILE *src, FILE *dst, const struct ulas_instr *instr,
   int bi = 0; // current buffer index
   // test all instruction's contents
   for (i = 0; instr->data[i]; i++) {
-    int dat = instr->data[i];
+    unsigned int dat = instr->data[i] & ULAS_INSTRDATMAX_VAL;
     if (dat == ULAS_DATZERO) {
       dat = 0;
     }
