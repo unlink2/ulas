@@ -25,7 +25,17 @@ void ulas_dasm_instr_fout(FILE *src, FILE *dst, const struct ulas_instr *instr,
     case ULAS_A8:
       printf("0x%x", buf[bi++]);
       break;
-    case ULAS_E16:
+    case ULAS_E16: {
+      unsigned short val = 0;
+      if (ulas.arch.endianess == ULAS_BE) {
+
+      } else {
+        val = (char)buf[bi+1] | (char)(buf[bi] << 8);
+      }
+      bi+=2;
+      printf("0x%x", val);
+      break;
+    }
     case ULAS_A16:
       break;
     default: {
@@ -67,11 +77,10 @@ int ulas_dasm_instr_check(FILE *src, FILE *dst, const struct ulas_instr *instr,
   int bi = 0; // current buffer index
   // test all instruction's contents
   for (i = 0; instr->data[i]; i++) {
-    unsigned int dat = instr->data[i] & ULAS_INSTRDATMAX_VAL;
+    unsigned int dat = instr->data[i];
     if (dat == ULAS_DATZERO) {
       dat = 0;
     }
-
 
     // do we even have enough data?
     // this is a general check for 1 byte
@@ -88,7 +97,7 @@ int ulas_dasm_instr_check(FILE *src, FILE *dst, const struct ulas_instr *instr,
     case ULAS_E16:
     case ULAS_A16:
       // need 2 bytes here
-      if (bi + 1 < read) {
+      if (bi + 1 >= read) {
         goto fail;
       }
       bi += 2;
