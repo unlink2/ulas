@@ -72,6 +72,7 @@ int ulas_dasm_instr_check(FILE *src, FILE *dst, const struct ulas_instr *instr,
       dat = 0;
     }
 
+
     // do we even have enough data?
     // this is a general check for 1 byte
     if (bi >= read) {
@@ -93,7 +94,7 @@ int ulas_dasm_instr_check(FILE *src, FILE *dst, const struct ulas_instr *instr,
       bi += 2;
       break;
     default:
-      if (buf[bi] != dat) {
+      if ((buf[bi] & 0xFF) != (dat & 0xFF)) {
         goto fail;
       }
       bi++;
