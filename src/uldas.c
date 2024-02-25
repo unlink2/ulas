@@ -23,7 +23,7 @@ void ulas_dasm_instr_fout(FILE *src, FILE *dst, const struct ulas_instr *instr,
     switch (dat) {
     case ULAS_E8:
     case ULAS_A8:
-      printf("0x%x", buf[bi++]);
+      fprintf(dst, "0x%x", buf[bi++]);
       break;
     case ULAS_E16: {
       unsigned short val = 0;
@@ -33,7 +33,7 @@ void ulas_dasm_instr_fout(FILE *src, FILE *dst, const struct ulas_instr *instr,
         val = (char)buf[bi+1] | (char)(buf[bi] << 8);
       }
       bi+=2;
-      printf("0x%x", val);
+      fprintf(dst, "0x%x", val);
       break;
     }
     case ULAS_A16:
@@ -41,12 +41,12 @@ void ulas_dasm_instr_fout(FILE *src, FILE *dst, const struct ulas_instr *instr,
     default: {
       const char *reg = ulas_asmregstr(dat);
       if (reg) {
-        printf("%s", reg);
+        fprintf(dst, "%s", reg);
       } else {
-        printf("%c", dat);
+        fprintf(dst, "%c", dat);
         // just for formatting purposes
         if (dat == ',') {
-          printf(" ");
+          fprintf(dst, " ");
         }
       }
       break;
