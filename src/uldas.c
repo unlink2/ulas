@@ -1,5 +1,11 @@
 #include "uldas.h"
 
+void ulas_dasm_print_addr(FILE *dst) {
+  if (ulascfg.print_addrs) {
+    fprintf(dst, "%08x ", ulas.address);
+  }
+}
+
 // this function assumes the bounds checks
 // for buf have already been done and will not check anymore!
 void ulas_dasm_instr_fout(FILE *src, FILE *dst, const struct ulas_instr *instr,
@@ -8,9 +14,8 @@ void ulas_dasm_instr_fout(FILE *src, FILE *dst, const struct ulas_instr *instr,
     return;
   }
 
-  if (ulascfg.print_addrs) {
-    fprintf(dst, "%08x ", ulas.address);
-  }
+  ulas_dasm_print_addr(dst);
+
   fprintf(dst, "  %s ", instr->name);
   int bi = 0;
   for (int i = 0; instr->tokens[i]; i++) {
@@ -18,7 +23,7 @@ void ulas_dasm_instr_fout(FILE *src, FILE *dst, const struct ulas_instr *instr,
     switch (dat) {
     case ULAS_E8:
     case ULAS_A8:
-      printf("%x", buf[bi++]);
+      printf("0x%x", buf[bi++]);
       break;
     case ULAS_E16:
     case ULAS_A16:
@@ -29,6 +34,10 @@ void ulas_dasm_instr_fout(FILE *src, FILE *dst, const struct ulas_instr *instr,
         printf("%s", reg);
       } else {
         printf("%c", dat);
+        // just for formatting purposes
+        if (dat == ',') {
+          printf(" ");
+        }
       }
       break;
     }
@@ -45,10 +54,9 @@ void ulas_dasm_db_fout(FILE *src, FILE *dst, const char *buf,
   if (ulas.pass != ULAS_PASS_FINAL) {
     return;
   }
-  if (ulascfg.print_addrs) {
-    fprintf(dst, "%08x ", ulas.address);
-  }
-  fprintf(dst, ".db %x\n", buf[0] & 0xFF);
+
+  ulas_dasm_print_addr(dst);
+  fprintf(dst, ".db 0x%x\n", buf[0] & 0xFF);
 }
 
 // returns > 1 if instruction was found, and 0 if not
