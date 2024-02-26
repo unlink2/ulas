@@ -1,9 +1,18 @@
 #include "uldas.h"
 
+
 void ulas_dasm_print_addr(FILE *dst) {
   if (ulascfg.print_addrs) {
     fprintf(dst, "%08x ", ulas.address);
   }
+}
+
+void ulas_dasm_print_header(FILE *dst) {
+  if (ulas.pass != ULAS_PASS_FINAL) {
+    return;
+  }
+  ulas_dasm_print_addr(dst);
+  fprintf(dst, ".org 0x%x\n", ulas.address);
 }
 
 // this function assumes the bounds checks
@@ -34,7 +43,7 @@ void ulas_dasm_instr_fout(FILE *src, FILE *dst, const struct ulas_instr *instr,
         val = (short)buf[bi] | (short)(buf[bi + 1] << 8);
       }
       bi += 2;
-      fprintf(dst, "0x%x", val);
+      fprintf(dst, "0x%x", val & 0xFFFF);
       break;
     }
     default: {
@@ -159,6 +168,8 @@ int ulas_dasm_next(FILE *src, FILE *dst) {
 int ulas_dasm(FILE *src, FILE *dst) {
   // pass 1: run and collect labels
   // pass 2: run and output to file
+
+  ulas_dasm_print_header(dst);
 
   int rc = 0;
   while ((rc = ulas_dasm_next(src, dst)) > 0) {
