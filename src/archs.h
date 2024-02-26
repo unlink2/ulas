@@ -69,6 +69,7 @@ enum ulas_asmspetok {
 enum ulas_archs { ULAS_ARCH_SM83 };
 
 struct ulas_arch {
+  enum ulas_archs type;
   const char **regs_names;
   unsigned long regs_len;
 
@@ -77,5 +78,9 @@ struct ulas_arch {
 };
 
 void ulas_arch_set(enum ulas_archs arch);
+
+// returns how many bytes of an instruction are occupied 
+// by the opcode based on its data 
+unsigned int ulas_arch_opcode_len(const char *buf, unsigned long read);
 
 #endif

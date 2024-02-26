@@ -326,10 +326,25 @@ const char *ULAS_SM83_REGS[] = {
 void ulas_arch_set(enum ulas_archs arch) {
   switch (arch) {
   case ULAS_ARCH_SM83:
-    ulas.arch = (struct ulas_arch){ULAS_SM83_REGS, ULAS_SM83_REGS_LEN,
+    ulas.arch = (struct ulas_arch){arch, ULAS_SM83_REGS, ULAS_SM83_REGS_LEN,
                                    ULASINSTRS_SM83, ULAS_LE};
     break;
   default:
     ULASPANIC("Unknown architecture\n");
+  }
+}
+
+unsigned int ulas_arch_opcode_len(const char *buf, unsigned long read) {
+  if (read == 0) {
+    return 0;
+  }
+  switch (ulas.arch.type) {
+    case ULAS_ARCH_SM83:
+      if ((unsigned char)buf[0] == 0xCB) {
+        return 2;
+      }
+      return 1;
+    default:
+      return 0;
   }
 }

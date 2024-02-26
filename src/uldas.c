@@ -17,7 +17,7 @@ void ulas_dasm_instr_fout(FILE *src, FILE *dst, const struct ulas_instr *instr,
   ulas_dasm_print_addr(dst);
 
   fprintf(dst, "  %s ", instr->name);
-  int bi = 0;
+  unsigned int bi = ulas_arch_opcode_len(buf, read);
   for (int i = 0; instr->tokens[i]; i++) {
     int dat = instr->tokens[i];
     switch (dat) {
@@ -25,19 +25,18 @@ void ulas_dasm_instr_fout(FILE *src, FILE *dst, const struct ulas_instr *instr,
     case ULAS_A8:
       fprintf(dst, "0x%x", buf[bi++]);
       break;
+    case ULAS_A16:
     case ULAS_E16: {
       unsigned short val = 0;
       if (ulas.arch.endianess == ULAS_BE) {
-
+        val = (short)buf[bi + 1] | (short)(buf[bi] << 8);
       } else {
-        val = (char)buf[bi+1] | (char)(buf[bi] << 8);
+        val = (short)buf[bi] | (short)(buf[bi + 1] << 8);
       }
-      bi+=2;
+      bi += 2;
       fprintf(dst, "0x%x", val);
       break;
     }
-    case ULAS_A16:
-      break;
     default: {
       const char *reg = ulas_asmregstr(dat);
       if (reg) {
