@@ -71,3 +71,7 @@ format:
 .PHONY: lint 
 lint:
 	clang-tidy ./src/*.h ./src/*.c
+
+buildtests:
+	./$(BDIR)/$(BNAME) tests/t0.s -l - -o tests/t0.bin
+	./$(BDIR)/$(BNAME) tests/t0.bin -d - -o tests/t0_dasm.s

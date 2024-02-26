@@ -379,7 +379,6 @@ void test_symscope(void) {
     printf("[source: %s; expect: %s]\n", in_path, expect_path);                \
     ulaslstout = stdout;                                                       \
     ulassymout = stdout;                                                       \
-    struct ulas_config cfg = ulas_cfg_from_env();                              \
     cfg.verbose = 1;                                                           \
     char dstbuf[ULAS_FULLEN];                                                  \
     char expect[ULAS_FULLEN];                                                  \
@@ -393,6 +392,9 @@ void test_symscope(void) {
     fclose(ulasout);                                                           \
     for (int i = 0; i < expect_len; i++) {                                     \
       assert(expect[i] == dstbuf[i]);                                          \
+      if (cfg.disas) {                                                         \
+        putchar(dstbuf[i]); /* for easier debugging in disas mode */           \
+      }                                                                        \
     }                                                                          \
     for (int i = expect_len; i < ULAS_FULLEN; i++) {                           \
       assert(dstbuf[i] == 0);                                                  \
@@ -401,13 +403,34 @@ void test_symscope(void) {
     ulasout = stdout;                                                          \
   }
 
+#define ASSERT_FULL_ASM(expect_rc, in_path, expect_path)                       \
+  {                                                                            \
+    struct ulas_config cfg = ulas_cfg_from_env();                              \
+    ASSERT_FULL(expect_rc, in_path, expect_path)                               \
+  }
+
 // tests the entire stack
-void test_full(void) {
-  TESTBEGIN("testfull");
+void test_full_asm(void) {
+  TESTBEGIN("testfullasm");
 
-  ASSERT_FULL(0, "tests/t0.s", "tests/t0.bin");
+  ASSERT_FULL_ASM(0, "tests/t0.s", "tests/t0.bin");
 
-  TESTEND("testfull");
+  TESTEND("testfullasm");
+}
+
+#define ASSERT_FULL_DASM(expect_rc, in_path, expect_path)                      \
+  {                                                                            \
+    struct ulas_config cfg = ulas_cfg_from_env();                              \
+    cfg.disas = 1;                                                             \
+    ASSERT_FULL(expect_rc, in_path, expect_path)                               \
+  }
+
+void test_full_dasm(void) {
+  TESTBEGIN("testfulldasm");
+
+  ASSERT_FULL_DASM(0, "tests/t0.bin", "tests/t0_dasm.s");
+
+  TESTEND("testfulldasm");
 }
 
 int main(int arc, char **argv) {
@@ -431,7 +454,8 @@ int main(int arc, char **argv) {
 
   // this will re-init everything on its own,
   // so call after free
-  test_full();
+  test_full_dasm();
+  test_full_asm();
 
   TESTEND("ulas test");
   return 0;
