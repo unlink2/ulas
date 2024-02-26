@@ -32,15 +32,15 @@ void ulas_dasm_instr_fout(FILE *src, FILE *dst, const struct ulas_instr *instr,
     switch (dat) {
     case ULAS_E8:
     case ULAS_A8:
-      fprintf(dst, "0x%x", buf[bi++]);
+      fprintf(dst, "0x%x", buf[bi++] & 0xFF);
       break;
     case ULAS_A16:
     case ULAS_E16: {
       unsigned short val = 0;
       if (ulas.arch.endianess == ULAS_BE) {
-        val = (short)buf[bi + 1] | (short)(buf[bi] << 8);
+        val = (unsigned short)(buf[bi + 1] & 0xFF) | (unsigned short)((buf[bi] & 0xFF) << 8);
       } else {
-        val = (short)buf[bi] | (short)(buf[bi + 1] << 8);
+        val = (unsigned short)(buf[bi] & 0xFF) | (unsigned short)((buf[bi + 1] & 0xFF) << 8);
       }
       bi += 2;
       fprintf(dst, "0x%x", val & 0xFFFF);
