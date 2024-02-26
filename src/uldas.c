@@ -92,8 +92,8 @@ int ulas_dasm_instr_check(FILE *src, FILE *dst, const struct ulas_instr *instr,
 
     // do we even have enough data?
     // this is a general check for 1 byte
-    if (bi >= read) {
-      break;
+    if (bi + 1 >= read) {
+      goto fail;
     }
 
     switch (dat) {
@@ -105,10 +105,10 @@ int ulas_dasm_instr_check(FILE *src, FILE *dst, const struct ulas_instr *instr,
     case ULAS_E16:
     case ULAS_A16:
       // need 2 bytes here
-      if (bi + 1 >= read) {
+      bi += 2;
+      if (bi > read) {
         goto fail;
       }
-      bi += 2;
       break;
     default:
       if ((buf[bi] & 0xFF) != (dat & 0xFF)) {
@@ -121,10 +121,12 @@ int ulas_dasm_instr_check(FILE *src, FILE *dst, const struct ulas_instr *instr,
 
   ulas_dasm_instr_fout(src, dst, instr, buf, read);
   ulas.address += i;
-  return i;
+  return bi;
 fail:
   return 0;
 }
+
+#define ULAS_DASM_BUFMAX 4
 
 // dasm the next instruction
 // if there are no more bytes to be read, return 0
@@ -133,14 +135,14 @@ fail:
 int ulas_dasm_next(FILE *src, FILE *dst) {
   long srctell = ftell(src);
   // read n bytes (as many as in instruction)
-  char buf[ULAS_OUTBUFMAX];
-  memset(buf, 0, ULAS_OUTBUFMAX);
+  char buf[ULAS_DASM_BUFMAX];
+  memset(buf, 0, ULAS_DASM_BUFMAX);
   unsigned long read = 0;
 
   // find the correct instructions
   // needs to match every byte!
   // first read max outbuf
-  read = fread(buf, 1, ULAS_OUTBUFMAX, src);
+  read = fread(buf, 1, ULAS_DASM_BUFMAX, src);
   if (read == 0) {
     return 0;
   }
