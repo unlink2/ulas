@@ -1470,7 +1470,7 @@ int ulas_parsecmp(int *i);
 int ulas_parseun(int *i) {
   struct ulas_tok *t = ulas_tokbufget(&ulas.toks, *i);
 
-  if (t && (t->type == '!' || t->type == '-' || t->type == '~')) {
+  if (t && (t->type == '!' || t->type == '-' || t->type == '~' || t->type == '+')) {
     int op = *i;
     *i += 1;
     int right = ulas_parseun(i);
@@ -1704,6 +1704,8 @@ int ulas_intexpreval(int i, int *rc) {
       return !right;
     case '-':
       return -right;
+    case '+':
+      return +right;
     case '~':
       return ~right;
     default:
