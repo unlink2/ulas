@@ -265,7 +265,7 @@ int ulas_isname(const char *tok, unsigned long n) {
 }
 
 int ulas_islabelname(const char *tok, unsigned long n) {
-  return tok[n - 1] == ':' && ulas_isname(tok, n - 1);
+  return tok[n - 1] == ':' && (ulas_isname(tok, n - 1) || n == 1);
 }
 
 struct ulas_sym *ulas_symbolresolve(const char *name, int scope, int *rc) {
@@ -311,7 +311,7 @@ int ulas_symbolset(const char *cname, int scope, struct ulas_tok tok,
     ulas.scope++;
   }
 
-  if (!existing) {
+  if (!existing || (name[0] == '\0' && len == 1)) {
     // def new symbol
     struct ulas_sym new_sym = {strndup(name, len), tok, scope, ulas.pass,
                                constant};
@@ -340,7 +340,11 @@ int ulas_symbolout(FILE *dst, struct ulas_sym *s) {
   }
 
   int rc = 0;
-  fprintf(dst, "%s = ", s->name);
+  if (!s->name || s->name[0] == '\0') {
+    fprintf(dst, "<unnamed> = ");
+  } else {
+    fprintf(dst, "%s = ", s->name);
+  }
   switch (s->tok.type) {
   case ULAS_INT:
     fprintf(dst, "0x%x", ulas_valint(&s->tok, &rc));
@@ -1470,7 +1474,8 @@ int ulas_parsecmp(int *i);
 int ulas_parseun(int *i) {
   struct ulas_tok *t = ulas_tokbufget(&ulas.toks, *i);
 
-  if (t && (t->type == '!' || t->type == '-' || t->type == '~' || t->type == '+')) {
+  if (t &&
+      (t->type == '!' || t->type == '-' || t->type == '~' || t->type == '+')) {
     int op = *i;
     *i += 1;
     int right = ulas_parseun(i);
@@ -2336,7 +2341,9 @@ int ulas_asmline(FILE *dst, FILE *src, const char *line, unsigned long n) {
   if (ulas_islabelname(ulas.tok.buf, strlen(ulas.tok.buf))) {
     instr_start = line;
     struct ulas_tok label_tok = {ULAS_INT, {(int)ulas.address}};
-    ulas_symbolset(ulas.tok.buf, -1, label_tok, 1);
+    if (ulas_symbolset(ulas.tok.buf, -1, label_tok, 1) == -1) {
+      return -1;
+    }
     ulas_tok(&ulas.tok, &line, n);
     // is next token empty?
     if (ulas_istokend(&ulas.tok)) {

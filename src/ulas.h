@@ -248,7 +248,6 @@ struct ulas_preproc {
   struct ulas_str macrobuf;
 };
 
-
 struct ulas {
   struct ulas_preproc pp;
   char *filename;
@@ -426,7 +425,6 @@ enum ulas_asmdir {
   // repeats a line n times
   ULAS_ASMDIR_REP,
 };
-
 
 #define ULAS_INSTRTOKMAX 16
 #define ULAS_INSTRDATMAX 16

@@ -155,3 +155,8 @@ nextlevel $2
 #endmacro 
 
 toplevel 5, 6
+
+:
+:
+  halt
+

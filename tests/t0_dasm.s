@@ -120,3 +120,4 @@
   dec b
   inc b
 .db 0x6
+.db 0x76
