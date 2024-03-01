@@ -361,8 +361,8 @@ int ulas_symbolout(FILE *dst, struct ulas_sym *s) {
   return rc;
 }
 
-#define WELD_TOKISTERM write
-#define WELD_TOKCOND (i < n && write < n && line[i])
+#define ULAS_TOKISTERM write
+#define ULAS_TOKCOND (i < n && write < n && line[i])
 
 int ulas_tok(struct ulas_str *dst, const char **out_line, unsigned long n) {
   const char *line = *out_line;
@@ -372,7 +372,7 @@ int ulas_tok(struct ulas_str *dst, const char **out_line, unsigned long n) {
   int write = 0;
 
   // always skip leading terminators
-  while (WELD_TOKCOND && isspace(line[i])) {
+  while (ULAS_TOKCOND && isspace(line[i])) {
     i++;
   }
 
@@ -380,14 +380,14 @@ int ulas_tok(struct ulas_str *dst, const char **out_line, unsigned long n) {
   if (line[i] == '"') {
     dst->buf[write++] = line[i++];
     int last_escape = 0;
-    while (WELD_TOKCOND && (line[i] != '\"' || last_escape)) {
+    while (ULAS_TOKCOND && (line[i] != '\"' || last_escape)) {
       last_escape = line[i] == '\\';
       dst->buf[write++] = line[i];
       i++;
     }
     dst->buf[write++] = line[i++];
   } else {
-    while (WELD_TOKCOND) {
+    while (ULAS_TOKCOND) {
       char c = line[i];
 
       switch (c) {
@@ -406,14 +406,14 @@ int ulas_tok(struct ulas_str *dst, const char **out_line, unsigned long n) {
       case ',':
       case '\\':
       case ULAS_TOK_COMMENT:
-        if (WELD_TOKISTERM) {
+        if (ULAS_TOKISTERM) {
           goto tokdone;
         }
         // single char tokens
         dst->buf[write++] = line[i++];
         goto tokdone;
       case '$':
-        if (WELD_TOKISTERM) {
+        if (ULAS_TOKISTERM) {
           goto tokdone;
         }
         // special var for preprocessor
@@ -474,11 +474,11 @@ int ulas_tokuntil(struct ulas_str *dst, char c, const char **out_line,
   int i = 0;
   int write = 0;
 
-  while (WELD_TOKCOND && isspace(line[i])) {
+  while (ULAS_TOKCOND && isspace(line[i])) {
     i++;
   }
 
-  while (WELD_TOKCOND && line[i] != c) {
+  while (ULAS_TOKCOND && line[i] != c) {
     dst->buf[write++] = line[i++];
   }
 
@@ -649,8 +649,8 @@ end:
   return tok;
 }
 
-#undef WELD_TOKCOND
-#undef WLED_TOKISTERM
+#undef ULAS_TOKCOND
+#undef ULAS_TOKISTERM
 
 struct ulas_str ulas_str(unsigned long n) {
   struct ulas_str str = {malloc(n), n};
