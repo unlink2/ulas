@@ -432,8 +432,7 @@ int ulas_tok(struct ulas_str *dst, const char **out_line, unsigned long n) {
     i++;
   }
 
-  // s
-  // tring token
+  // string token
   if (line[i] == '"') {
     dst->buf[write++] = line[i++];
     int last_escape = 0;
