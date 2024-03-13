@@ -23,7 +23,7 @@
 #define ULAS_OPTS "hvVpdA"
 
 // args with value
-#define ULAS_OPTS_ARG "o:l:s:i:w:a:"
+#define ULAS_OPTS_ARG "o:l:s:i:w:a:S:"
 
 #define ULAS_HELP(a, desc) printf("\t-%s\t%s\n", (a), desc);
 
@@ -34,7 +34,7 @@ unsigned long incpathslen = 0;
 
 void ulas_help(void) {
   printf("%s\n", ULAS_NAME);
-  printf("Usage %s [-%s] [-o=path] [-i=path] [-l=path] [-a=initial-address] "
+  printf("Usage %s [-%s] [-o=path] [-i=path] [-l=path] [-a=initial-address] [-S=ulas|mlb] "
          "[input]\n\n",
          ULAS_NAME, ULAS_OPTS);
   ULAS_HELP("h", "display this help and exit");
@@ -48,6 +48,7 @@ void ulas_help(void) {
   ULAS_HELP("a=initial-address", "Initial starting address");
   ULAS_HELP("A", "Print addresses in disassembler mode");
   ULAS_HELP("d", "Disassemble a file");
+  ULAS_HELP("S", "Set the symbol format");
   ULAS_HELP("w=warning", "Toggle warnings: a=all, o=overflow");
 }
 
@@ -100,6 +101,16 @@ void ulas_getopt(int argc, char **argv, struct ulas_config *cfg) {
       break;
     case 'A':
       cfg->print_addrs = 1;
+      break;
+    case 'S':
+      if (strcmp("ulas", optarg) == 0) {
+        cfg->sym_fmt = ULAS_SYM_FMT_DEFAULT; 
+      } else if (strcmp("mlb", optarg) == 0) {
+        cfg->sym_fmt = ULAS_SYM_FMT_MLB; 
+      } else {
+        printf("Invalid symbol format: %s\n", optarg);
+        exit(-1);
+      }
       break;
     case '?':
       break;

@@ -119,6 +119,8 @@ struct ulas_tok;
 
 enum ulas_warm { ULAS_WARN_OVERFLOW = 1, ULAS_WARN_ALL = 0x7FFFFFFF };
 
+enum ulas_symfmt { ULAS_SYM_FMT_DEFAULT, ULAS_SYM_FMT_MLB };
+
 struct ulas_config {
   // argv represents file names
   char **argv;
@@ -127,6 +129,8 @@ struct ulas_config {
   char *output_path;
   char *lst_path;
   char *sym_path;
+
+  enum ulas_symfmt sym_fmt;
 
   int verbose;
   int preproc_only;

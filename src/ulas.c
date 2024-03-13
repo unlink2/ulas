@@ -334,29 +334,85 @@ int ulas_symbolset(const char *cname, int scope, struct ulas_tok tok,
   return rc;
 }
 
+int ulas_symbolout_mlbloc(FILE *dst, long addr) {
+  if (addr == -1) {
+    fprintf(dst, "Unknown:");
+    return 0;
+  }
+  
+  // TODO: maybe allow the user to define this by using 
+  // .section and just trust the label location in the source
+  // is correct
+  switch (ulas.arch.type) {
+  case ULAS_ARCH_SM83:
+    if (addr >= 0x0000 && addr <= 0x7FFF) {
+      fprintf(dst, "GbPrgRom:");
+      return 0;
+    } else if (addr >= 0xC000 && addr <= 0xDFFF) {
+      fprintf(dst, "GbWorkRam:");
+      return 0xC000;
+    } else {
+      fprintf(dst, "Unknown:");
+      return 0;
+    }
+    break;
+  }
+  return 0;
+}
+
 int ulas_symbolout(FILE *dst, struct ulas_sym *s) {
   if (!dst || ulas.pass != ULAS_PASS_FINAL) {
     return 0;
   }
 
   int rc = 0;
-  if (!s->name || s->name[0] == '\0') {
-    fprintf(dst, "<unnamed> = ");
-  } else {
-    fprintf(dst, "%s = ", s->name);
+
+  switch (ulascfg.sym_fmt) {
+  case ULAS_SYM_FMT_DEFAULT:
+    if (!s->name || s->name[0] == '\0') {
+      fprintf(dst, "<unnamed> = ");
+    } else {
+      fprintf(dst, "%s = ", s->name);
+    }
+    switch (s->tok.type) {
+    case ULAS_INT:
+      fprintf(dst, "0x%x", ulas_valint(&s->tok, &rc));
+      break;
+    case ULAS_STR:
+      fprintf(dst, "%s", ulas_valstr(&s->tok, &rc));
+      break;
+    default:
+      fprintf(dst, "<Unknown type>");
+      break;
+    }
+    fprintf(dst, "\n");
+    break;
+  case ULAS_SYM_FMT_MLB:
+    switch (s->tok.type) {
+    case ULAS_INT: {
+      int valint = ulas_valint(&s->tok, &rc);
+      valint -= ulas_symbolout_mlbloc(dst, valint);
+      fprintf(dst, "%x:", valint);
+      break;
+    }
+    case ULAS_STR:
+      ulas_symbolout_mlbloc(dst, -1);
+      fprintf(dst, "%s:", ulas_valstr(&s->tok, &rc));
+      break;
+    default:
+      ulas_symbolout_mlbloc(dst, -1);
+      fprintf(dst, "<Unknown type>:");
+      break;
+    }
+    if (!s->name || s->name[0] == '\0') {
+      fprintf(dst, "<unnamed>:<unnamed>");
+    } else {
+      fprintf(dst, "%s:%s", s->name, s->name);
+    }
+
+    fprintf(dst, "\n");
+    break;
   }
-  switch (s->tok.type) {
-  case ULAS_INT:
-    fprintf(dst, "0x%x", ulas_valint(&s->tok, &rc));
-    break;
-  case ULAS_STR:
-    fprintf(dst, "%s", ulas_valstr(&s->tok, &rc));
-    break;
-  default:
-    fprintf(dst, "<Unknown type>");
-    break;
-  }
-  fprintf(dst, "\n");
 
   return rc;
 }
@@ -376,7 +432,8 @@ int ulas_tok(struct ulas_str *dst, const char **out_line, unsigned long n) {
     i++;
   }
 
-  // string token
+  // s
+  // tring token
   if (line[i] == '"') {
     dst->buf[write++] = line[i++];
     int last_escape = 0;
